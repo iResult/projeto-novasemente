@@ -36,6 +36,8 @@ jobs:
             php artisan communities:install-defaults
             php artisan app:seed-talent-demo-listings
             php artisan app:reparse-saturday-programs --only-missing
+            # Escala dos Diáconos (planilha 2º semestre 2026 — nomes, funções e coordenadores).
+            php artisan db:seed --class=DeaconsSeeder --force
             # Registar versão web automaticamente (para aparecer no card "Versão").
             RELEASE_SHA="$(git rev-parse --short HEAD)"
             RELEASE_VER="v2.${{ github.run_number }}"

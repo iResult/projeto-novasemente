@@ -68,7 +68,7 @@ const items: MoreMenuItem[] = [
     { name: 'Doação', description: 'Seu gesto de amor pode transformar vidas e renovar esperanças', route: 'mobile.donations.index', featureKey: 'charity_donations', icon: BanknotesIcon },
     {
         name: 'Central de Serviços',
-        description: 'Serviços, habilidades e apoio mútuo entre membros',
+        description: 'Divulgue suas habilidades e encontre profissionais e oportunidades de trabalho na comunidade.',
         route: 'mobile.talents.index',
         featureKey: 'talents',
         icon: SparklesIcon,

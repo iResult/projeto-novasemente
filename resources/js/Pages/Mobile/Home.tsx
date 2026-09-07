@@ -151,7 +151,7 @@ const homeQuickActions: QuickAction[] = [
     {
         id: 'central-servicos',
         label: 'Central de Serviços',
-        subtitle: 'Serviços, habilidades e apoio mútuo entre membros',
+        subtitle: 'Divulgue suas habilidades e encontre profissionais e oportunidades de trabalho na comunidade.',
         route: 'mobile.talents.index',
         featureKey: 'talents',
         icon: SparklesIcon,

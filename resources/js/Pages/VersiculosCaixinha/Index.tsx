@@ -25,10 +25,12 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
 import AppPhonePreviewButton from '@/Components/AppPhonePreview/AppPhonePreviewButton';
+import PromiseBoxPhonePreview, {
+    type PromiseBoxPreviewItem,
+} from '@/Components/AppPhonePreview/PromiseBoxPhonePreview';
 import { FormEventHandler, useMemo, useState } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
-import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
 
 type Row = {
     id: number;
@@ -163,7 +165,7 @@ export default function VersiculosCaixinhaIndex({
     const [previewSummary, setPreviewSummary] = useState<ImportPreviewSummary | null>(null);
     const [previewTitle, setPreviewTitle] = useState('');
     const [previewScanned, setPreviewScanned] = useState<number | null>(null);
-    const { openPreview, previewModal } = usePublicationAppPreview();
+    const [phonePreviewItem, setPhonePreviewItem] = useState<PromiseBoxPreviewItem | null>(null);
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         livro: books[0] ?? '',
@@ -443,12 +445,10 @@ export default function VersiculosCaixinhaIndex({
     const previewSelectedCount = previewItems.filter((item) => item.selected && item.status === 'ready').length;
 
     const openRowPhonePreview = (row: Row) => {
-        openPreview({
-            typeLabel: 'Promessa',
-            title: row.ref,
-            excerpt: row.textPreview,
-            meta: [row.categoria, row.ativo ? 'Ativo' : 'Inativo'],
-            backLabel: '← Caixinha',
+        setPhonePreviewItem({
+            ref: row.ref,
+            textPreview: row.textPreview,
+            categoria: row.categoria,
         });
     };
 
@@ -1069,7 +1069,11 @@ export default function VersiculosCaixinhaIndex({
                 </div>
             </Modal>
 
-            {previewModal}
+            <PromiseBoxPhonePreview
+                show={phonePreviewItem != null}
+                item={phonePreviewItem}
+                onClose={() => setPhonePreviewItem(null)}
+            />
         </AdminLayout>
     );
 }
