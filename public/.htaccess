@@ -1,3 +1,9 @@
+<IfModule mod_mime.c>
+    # PDF.js importa o worker como ES module; sem isto o Apache serve .mjs
+    # como octet-stream e o leitor falha ("Setting up fake worker failed").
+    AddType application/javascript .mjs
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

@@ -3,10 +3,14 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NGINX_LIMITS_SOURCE="${ROOT_DIR}/deployment/nginx-upload-limits.conf"
+NGINX_MJS_SOURCE="${ROOT_DIR}/deployment/nginx-mjs-mime.conf"
 PHP_LIMITS_FILE="/tmp/projeto-novasemente-upload-limits.ini"
 
 if command -v nginx >/dev/null 2>&1 && [ -d /etc/nginx/conf.d ]; then
     install -m 0644 "${NGINX_LIMITS_SOURCE}" /etc/nginx/conf.d/projeto-novasemente-upload-limits.conf
+    if [ -f "${NGINX_MJS_SOURCE}" ]; then
+        install -m 0644 "${NGINX_MJS_SOURCE}" /etc/nginx/conf.d/projeto-novasemente-mjs-mime.conf
+    fi
     nginx -t
     # Smoke check: se o nginx não incluir conf.d, este ficheiro não terá efeito.
     if nginx -T 2>/dev/null | grep -q "projeto-novasemente-upload-limits.conf"; then
@@ -14,6 +18,11 @@ if command -v nginx >/dev/null 2>&1 && [ -d /etc/nginx/conf.d ]; then
     else
         echo "[upload-limits] AVISO: Nginx não parece incluir /etc/nginx/conf.d/*.conf."
         echo "[upload-limits]        Inclua manualmente o ficheiro em sites-enabled/server { ... }."
+    fi
+    if nginx -T 2>/dev/null | grep -q "projeto-novasemente-mjs-mime.conf"; then
+        echo "[upload-limits] Nginx: MIME de .mjs (application/javascript) aplicado."
+    elif [ -f "${NGINX_MJS_SOURCE}" ]; then
+        echo "[upload-limits] AVISO: MIME de .mjs pode não estar ativo (conf.d não incluído)."
     fi
     if command -v systemctl >/dev/null 2>&1; then
         systemctl reload nginx

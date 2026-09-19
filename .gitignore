@@ -19,6 +19,7 @@ temp.env
 /.ci-toolcache
 /public/build
 /public/hot
+/public/pdf.worker.min.js
 /public/php.info.php
 /public/storage
 /storage/*.key

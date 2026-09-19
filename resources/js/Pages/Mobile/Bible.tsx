@@ -3,7 +3,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { MagnifyingGlassIcon, XMarkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeForSearch } from '@/utils/searchText';
-import { LIST_SEARCH_DEBOUNCE_MS, LIST_SEARCH_MIN_LENGTH } from '@/utils/listSearch';
+import ListSearchHint from '@/Components/ListSearchHint';
+import { isListSearchBelowMinimum, LIST_SEARCH_DEBOUNCE_MS, LIST_SEARCH_MIN_LENGTH } from '@/utils/listSearch';
 
 type Testament = 'old' | 'new';
 
@@ -45,6 +46,52 @@ type LastReading = {
 };
 
 const LAST_READING_STORAGE_KEY = 'ns:bible:lastReading:v1';
+
+function bibleBookSearchScore(book: BibleBook, query: string): number | null {
+    const name = normalizeForSearch(book.name);
+    const abbrev = normalizeForSearch(book.abbrev);
+    if (name === query) return 0;
+    if (abbrev === query) return 1;
+    if (name.startsWith(query)) return 2;
+    if (abbrev.startsWith(query)) return 3;
+    if (name.includes(query)) return 4;
+    if (abbrev.includes(query)) return 5;
+    return null;
+}
+
+function matchingBibleBooks(books: BibleBook[], rawQuery: string): BibleBook[] {
+    const query = normalizeForSearch(rawQuery);
+    if (!query) return [];
+
+    return books
+        .map((book) => {
+            const score = bibleBookSearchScore(book, query);
+            return score === null ? null : { book, score };
+        })
+        .filter((row): row is { book: BibleBook; score: number } => row !== null)
+        .sort((a, b) => a.score - b.score || a.book.position - b.book.position)
+        .map((row) => row.book);
+}
+
+function BibleBookGrid({ books, onSelect }: { books: BibleBook[]; onSelect: (book: BibleBook) => void }) {
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {books.map((b) => (
+                <button
+                    key={b.key}
+                    type="button"
+                    onClick={() => onSelect(b)}
+                    className="cursor-pointer text-left rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 active:scale-[0.99] transition"
+                >
+                    <p className="font-bold text-zinc-900 dark:text-white">{b.name}</p>
+                    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        {b.chapters_count} {b.chapters_count === 1 ? 'cap.' : 'caps.'}
+                    </p>
+                </button>
+            ))}
+        </div>
+    );
+}
 
 function readLastReading(): LastReading | null {
     if (typeof window === 'undefined') return null;
@@ -112,19 +159,19 @@ export default function MobileBible({ books, initial }: Props) {
         return { old, new: neu };
     }, [books]);
 
-    const filteredBooks = useMemo(() => {
-        const list = testament === 'old' ? booksByTestament.old : booksByTestament.new;
-        const q = normalizeForSearch(search.trim());
-        if (!q) return list;
-        return list.filter((b) => normalizeForSearch(b.name).includes(q) || normalizeForSearch(b.abbrev).includes(q));
-    }, [booksByTestament, testament, search]);
+    const testamentBooks = testament === 'old' ? booksByTestament.old : booksByTestament.new;
+
+    const matchingBooks = useMemo(() => matchingBibleBooks(books, search), [books, search]);
 
     const chapters = useMemo(() => {
         const count = selectedBook?.chapters_count ?? 0;
         return Array.from({ length: count }, (_, i) => i + 1);
     }, [selectedBook]);
 
-    const showSearchResults = search.trim().length >= 2;
+    const searchQuery = search.trim();
+    const isSearching = searchQuery.length > 0;
+    const showVerseSearch = searchQuery.length >= LIST_SEARCH_MIN_LENGTH;
+    const searchBelowMinimum = isListSearchBelowMinimum(search);
 
     useEffect(() => {
         if (!selectedBook) return;
@@ -202,7 +249,10 @@ export default function MobileBible({ books, initial }: Props) {
     };
 
     const onSelectBook = (b: BibleBook) => {
+        setSearch('');
+        setSearchResults([]);
         setFocusedVerse(null);
+        setTestament(b.testament);
         setSelectedBook(b);
         setChapter(1);
         setVerses([]);
@@ -220,7 +270,7 @@ export default function MobileBible({ books, initial }: Props) {
     };
 
     useEffect(() => {
-        if (!showSearchResults) {
+        if (!showVerseSearch) {
             setSearchStatus('idle');
             setSearchResults([]);
             if (searchDebounce.current) {
@@ -231,12 +281,8 @@ export default function MobileBible({ books, initial }: Props) {
         }
 
         if (searchDebounce.current) window.clearTimeout(searchDebounce.current);
-        const q = search.trim();
-        if (q.length > 0 && q.length < LIST_SEARCH_MIN_LENGTH) {
-            setSearchStatus('idle');
-            setSearchResults([]);
-            return;
-        }
+        setSearchResults([]);
+        const q = searchQuery;
         searchDebounce.current = window.setTimeout(async () => {
             const seq = ++searchSeq.current;
             setSearchStatus('loading');
@@ -260,7 +306,7 @@ export default function MobileBible({ books, initial }: Props) {
         return () => {
             if (searchDebounce.current) window.clearTimeout(searchDebounce.current);
         };
-    }, [search, testament, showSearchResults]);
+    }, [searchQuery, testament, showVerseSearch]);
 
     const onOpenSearchResult = (r: SearchResult) => {
         const b = books.find((x) => x.key === r.book) ?? null;
@@ -363,7 +409,7 @@ export default function MobileBible({ books, initial }: Props) {
                             <button
                                 type="button"
                                 onClick={() => setSearch('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:bg-zinc-200 dark:active:bg-zinc-700"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-1.5 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 active:bg-zinc-200 dark:active:bg-zinc-700"
                                 aria-label="Limpar busca"
                             >
                                 <XMarkIcon className="h-5 w-5" />
@@ -382,41 +428,63 @@ export default function MobileBible({ books, initial }: Props) {
                             Ainda não foi importada para a base de dados. Rode o importador no servidor.
                         </p>
                     </div>
-                ) : showSearchResults ? (
-                    <div className="space-y-3">
-                        {searchStatus === 'loading' ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">A procurar…</p>
-                        ) : searchStatus === 'error' ? (
-                            <p className="text-sm text-amber-700 dark:text-amber-300">
-                                Não foi possível pesquisar agora. Tente novamente.
-                            </p>
-                        ) : searchResults.length === 0 ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">Nenhum resultado.</p>
+                ) : isSearching ? (
+                    <div className="space-y-5">
+                        {matchingBooks.length > 0 ? (
+                            <section className="space-y-3">
+                                {showVerseSearch ? (
+                                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Livros</h2>
+                                ) : null}
+                                <BibleBookGrid books={matchingBooks} onSelect={onSelectBook} />
+                            </section>
                         ) : (
-                            <ul className="space-y-2">
-                                {searchResults.map((r) => (
-                                    <li key={`${r.book}-${r.chapter}-${r.verse}-${r.ref}`}>
-                                        <button
-                                            type="button"
-                                            onClick={() => onOpenSearchResult(r)}
-                                            className="w-full text-left rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 active:scale-[0.99] transition"
-                                        >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-zinc-900 dark:text-white">
-                                                        {r.ref}
-                                                    </p>
-                                                    <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                                                        {r.text}
-                                                    </p>
-                                                </div>
-                                                <BookOpenIcon className="h-5 w-5 text-zinc-400 shrink-0" aria-hidden />
-                                            </div>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
+                            <ListSearchHint show={searchBelowMinimum} />
                         )}
+
+                        {showVerseSearch &&
+                        (matchingBooks.length === 0 ||
+                            searchStatus === 'loading' ||
+                            searchStatus === 'error' ||
+                            searchResults.length > 0) ? (
+                            <section className="space-y-3">
+                                {matchingBooks.length > 0 ? (
+                                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Versículos</h2>
+                                ) : null}
+                                {searchStatus === 'loading' ? (
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Procurando…</p>
+                                ) : searchStatus === 'error' ? (
+                                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                                        Não foi possível pesquisar agora. Tente novamente.
+                                    </p>
+                                ) : searchResults.length === 0 ? (
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Nenhum resultado.</p>
+                                ) : (
+                                    <ul className="space-y-2">
+                                        {searchResults.map((r) => (
+                                            <li key={`${r.book}-${r.chapter}-${r.verse}-${r.ref}`}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onOpenSearchResult(r)}
+                                                    className="w-full cursor-pointer text-left rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 active:scale-[0.99] transition"
+                                                >
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="min-w-0">
+                                                            <p className="font-semibold text-zinc-900 dark:text-white">
+                                                                {r.ref}
+                                                            </p>
+                                                            <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                                                {r.text}
+                                                            </p>
+                                                        </div>
+                                                        <BookOpenIcon className="h-5 w-5 text-zinc-400 shrink-0" aria-hidden />
+                                                    </div>
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </section>
+                        ) : null}
                     </div>
                 ) : selectedBook ? (
                     <div className="space-y-4">
@@ -538,24 +606,10 @@ export default function MobileBible({ books, initial }: Props) {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {filteredBooks.length === 0 ? (
+                        {testamentBooks.length === 0 ? (
                             <p className="text-sm text-zinc-500 dark:text-zinc-400">Nenhum livro encontrado.</p>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {filteredBooks.map((b) => (
-                                    <button
-                                        key={b.key}
-                                        type="button"
-                                        onClick={() => onSelectBook(b)}
-                                        className="text-left rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 active:scale-[0.99] transition"
-                                    >
-                                        <p className="font-bold text-zinc-900 dark:text-white">{b.name}</p>
-                                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                            {b.chapters_count} {b.chapters_count === 1 ? 'cap.' : 'caps.'}
-                                        </p>
-                                    </button>
-                                ))}
-                            </div>
+                            <BibleBookGrid books={testamentBooks} onSelect={onSelectBook} />
                         )}
                     </div>
                 )}
