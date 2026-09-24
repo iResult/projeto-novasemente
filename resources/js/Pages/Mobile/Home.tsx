@@ -17,7 +17,6 @@ import {
     ClipboardDocumentListIcon,
     SparklesIcon,
     UserGroupIcon,
-    ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
@@ -239,14 +238,6 @@ const homeQuickActions: QuickAction[] = [
         icon: MusicalNoteIcon,
     },
     {
-        id: 'ns-whats',
-        label: 'NS Conecta',
-        subtitle: 'Converse com departamentos, líderes e voluntários',
-        route: 'mobile.ns-whats.index',
-        featureKey: 'ns_whats',
-        icon: ChatBubbleLeftRightIcon,
-    },
-    {
         id: 'oracao',
         label: 'Oração',
         subtitle: 'Pedidos de oração',
@@ -464,7 +455,7 @@ export default function MobileHome({
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} />
                 ) : null}
 
-                <HomeGivingShortcuts />
+                <HomeGivingShortcuts nsWhatsPendingReply={nsWhatsPendingReply} />
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
