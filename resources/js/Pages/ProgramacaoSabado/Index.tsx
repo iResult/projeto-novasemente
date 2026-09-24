@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { DocumentTextIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, DocumentTextIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import AppPhonePreviewButton from '@/Components/AppPhonePreview/AppPhonePreviewButton';
 import AddButton from '@/Components/AddButton';
 import PageHeader from '@/Components/PageHeader';
@@ -13,6 +13,7 @@ import InputError from '@/Components/InputError';
 import ListCardActionRow from '@/Components/ListCard/ListCardActionRow';
 import ListCardIconActionButton from '@/Components/ListCard/ListCardIconActionButton';
 import SaturdayProgramPhonePreview from '@/Components/ProgramacaoSabado/SaturdayProgramPhonePreview';
+import SaturdayProgramLiveSchedule from '@/Components/ProgramacaoSabado/SaturdayProgramLiveSchedule';
 import type { SaturdaySchedule } from '@/Components/Mobile/SaturdayProgramScheduleView';
 import { FormEventHandler, useEffect, useState } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
@@ -32,6 +33,8 @@ interface SaturdayProgramRow {
     schedule_item_count?: number;
     has_schedule?: boolean;
     schedule?: SaturdaySchedule | null;
+    live_current_index?: number | null;
+    live_active?: boolean;
 }
 
 interface Props {
@@ -89,6 +92,7 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [previewRow, setPreviewRow] = useState<SaturdayProgramRow | null>(null);
+    const [liveRow, setLiveRow] = useState<SaturdayProgramRow | null>(null);
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm<{
         saturday_date: string;
@@ -104,11 +108,11 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
         pdf_file: null,
     });
 
-    const syncEditModalUrl = (id: number | null) => {
+    const syncModalUrl = (id: number | null, kind: 'edit' | 'live' | null = 'edit') => {
         if (typeof window === 'undefined') return;
         const params = new URLSearchParams(window.location.search);
-        if (id != null && id > 0) {
-            params.set('modal', 'edit');
+        if (id != null && id > 0 && kind) {
+            params.set('modal', kind);
             params.set('id', String(id));
         } else {
             params.delete('modal');
@@ -123,9 +127,10 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
     };
 
     const openCreateModal = () => {
+        setLiveRow(null);
         setIsEditing(false);
         setEditingId(null);
-        syncEditModalUrl(null);
+        syncModalUrl(null);
         reset();
         setData({
             saturday_date: '',
@@ -139,9 +144,10 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
     };
 
     const openEditModal = (row: SaturdayProgramRow) => {
+        setLiveRow(null);
         setIsEditing(true);
         setEditingId(row.id);
-        syncEditModalUrl(row.id);
+        syncModalUrl(row.id, 'edit');
         setData({
             saturday_date: row.saturday_date ?? '',
             title: row.title ?? '',
@@ -153,22 +159,42 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
         setIsModalOpen(true);
     };
 
+    const openLiveModal = (row: SaturdayProgramRow) => {
+        setIsModalOpen(false);
+        setEditingId(null);
+        setIsEditing(false);
+        setLiveRow(row);
+        syncModalUrl(row.id, 'live');
+    };
+
     const closeModal = () => {
         setIsModalOpen(false);
-        syncEditModalUrl(null);
+        syncModalUrl(null);
         reset();
         setEditingId(null);
         setIsEditing(false);
     };
 
+    const closeLiveModal = () => {
+        setLiveRow(null);
+        syncModalUrl(null);
+    };
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const params = new URLSearchParams(window.location.search);
-        if (params.get('modal') !== 'edit') return;
+        const modal = params.get('modal');
         const id = Number(params.get('id'));
         if (Number.isNaN(id) || id <= 0) return;
         const row = items.find((r) => r.id === id);
         if (!row) return;
+        if (modal === 'live') {
+            if (liveRow?.id !== id) {
+                openLiveModal(row);
+            }
+            return;
+        }
+        if (modal !== 'edit') return;
         if (!isModalOpen || editingId !== id) {
             openEditModal(row);
         }
@@ -204,13 +230,15 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
         }
     };
 
+    const liveTitle = liveRow?.title?.trim() || 'Programação do Sábado';
+
     return (
         <AdminLayout>
             <Head title="Programação do sábado" />
             <div className="space-y-6">
                 <PageHeader
                     title="Programação do sábado"
-                    subtitle="Publique o PDF da programação. Fica visível no app até sábado às 15:00."
+                    subtitle="Publique o PDF e, no sábado, passe a programação para a igreja acompanhar o momento atual."
                     actions={
                         canManage ? (
                             <AddButton variant="label" onClick={openCreateModal}>
@@ -257,6 +285,7 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                                             </p>
                                             <p className="mt-1 text-xs font-medium text-zinc-600 dark:text-zinc-300">
                                                 {statusLabel(row)}
+                                                {row.live_active ? ' · Ao vivo' : ''}
                                             </p>
                                             <div className="mt-2">
                                                 <ParseBadge row={row} />
@@ -266,6 +295,13 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                                     <div className="mt-3">
                                         <ListCardActionRow>
                                             <AppPhonePreviewButton onClick={() => setPreviewRow(row)} />
+                                            {canManage && row.has_schedule ? (
+                                                <ListCardIconActionButton
+                                                    label="Passar programação"
+                                                    icon={<CheckIcon className="h-4 w-4" aria-hidden />}
+                                                    onClick={() => openLiveModal(row)}
+                                                />
+                                            ) : null}
                                             {canManage ? (
                                                 <>
                                                     <ListCardIconActionButton
@@ -319,6 +355,7 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                                             </td>
                                             <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
                                                 {statusLabel(row)}
+                                                {row.live_active ? ' · Ao vivo' : ''}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <ParseBadge row={row} />
@@ -326,6 +363,13 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                                             <td className="px-4 py-3 text-right">
                                                 <div className="inline-flex items-center gap-1">
                                                     <AppPhonePreviewButton onClick={() => setPreviewRow(row)} />
+                                                    {canManage && row.has_schedule ? (
+                                                        <ListCardIconActionButton
+                                                            label="Passar programação"
+                                                            icon={<CheckIcon className="h-4 w-4" aria-hidden />}
+                                                            onClick={() => openLiveModal(row)}
+                                                        />
+                                                    ) : null}
                                                     {canManage ? (
                                                         <>
                                                             <ListCardIconActionButton
@@ -357,6 +401,37 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                 row={previewRow}
                 onClose={() => setPreviewRow(null)}
             />
+
+            <Modal show={liveRow != null} onClose={closeLiveModal} maxWidth="lg">
+                <div className="space-y-3 p-5 sm:p-6">
+                    <div>
+                        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                            Passar programação
+                        </h2>
+                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            {liveTitle}
+                            {liveRow?.saturday_date ? ` · ${formatDate(liveRow.saturday_date)}` : ''}
+                        </p>
+                    </div>
+                    {liveRow?.schedule ? (
+                        <SaturdayProgramLiveSchedule
+                            programId={liveRow.id}
+                            schedule={liveRow.schedule}
+                            fallbackDateLabel={
+                                liveRow.saturday_date ? formatDate(liveRow.saturday_date) : null
+                            }
+                            canConduct={canManage}
+                            initialLiveIndex={liveRow.live_current_index ?? null}
+                            pollUrl={route('programacao-sabado.live.show', liveRow.id)}
+                            updateUrl={route('programacao-sabado.live.update', liveRow.id)}
+                        />
+                    ) : (
+                        <p className="rounded-2xl bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300">
+                            Sem itens capturados para passar.
+                        </p>
+                    )}
+                </div>
+            </Modal>
 
             <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
                 <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
@@ -399,7 +474,7 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
                             id="pdf_file"
                             type="file"
                             accept="application/pdf,.pdf"
-                            className="mt-1 block w-full cursor-pointer text-sm text-zinc-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-teal-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-teal-800 dark:text-zinc-300 dark:file:bg-teal-950/50 dark:file:text-teal-200"
+                            className="mt-1 block w-full cursor-pointer text-sm text-zinc-900 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-teal-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-teal-800 dark:text-zinc-100 dark:file:bg-teal-950/50 dark:file:text-teal-200"
                             onChange={(e) => setData('pdf_file', e.target.files?.[0] ?? null)}
                         />
                         <InputError message={errors.pdf_file} className="mt-1" />

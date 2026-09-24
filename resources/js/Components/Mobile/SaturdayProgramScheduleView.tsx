@@ -1,6 +1,10 @@
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+    computeToggleLiveIndex,
+    isLiveFinished,
+} from '@/utils/saturdayProgramLive';
 
 export type ScheduleCrewRow = { role: string; names: string };
 
@@ -29,8 +33,12 @@ export type SaturdaySchedule = {
 type Props = {
     schedule: SaturdaySchedule;
     fallbackDateLabel?: string | null;
-    /** Chave estável para lembrar itens marcados (ex.: programacao-sabado:12:2026-09-05). */
-    contentKey?: string | null;
+    /** ADM pode marcar/passar itens. Membros só acompanham. */
+    canConduct?: boolean;
+    /** Índice do item atual na passagem ao vivo (`items.length` = concluída). `null` = ainda não iniciada. */
+    liveCurrentIndex?: number | null;
+    livePending?: boolean;
+    onLiveIndexChange?: (nextIndex: number | null) => void;
 };
 
 type TimedItem = {
@@ -89,32 +97,6 @@ function formatDurationLabel(raw: string | null | undefined): string | null {
     return `${whole.toFixed(1).replace('.', ',')} min`;
 }
 
-function itemStorageId(row: Extract<ScheduleItemRow, { kind: 'item' }>, index: number): string {
-    return `${index}|${row.start}|${row.title}`;
-}
-
-function readDoneSet(contentKey: string | null | undefined): Set<string> {
-    if (!contentKey || typeof window === 'undefined') return new Set();
-    try {
-        const raw = window.localStorage.getItem(`ns.saturday-done:${contentKey}`);
-        if (!raw) return new Set();
-        const parsed = JSON.parse(raw) as unknown;
-        if (!Array.isArray(parsed)) return new Set();
-        return new Set(parsed.filter((x): x is string => typeof x === 'string'));
-    } catch {
-        return new Set();
-    }
-}
-
-function writeDoneSet(contentKey: string | null | undefined, done: Set<string>): void {
-    if (!contentKey || typeof window === 'undefined') return;
-    try {
-        window.localStorage.setItem(`ns.saturday-done:${contentKey}`, JSON.stringify([...done]));
-    } catch {
-        // ignore quota / private mode
-    }
-}
-
 function nowMinutesOfDay(): number {
     const d = new Date();
     return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
@@ -149,19 +131,18 @@ function buildTimedItems(items: ScheduleItemRow[]): TimedItem[] {
 export default function SaturdayProgramScheduleView({
     schedule,
     fallbackDateLabel = null,
-    contentKey = null,
+    canConduct = false,
+    liveCurrentIndex = null,
+    livePending = false,
+    onLiveIndexChange,
 }: Props) {
     const crew = schedule.crew ?? [];
     const items = schedule.items ?? [];
     const [crewOpen, setCrewOpen] = useState(false);
-    const [doneIds, setDoneIds] = useState<Set<string>>(() => readDoneSet(contentKey));
     const [nowMin, setNowMin] = useState(nowMinutesOfDay);
     const currentRef = useRef<HTMLElement | null>(null);
     const didScrollRef = useRef(false);
-
-    useEffect(() => {
-        setDoneIds(readDoneSet(contentKey));
-    }, [contentKey]);
+    const liveActive = liveCurrentIndex !== null;
 
     useEffect(() => {
         const tick = () => setNowMin(nowMinutesOfDay());
@@ -173,47 +154,54 @@ export default function SaturdayProgramScheduleView({
     const visibleCrew = useMemo(() => (crewOpen ? crew : crew.slice(0, 4)), [crew, crewOpen]);
     const dateLabel = schedule.date_label?.trim() || fallbackDateLabel || null;
     const timedItems = useMemo(() => buildTimedItems(items), [items]);
+    const finished = isLiveFinished(items, liveCurrentIndex);
 
-    const currentTimedIndex = useMemo(() => {
+    const clockTimedIndex = useMemo(() => {
         const hit = timedItems.findIndex((t) => nowMin >= t.startMin && nowMin < t.endMin);
         if (hit >= 0) return hit;
-        // Entre itens: destaca o próximo a começar (até 2 min antes).
         const upcoming = timedItems.findIndex((t) => t.startMin > nowMin && t.startMin - nowMin <= 2);
         return upcoming;
     }, [timedItems, nowMin]);
 
-    const currentItemIndex =
-        currentTimedIndex >= 0 ? timedItems[currentTimedIndex]?.index ?? -1 : -1;
+    const currentItemIndex = liveActive
+        ? finished
+            ? -1
+            : liveCurrentIndex
+        : clockTimedIndex >= 0
+          ? timedItems[clockTimedIndex]?.index ?? -1
+          : -1;
 
     useEffect(() => {
-        if (currentItemIndex < 0 || didScrollRef.current) return;
+        if (currentItemIndex < 0) return;
+        if (!liveActive && didScrollRef.current) return;
         const el = currentRef.current;
         if (!el) return;
         didScrollRef.current = true;
         window.requestAnimationFrame(() => {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
-    }, [currentItemIndex, items.length]);
+    }, [currentItemIndex, liveActive, items.length]);
 
-    const toggleDone = (id: string) => {
-        setDoneIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            writeDoneSet(contentKey, next);
-            return next;
-        });
-    };
-
-    const doneCount = useMemo(() => {
+    const passedCount = useMemo(() => {
+        if (!liveActive) return 0;
         let n = 0;
         items.forEach((row, index) => {
-            if (row.kind === 'item' && doneIds.has(itemStorageId(row, index))) n += 1;
+            if (row.kind === 'item' && index < (liveCurrentIndex ?? 0)) n += 1;
         });
         return n;
-    }, [items, doneIds]);
+    }, [items, liveActive, liveCurrentIndex]);
 
     const itemTotal = timedItems.length;
+
+    const handleToggle = (index: number) => {
+        if (!canConduct || !onLiveIndexChange || livePending) return;
+        onLiveIndexChange(computeToggleLiveIndex(items, liveCurrentIndex, index));
+    };
+
+    const handleReset = () => {
+        if (!canConduct || !onLiveIndexChange || livePending) return;
+        onLiveIndexChange(null);
+    };
 
     return (
         <div className="space-y-5">
@@ -270,15 +258,43 @@ export default function SaturdayProgramScheduleView({
             ) : null}
 
             {itemTotal > 0 ? (
-                <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
-                    Toque no ✓ para marcar o que já passou
-                    {doneCount > 0 ? (
-                        <span className="text-zinc-400 dark:text-zinc-500">
-                            {' '}
-                            · {doneCount}/{itemTotal}
-                        </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    {liveActive ? (
+                        <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
+                            {finished ? (
+                                'Programação concluída'
+                            ) : (
+                                <>
+                                    Ao vivo
+                                    {passedCount > 0 ? (
+                                        <span className="text-zinc-400 dark:text-zinc-500">
+                                            {' '}
+                                            · {passedCount}/{itemTotal}
+                                        </span>
+                                    ) : null}
+                                </>
+                            )}
+                        </p>
+                    ) : canConduct ? (
+                        <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
+                            Toque no ✓ para iniciar a passagem. A igreja vê o momento atual.
+                        </p>
+                    ) : (
+                        <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
+                            O destaque segue o horário até a equipe iniciar a passagem.
+                        </p>
+                    )}
+                    {canConduct && liveActive ? (
+                        <button
+                            type="button"
+                            onClick={handleReset}
+                            disabled={livePending}
+                            className="cursor-pointer text-[12px] font-semibold text-teal-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-teal-300"
+                        >
+                            Reiniciar passagem
+                        </button>
                     ) : null}
-                </p>
+                </div>
             ) : null}
 
             <section aria-label="Timeline da programação" className="space-y-2.5">
@@ -298,12 +314,12 @@ export default function SaturdayProgramScheduleView({
                         );
                     }
 
-                    const id = itemStorageId(row, index);
-                    const done = doneIds.has(id);
+                    const done = liveActive && !finished && liveCurrentIndex != null && index < liveCurrentIndex;
+                    const doneFinished = finished;
+                    const isDone = done || doneFinished;
                     const isNow = index === currentItemIndex;
                     const timed = timedItems.find((t) => t.index === index);
-                    const isPastByClock =
-                        timed != null && nowMin >= timed.endMin && !isNow;
+                    const isPastByClock = !liveActive && timed != null && nowMin >= timed.endMin && !isNow;
                     const durationLabel = formatDurationLabel(row.duration ?? null);
 
                     return (
@@ -312,10 +328,11 @@ export default function SaturdayProgramScheduleView({
                             ref={isNow ? currentRef : undefined}
                             aria-current={isNow ? 'true' : undefined}
                             className={[
-                                'relative overflow-hidden rounded-2xl p-3.5 pr-12 shadow-sm transition-colors',
+                                'relative overflow-hidden rounded-2xl p-3.5 shadow-sm transition-colors',
+                                canConduct ? 'pr-12' : '',
                                 isNow
-                                    ? 'bg-teal-50 ring-2 ring-teal-500/80 dark:bg-teal-950/50 dark:ring-teal-400/70'
-                                    : done
+                                    ? 'bg-teal-50 ring-2 ring-teal-500/80 dark:bg-teal-950 dark:ring-teal-400'
+                                    : isDone
                                       ? 'bg-zinc-100/90 ring-1 ring-zinc-200/80 dark:bg-zinc-800/60 dark:ring-zinc-700/80'
                                       : isPastByClock
                                         ? 'bg-white/80 ring-1 ring-zinc-200/70 opacity-80 dark:bg-zinc-900/70 dark:ring-zinc-700/70'
@@ -326,25 +343,40 @@ export default function SaturdayProgramScheduleView({
                                 <span className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-teal-500 dark:bg-teal-400" />
                             ) : null}
 
-                            <button
-                                type="button"
-                                onClick={() => toggleDone(id)}
-                                aria-pressed={done}
-                                aria-label={done ? 'Desmarcar item' : 'Marcar como já passou'}
-                                title={done ? 'Desmarcar' : 'Marcar como já passou'}
-                                className={[
-                                    'absolute right-2.5 top-2.5 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition',
-                                    done
-                                        ? 'bg-teal-600 text-white shadow-sm dark:bg-teal-500'
-                                        : 'bg-white text-zinc-400 ring-1 ring-zinc-200 hover:text-teal-700 hover:ring-teal-300 dark:bg-zinc-900 dark:text-zinc-500 dark:ring-zinc-600 dark:hover:text-teal-300',
-                                ].join(' ')}
-                            >
-                                {done ? (
-                                    <CheckIconSolid className="h-4 w-4" aria-hidden />
-                                ) : (
-                                    <CheckIcon className="h-4 w-4" aria-hidden />
-                                )}
-                            </button>
+                            {canConduct ? (
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggle(index)}
+                                    disabled={livePending}
+                                    aria-pressed={isDone}
+                                    aria-label={
+                                        isNow
+                                            ? 'Passar este item'
+                                            : isDone
+                                              ? 'Voltar a este item'
+                                              : 'Ir para este item'
+                                    }
+                                    title={
+                                        isNow
+                                            ? 'Passar'
+                                            : isDone
+                                              ? 'Voltar a este ponto'
+                                              : 'Iniciar / ir para este ponto'
+                                    }
+                                    className={[
+                                        'absolute right-2.5 top-2.5 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-50',
+                                        isDone
+                                            ? 'bg-teal-600 text-white shadow-sm dark:bg-teal-500'
+                                            : 'bg-white text-zinc-400 ring-1 ring-zinc-200 hover:text-teal-700 hover:ring-teal-300 dark:bg-zinc-900 dark:text-zinc-500 dark:ring-zinc-600 dark:hover:text-teal-300',
+                                    ].join(' ')}
+                                >
+                                    {isDone ? (
+                                        <CheckIconSolid className="h-4 w-4" aria-hidden />
+                                    ) : (
+                                        <CheckIcon className="h-4 w-4" aria-hidden />
+                                    )}
+                                </button>
+                            ) : null}
 
                             <div className="flex gap-3.5">
                                 <div className="w-[4.5rem] shrink-0 pt-0.5 text-right">
@@ -353,7 +385,7 @@ export default function SaturdayProgramScheduleView({
                                             'font-bold tabular-nums leading-none tracking-tight',
                                             isNow
                                                 ? 'text-[1.35rem] text-teal-800 dark:text-teal-100'
-                                                : done
+                                                : isDone
                                                   ? 'text-[1.15rem] text-zinc-400 dark:text-zinc-500'
                                                   : 'text-[1.2rem] text-zinc-900 dark:text-zinc-50',
                                         ].join(' ')}
@@ -373,7 +405,7 @@ export default function SaturdayProgramScheduleView({
                                         </p>
                                     ) : null}
                                     {isNow ? (
-                                        <span className="mt-2 inline-flex items-center rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white dark:bg-teal-500">
+                                        <span className="mt-2 inline-flex items-center rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white dark:bg-teal-400 dark:text-teal-950">
                                             Agora
                                         </span>
                                     ) : null}
@@ -393,7 +425,7 @@ export default function SaturdayProgramScheduleView({
                                     <h3
                                         className={[
                                             'text-[15px] font-semibold leading-snug',
-                                            done
+                                            isDone
                                                 ? 'text-zinc-500 line-through decoration-zinc-300 dark:text-zinc-400 dark:decoration-zinc-600'
                                                 : isNow
                                                   ? 'text-zinc-950 dark:text-white'
@@ -406,7 +438,7 @@ export default function SaturdayProgramScheduleView({
                                         <p
                                             className={[
                                                 'mt-1 text-[13px] font-medium leading-snug',
-                                                done
+                                                isDone
                                                     ? 'text-zinc-400 dark:text-zinc-500'
                                                     : 'text-zinc-600 dark:text-zinc-300',
                                             ].join(' ')}
@@ -418,7 +450,7 @@ export default function SaturdayProgramScheduleView({
                                         <p
                                             className={[
                                                 'mt-1.5 text-[12px] leading-relaxed',
-                                                done
+                                                isDone
                                                     ? 'text-zinc-400 dark:text-zinc-500'
                                                     : 'text-zinc-500 dark:text-zinc-400',
                                             ].join(' ')}

@@ -189,6 +189,8 @@ class SaturdayProgramTest extends TestCase
             'pdf_path' => $path,
             'published_at' => Carbon::parse('2026-09-01 08:00:00', 'America/Sao_Paulo'),
             'is_active' => true,
+            'live_current_index' => 2,
+            'live_updated_at' => Carbon::parse('2026-09-05 10:00:00', 'America/Sao_Paulo'),
         ]);
 
         Carbon::setTestNow(Carbon::parse('2026-09-05 15:05:00', 'America/Sao_Paulo'));
@@ -199,8 +201,144 @@ class SaturdayProgramTest extends TestCase
         $program->refresh();
         $this->assertFalse($program->is_active);
         $this->assertSame('', $program->pdf_path);
+        $this->assertNull($program->live_current_index);
         Storage::disk('public')->assertMissing($path);
 
         Carbon::setTestNow();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sampleSchedule(): array
+    {
+        return [
+            'version' => 1,
+            'heading' => 'CULTO',
+            'crew' => [],
+            'items' => [
+                ['kind' => 'item', 'start' => '09:00', 'duration' => '5:00', 'title' => 'Abertura', 'person' => 'A'],
+                ['kind' => 'section', 'title' => 'CULTO'],
+                ['kind' => 'item', 'start' => '09:10', 'duration' => '20:00', 'title' => 'Mensagem', 'person' => 'B'],
+            ],
+        ];
+    }
+
+    private function createScheduledProgram(Church $church): SaturdayProgram
+    {
+        return SaturdayProgram::query()->create([
+            'church_id' => $church->id,
+            'saturday_date' => '2026-09-05',
+            'title' => 'Culto de sábado',
+            'pdf_path' => 'saturday-programs/pdfs/culto.pdf',
+            'published_at' => Carbon::parse('2026-09-04 10:00:00', 'America/Sao_Paulo'),
+            'is_active' => true,
+            'parse_status' => SaturdayProgram::PARSE_OK,
+            'schedule' => $this->sampleSchedule(),
+        ]);
+    }
+
+    public function test_admin_can_advance_live_cursor_and_mobile_sees_it(): void
+    {
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+        $user = User::factory()->create(['church_id' => $church->id]);
+        $this->grantManage($user);
+        $program = $this->createScheduledProgram($church);
+
+        Carbon::setTestNow(Carbon::parse('2026-09-05 10:00:00', 'America/Sao_Paulo'));
+
+        $this->actingAs($user)
+            ->withSession(['working_church_id' => $church->id])
+            ->patchJson(route('programacao-sabado.live.update', $program), [
+                'live_current_index' => 0,
+            ])
+            ->assertOk()
+            ->assertJson([
+                'id' => $program->id,
+                'live_current_index' => 0,
+                'live_active' => true,
+            ]);
+
+        $this->actingAs($user)
+            ->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.programacao-sabado'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Mobile/ProgramacaoSabado')
+                ->where('program.status', 'available')
+                ->where('program.live_current_index', 0)
+                ->where('program.live_active', true)
+                ->where('program.can_conduct', true));
+
+        auth()->logout();
+        $this->app['auth']->forgetGuards();
+
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.programacao-sabado'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('program.can_conduct', false)
+                ->where('program.live_current_index', 0));
+
+        $this->withSession(['working_church_id' => $church->id])
+            ->getJson(route('mobile.programacao-sabado.live'))
+            ->assertOk()
+            ->assertJson([
+                'status' => 'available',
+                'id' => $program->id,
+                'live_current_index' => 0,
+                'live_active' => true,
+            ]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_live_update_snaps_section_to_next_item(): void
+    {
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+        $user = User::factory()->create(['church_id' => $church->id]);
+        $this->grantManage($user);
+        $program = $this->createScheduledProgram($church);
+
+        $this->actingAs($user)
+            ->withSession(['working_church_id' => $church->id])
+            ->patchJson(route('programacao-sabado.live.update', $program), [
+                'live_current_index' => 1,
+            ])
+            ->assertOk()
+            ->assertJsonPath('live_current_index', 2);
+    }
+
+    public function test_member_cannot_update_live_cursor(): void
+    {
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+        $member = User::factory()->create(['church_id' => $church->id]);
+        $program = $this->createScheduledProgram($church);
+
+        $this->actingAs($member)
+            ->withSession(['working_church_id' => $church->id])
+            ->patchJson(route('programacao-sabado.live.update', $program), [
+                'live_current_index' => 0,
+            ])
+            ->assertForbidden();
+
+        $program->refresh();
+        $this->assertNull($program->live_current_index);
+    }
+
+    public function test_guest_cannot_update_live_cursor(): void
+    {
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+        $program = $this->createScheduledProgram($church);
+
+        $this->withSession(['working_church_id' => $church->id])
+            ->patchJson(route('programacao-sabado.live.update', $program), [
+                'live_current_index' => 0,
+            ])
+            ->assertUnauthorized();
     }
 }

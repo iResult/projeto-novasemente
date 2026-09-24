@@ -17,7 +17,7 @@ import {
     ClipboardDocumentListIcon,
     SparklesIcon,
     UserGroupIcon,
-    UserPlusIcon,
+    ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
@@ -27,6 +27,7 @@ import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgra
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
 import HomeGivingShortcuts from '@/Components/Mobile/HomeGivingShortcuts';
+import HomeVolunteerArea from '@/Components/Mobile/HomeVolunteerArea';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
 import AppNoveltyOverlay, {
@@ -108,14 +109,6 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.ano-biblico',
         featureKey: 'ano_biblico',
         icon: AcademicCapIcon,
-    },
-    {
-        id: 'voluntario',
-        label: 'Voluntário',
-        subtitle: 'Cadastro completo',
-        route: 'volunteers.public-signup.page',
-        featureKey: 'volunteer_signup',
-        icon: UserPlusIcon,
     },
     {
         id: 'batismo',
@@ -244,6 +237,14 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.musica',
         featureKey: 'musica',
         icon: MusicalNoteIcon,
+    },
+    {
+        id: 'ns-whats',
+        label: 'NS Conecta',
+        subtitle: 'Converse com departamentos, líderes e voluntários',
+        route: 'mobile.ns-whats.index',
+        featureKey: 'ns_whats',
+        icon: ChatBubbleLeftRightIcon,
     },
     {
         id: 'oracao',
@@ -463,7 +464,7 @@ export default function MobileHome({
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} />
                 ) : null}
 
-                <HomeGivingShortcuts nsWhatsPendingReply={nsWhatsPendingReply} />
+                <HomeGivingShortcuts />
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
@@ -579,6 +580,8 @@ export default function MobileHome({
                         })}
                     </div>
                 </section>
+
+                <HomeVolunteerArea />
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>

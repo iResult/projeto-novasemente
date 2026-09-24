@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/ProgramacaoSabado/Index.tsx"
+        ],
+        "createdAt": "2026-09-19T04:16:28.184Z",
+        "reason": "Agent: false positive — text-zinc-700 is the filename on the white modal surface; file:bg-teal-50 applies only to the native file button via Tailwind file: prefix"
+      }
+    ]
+  }
+}

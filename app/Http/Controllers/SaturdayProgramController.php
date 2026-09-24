@@ -149,6 +149,39 @@ class SaturdayProgramController extends Controller
             ->with('success', 'Programação do sábado excluída com sucesso!');
     }
 
+    public function showLive(SaturdayProgram $saturdayProgram)
+    {
+        $this->assertSameChurch($saturdayProgram);
+
+        return response()->json([
+            'id' => $saturdayProgram->id,
+            ...$this->saturdayPrograms->livePublicState($saturdayProgram),
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    public function updateLive(Request $request, SaturdayProgram $saturdayProgram)
+    {
+        $this->assertSameChurch($saturdayProgram);
+        if (! $this->saturdayPrograms->hasUsableSchedule($saturdayProgram)) {
+            return response()->json([
+                'message' => 'Sem programação capturada para passar.',
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'live_current_index' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $index = array_key_exists('live_current_index', $data) ? $data['live_current_index'] : null;
+        $index = $index === null ? null : (int) $index;
+        $saturdayProgram = $this->saturdayPrograms->setLiveCurrentIndex($saturdayProgram, $index);
+
+        return response()->json([
+            'id' => $saturdayProgram->id,
+            ...$this->saturdayPrograms->livePublicState($saturdayProgram),
+        ]);
+    }
+
     private function assertSameChurch(SaturdayProgram $item): void
     {
         $churchId = $this->currentChurchId();
@@ -221,6 +254,7 @@ class SaturdayProgramController extends Controller
             'schedule_item_count' => $itemCount,
             'has_schedule' => $hasSchedule,
             'schedule' => $hasSchedule ? $schedule : null,
+            ...$this->saturdayPrograms->livePublicState($item),
         ];
     }
 

@@ -16,6 +16,8 @@ class SaturdayProgram extends Model
         'parse_status',
         'parsed_at',
         'parse_error',
+        'live_current_index',
+        'live_updated_at',
         'published_at',
         'is_active',
     ];
@@ -24,6 +26,8 @@ class SaturdayProgram extends Model
         'saturday_date' => 'date',
         'published_at' => 'datetime',
         'parsed_at' => 'datetime',
+        'live_updated_at' => 'datetime',
+        'live_current_index' => 'integer',
         'is_active' => 'boolean',
         'schedule' => 'array',
     ];

@@ -37,8 +37,10 @@ use App\Services\SaturdayProgramService;
 use App\Services\ScheduleAssignmentPresenter;
 use App\Services\SolicitationChatNotifier;
 use App\Services\VolunteerScheduleOverview;
+use App\Services\WeeklyProgramService;
 use App\Services\YoutubePlaylistImportService;
 use App\Support\ChurchAppFeatures;
+use App\Support\DevotionalAudience;
 use App\Support\GivingLinks;
 use App\Support\HomeCardKeys;
 use App\Support\HomeModuleSpotlight;
@@ -53,17 +55,21 @@ use App\Support\ScheduleBoardViewData;
 use App\Support\SolicitationAssignees;
 use App\Support\VolunteerSignupCompletion;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MobileController extends Controller
 {
@@ -253,7 +259,7 @@ class MobileController extends Controller
         $user = $request->user();
 
         $sabbathBanner = app(SabbathSunsetService::class)->homeBannerPayload();
-        $weeklyProgramCards = app(\App\Services\WeeklyProgramService::class)->homeCards($church);
+        $weeklyProgramCards = app(WeeklyProgramService::class)->homeCards($church);
         $showSaturdayProgram = Carbon::now((string) config('sabbath.timezone', 'America/Sao_Paulo'))->isSaturday()
             && $weeklyProgramCards !== [];
         $meditationBanner = $showSaturdayProgram
@@ -290,7 +296,7 @@ class MobileController extends Controller
         ]);
     }
 
-    public function toggleHomeCardBookmark(Request $request): \Illuminate\Http\JsonResponse
+    public function toggleHomeCardBookmark(Request $request): JsonResponse
     {
         $user = $request->user();
         abort_unless($user !== null, 401);
@@ -339,10 +345,10 @@ class MobileController extends Controller
     public function meditacaoDiaria(Request $request): Response
     {
         $church = $this->currentChurch();
-        $audience = \App\Support\DevotionalAudience::fromRequest($request);
+        $audience = DevotionalAudience::fromRequest($request);
         $url = $church !== null
             ? $church->resolvedLibraryMeditationUrlForAudience($audience)
-            : \App\Support\DevotionalAudience::defaultUrl($audience);
+            : DevotionalAudience::defaultUrl($audience);
 
         /** @var LibraryExternalPageExtractService $svc */
         $svc = app(LibraryExternalPageExtractService::class);
@@ -356,8 +362,8 @@ class MobileController extends Controller
             'error' => (string) ($result['error'] ?? ''),
             'sourceUrl' => $url,
             'audience' => $audience,
-            'audienceOptions' => \App\Support\DevotionalAudience::options(),
-            'audienceTitle' => \App\Support\DevotionalAudience::title($audience),
+            'audienceOptions' => DevotionalAudience::options(),
+            'audienceTitle' => DevotionalAudience::title($audience),
         ]);
     }
 
@@ -831,7 +837,7 @@ class MobileController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse
+     * @return \Illuminate\Http\Response|StreamedResponse
      */
     public function revistaAdventistaAcervoPdfStream(
         RevistaAdventistaEdition $revistaAdventistaEdition,
@@ -857,7 +863,7 @@ class MobileController extends Controller
     }
 
     /**
-     * @return RedirectResponse|\Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\Response
+     * @return RedirectResponse|StreamedResponse|\Illuminate\Http\Response
      */
     public function revistaAdventistaAcervoPdfDownload(
         RevistaAdventistaEdition $revistaAdventistaEdition,
@@ -1307,12 +1313,12 @@ class MobileController extends Controller
         return back();
     }
 
-    public function more(): \Illuminate\Http\RedirectResponse
+    public function more(): RedirectResponse
     {
         return redirect()->route('mobile.home');
     }
 
-    public function publicationsFeed(Request $request): Response|\Illuminate\Http\JsonResponse
+    public function publicationsFeed(Request $request): Response|JsonResponse
     {
         PublicationsFeedAccess::assertCanAccess($request->user());
 
@@ -1356,9 +1362,31 @@ class MobileController extends Controller
     {
         $churchId = $this->currentChurch()?->id;
 
+        $canConduct = request()->user()?->can('programacao-sabado.manage') ?? false;
+
         return Inertia::render('Mobile/ProgramacaoSabado', [
-            'program' => $saturdayPrograms->mobilePayload($churchId),
+            'program' => $saturdayPrograms->mobilePayload($churchId, $canConduct),
         ]);
+    }
+
+    public function programacaoSabadoLive(SaturdayProgramService $saturdayPrograms)
+    {
+        $churchId = $this->currentChurch()?->id;
+        $program = $saturdayPrograms->currentForChurch($churchId);
+        if ($program === null) {
+            return response()->json([
+                'status' => 'waiting',
+                'live_current_index' => null,
+                'live_updated_at' => null,
+                'live_active' => false,
+            ])->header('Cache-Control', 'no-store');
+        }
+
+        return response()->json([
+            'status' => 'available',
+            'id' => $program->id,
+            ...$saturdayPrograms->livePublicState($program),
+        ])->header('Cache-Control', 'no-store');
     }
 
     public function programacaoSabadoPdfDownload(SaturdayProgramService $saturdayPrograms)
@@ -1370,13 +1398,13 @@ class MobileController extends Controller
         }
 
         $path = is_string($program->pdf_path) ? trim($program->pdf_path) : '';
-        if ($path === '' || ! \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        if ($path === '' || ! Storage::disk('public')->exists($path)) {
             abort(404);
         }
 
         $filename = 'programacao-sabado-'.($program->saturday_date?->toDateString() ?? $program->id).'.pdf';
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($path, $filename, [
+        return Storage::disk('public')->download($path, $filename, [
             'Content-Type' => 'application/pdf',
         ]);
     }
@@ -1544,7 +1572,7 @@ class MobileController extends Controller
         ]);
     }
 
-    public function toggleLibraryBookBookmark(Request $request): \Illuminate\Http\JsonResponse
+    public function toggleLibraryBookBookmark(Request $request): JsonResponse
     {
         $user = $request->user();
         abort_unless($user !== null, 401);
@@ -1602,7 +1630,7 @@ class MobileController extends Controller
     /**
      * PDF inline para leitura no app (proxy/cache para catálogo EGW).
      *
-     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse
+     * @return \Illuminate\Http\Response|StreamedResponse
      */
     public function bibliotecaPdfStream(LibraryBook $libraryBook, LibraryEgwPdfService $pdfService)
     {
@@ -1632,7 +1660,7 @@ class MobileController extends Controller
     /**
      * Descarrega o PDF com Content-Disposition: attachment (evita abrir o visualizador como em «Ler»).
      *
-     * @return RedirectResponse|\Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\Response
+     * @return RedirectResponse|StreamedResponse|\Illuminate\Http\Response
      */
     public function bibliotecaPdfDownload(LibraryBook $libraryBook, LibraryEgwPdfService $pdfService)
     {
@@ -1782,8 +1810,8 @@ class MobileController extends Controller
         $services = [];
         if ($church) {
             $services = $church->services()->get()->map(function ($s) {
-                $start = \Carbon\Carbon::parse($s->start_time)->format('H:i');
-                $end = $s->end_time ? \Carbon\Carbon::parse($s->end_time)->format('H:i') : null;
+                $start = Carbon::parse($s->start_time)->format('H:i');
+                $end = $s->end_time ? Carbon::parse($s->end_time)->format('H:i') : null;
 
                 return [
                     'id' => $s->id,
@@ -1796,7 +1824,7 @@ class MobileController extends Controller
             })->toArray();
         }
 
-        $weeklyProgram = app(\App\Services\WeeklyProgramService::class)->agendaRows($church);
+        $weeklyProgram = app(WeeklyProgramService::class)->agendaRows($church);
 
         return Inertia::render('Mobile/Services', [
             'churchName' => $church?->name,
@@ -2082,7 +2110,7 @@ class MobileController extends Controller
         ]);
     }
 
-    public function pastorMyAvailability(Request $request): Response|\Illuminate\Http\RedirectResponse
+    public function pastorMyAvailability(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
         abort_unless($user, 401);
@@ -2227,12 +2255,12 @@ class MobileController extends Controller
             : [];
 
         $volunteerSignupCompletion = VolunteerSignupCompletion::profileAlertForUser($user);
-        $volunteerSignupProgress = \Illuminate\Support\Facades\Route::has('volunteers.self-signup.edit')
+        $volunteerSignupProgress = Route::has('volunteers.self-signup.edit')
             ? VolunteerSignupCompletion::forUser($user)
             : null;
 
         return Inertia::render('Mobile/ProfileEdit', [
-            'mustVerifyEmail' => $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'volunteerMinistries' => $volunteerMinistries,
             'profileRedirectTo' => 'mobile.profile.edit',

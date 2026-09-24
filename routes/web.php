@@ -12,8 +12,12 @@ use App\Http\Controllers\CharityDonationController;
 use App\Http\Controllers\CharityItemDonationController;
 use App\Http\Controllers\CharityTreasurerDashboardController;
 use App\Http\Controllers\ChurchController;
+use App\Http\Controllers\ChurchServiceController;
 use App\Http\Controllers\CommunicationRequestController;
 use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\ConversationAdminController;
+use App\Http\Controllers\ConvivaCheckinController;
+use App\Http\Controllers\ConvivaClassController;
 use App\Http\Controllers\CultoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationCampaignController;
@@ -26,28 +30,40 @@ use App\Http\Controllers\FaceAiController;
 use App\Http\Controllers\FaviconController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\LeaderPublicSignupController;
 use App\Http\Controllers\LibraryBookController;
 use App\Http\Controllers\LibraryBookExternalContentController;
 use App\Http\Controllers\LibraryConfigExternalContentController;
+use App\Http\Controllers\LibraryLessonNoteController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MinistryController;
 use App\Http\Controllers\MinistryLeadVolunteerController;
+use App\Http\Controllers\MissionAppAccountController;
+use App\Http\Controllers\MissionContentController;
 use App\Http\Controllers\MissionFormController;
+use App\Http\Controllers\MissionHubController;
 use App\Http\Controllers\MissionTripRegistrationController;
 use App\Http\Controllers\MissionVolunteerController;
 use App\Http\Controllers\MobileAnoBiblicoController;
 use App\Http\Controllers\MobileBibleController;
 use App\Http\Controllers\MobileChurchSolicitationController;
 use App\Http\Controllers\MobileController;
+use App\Http\Controllers\MobileLeaderBirthdaysController;
+use App\Http\Controllers\MobileNsWhatsController;
+use App\Http\Controllers\MobileNsWhatsLeaderController;
 use App\Http\Controllers\MobilePastoralAppointmentController;
 use App\Http\Controllers\MobilePromiseBoxController;
 use App\Http\Controllers\MobileSupportController;
+use App\Http\Controllers\MoreController;
 use App\Http\Controllers\MusicaController;
 use App\Http\Controllers\MyMinistryVolunteersController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\OfferingLandingController;
 use App\Http\Controllers\OperationsDashboardController;
 use App\Http\Controllers\PastoralAgendaController;
+use App\Http\Controllers\PastoralAvailabilityController;
 use App\Http\Controllers\PastorController;
 use App\Http\Controllers\PhotoAlbumController;
 use App\Http\Controllers\PollController;
@@ -63,7 +79,11 @@ use App\Http\Controllers\PushTokenController;
 use App\Http\Controllers\RevistaAdventistaArticleController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoomBookingController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\SaturdayProgramController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SetWorkingChurchController;
 use App\Http\Controllers\SharedTalentAdminController;
 use App\Http\Controllers\SharedTalentController;
 use App\Http\Controllers\SolicitationAdminController;
@@ -71,13 +91,19 @@ use App\Http\Controllers\SupportAdminController;
 use App\Http\Controllers\TalentConnectionAdminController;
 use App\Http\Controllers\TalentConnectionController;
 use App\Http\Controllers\TreasurerDashboardController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariosController;
 use App\Http\Controllers\VersiculoCaixinhaController;
 use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\VolunteerManagementCenterController;
+use App\Http\Controllers\VolunteerMinistryInvitationController;
+use App\Http\Controllers\VolunteerMinistryInvitationPublicController;
 use App\Http\Controllers\VolunteerPipelineLeadController;
 use App\Http\Controllers\VolunteerPublicSignupController;
 use App\Http\Controllers\VolunteerRequestSolicitationController;
 use App\Http\Controllers\VolunteerSelfSignupEditController;
+use App\Http\Controllers\WeeklyProgramController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -118,7 +144,7 @@ Route::post('/enquete/v/{token}', [PollPublicVoteController::class, 'store'])
     ->middleware('throttle:20,1')
     ->name('polls.vote.store');
 
-Route::get('/mais', [\App\Http\Controllers\MoreController::class, 'index'])->name('more.index');
+Route::get('/mais', [MoreController::class, 'index'])->name('more.index');
 Route::get('/varios/escala', [VariosController::class, 'schedule'])->name('varios.schedule');
 Route::get('/varios/servicos', [VariosController::class, 'services'])->name('varios.services');
 Route::get('/varios/classe-comecos', [VariosController::class, 'classeComecos'])->name('varios.classe-comecos');
@@ -177,21 +203,21 @@ Route::get('/mobile/publicacoes/{feedId}/comentarios', [PublicationEngagementCon
     ->where('feedId', '[A-Za-z0-9_-]+')
     ->name('mobile.publications.comments.index');
 Route::get('/mobile/comunidade', [CommunityController::class, 'mobile'])->name('mobile.communities');
-Route::get('/mobile/missao', [\App\Http\Controllers\MissionHubController::class, 'index'])->name('mobile.mission');
-Route::get('/mobile/missao/home', [\App\Http\Controllers\MissionHubController::class, 'home'])->name('mobile.mission.home');
+Route::get('/mobile/missao', [MissionHubController::class, 'index'])->name('mobile.mission');
+Route::get('/mobile/missao/home', [MissionHubController::class, 'home'])->name('mobile.mission.home');
 Route::get('/mobile/missao/inscricao', [MissionTripRegistrationController::class, 'create'])
     ->name('mobile.mission.trip-registration.create');
 Route::post('/mobile/missao/inscricao', [MissionTripRegistrationController::class, 'store'])
     ->middleware('throttle:20,1')
     ->name('mobile.mission.trip-registration.store');
-Route::get('/mobile/missao/eventos', [\App\Http\Controllers\MissionHubController::class, 'events'])->name('mobile.mission.events');
-Route::get('/mobile/missao/recados', [\App\Http\Controllers\MissionHubController::class, 'messages'])->name('mobile.mission.messages');
-Route::post('/mobile/missao/recados', [\App\Http\Controllers\MissionHubController::class, 'storeMessage'])
+Route::get('/mobile/missao/eventos', [MissionHubController::class, 'events'])->name('mobile.mission.events');
+Route::get('/mobile/missao/recados', [MissionHubController::class, 'messages'])->name('mobile.mission.messages');
+Route::post('/mobile/missao/recados', [MissionHubController::class, 'storeMessage'])
     ->middleware(['auth', 'throttle:30,1'])
     ->name('mobile.mission.messages.store');
-Route::get('/mobile/missao/quem-somos', [\App\Http\Controllers\MissionHubController::class, 'about'])->name('mobile.mission.about');
-Route::get('/mobile/missao/mural', [\App\Http\Controllers\MissionHubController::class, 'wall'])->name('mobile.mission.wall');
-Route::get('/mobile/missao/mural/{missionWallItem}', [\App\Http\Controllers\MissionHubController::class, 'wallShow'])->name('mobile.mission.wall.show');
+Route::get('/mobile/missao/quem-somos', [MissionHubController::class, 'about'])->name('mobile.mission.about');
+Route::get('/mobile/missao/mural', [MissionHubController::class, 'wall'])->name('mobile.mission.wall');
+Route::get('/mobile/missao/mural/{missionWallItem}', [MissionHubController::class, 'wallShow'])->name('mobile.mission.wall.show');
 Route::get('/mobile/missao/cadastro', [MissionFormController::class, 'create'])->name('mobile.mission.form');
 Route::post('/mobile/missao/cadastro', [MissionFormController::class, 'store'])
     ->middleware('throttle:20,1')
@@ -199,7 +225,7 @@ Route::post('/mobile/missao/cadastro', [MissionFormController::class, 'store'])
 Route::post('/mobile/missao/cadastro/etapa', [MissionFormController::class, 'saveStep'])
     ->middleware(['auth', 'throttle:60,1'])
     ->name('mobile.mission.step');
-Route::post('/mobile/missao/cadastro/conta-app', [\App\Http\Controllers\MissionAppAccountController::class, 'store'])
+Route::post('/mobile/missao/cadastro/conta-app', [MissionAppAccountController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('mobile.mission.app-account.store');
 Route::get('/oferta', OfferingLandingController::class)->name('oferta');
@@ -213,7 +239,7 @@ Route::post('/missao', [MissionFormController::class, 'store'])
 Route::post('/missao/etapa', [MissionFormController::class, 'saveStep'])
     ->middleware(['auth', 'throttle:60,1'])
     ->name('mission.step');
-Route::post('/missao/conta-app', [\App\Http\Controllers\MissionAppAccountController::class, 'store'])
+Route::post('/missao/conta-app', [MissionAppAccountController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('mission.app-account.store');
 Route::get('/mobile/biblia', [MobileBibleController::class, 'index'])->name('mobile.bible');
@@ -265,6 +291,8 @@ Route::post('/mobile/ano-biblico/desafios/recalcular-atual', [MobileAnoBiblicoCo
 Route::get('/mobile/sobre-o-app', [MobileController::class, 'sobreOApp'])->name('mobile.sobre-o-app');
 Route::get('/mobile/conheca-a-nova-semente', [MobileController::class, 'conhecaNovaSemente'])->name('mobile.conheca');
 Route::get('/mobile/programacao-sabado', [MobileController::class, 'programacaoSabado'])->name('mobile.programacao-sabado');
+Route::get('/mobile/programacao-sabado/live', [MobileController::class, 'programacaoSabadoLive'])
+    ->name('mobile.programacao-sabado.live');
 Route::get('/mobile/programacao-sabado/pdf', [MobileController::class, 'programacaoSabadoPdfDownload'])
     ->name('mobile.programacao-sabado.pdf-download');
 Route::get('/mobile/crencas', [MobileController::class, 'beliefs'])->name('mobile.beliefs');
@@ -292,9 +320,9 @@ Route::get('/mobile/biblioteca/{libraryBook}/pdf', [MobileController::class, 'bi
     ->name('mobile.biblioteca.pdf-stream');
 Route::get('/mobile/biblioteca/{libraryBook}', [MobileController::class, 'bibliotecaShow'])->name('mobile.biblioteca.show');
 Route::middleware(['auth', 'throttle:60,1'])->group(function () {
-    Route::get('/mobile/biblioteca/licao/anotacoes', [\App\Http\Controllers\LibraryLessonNoteController::class, 'index'])
+    Route::get('/mobile/biblioteca/licao/anotacoes', [LibraryLessonNoteController::class, 'index'])
         ->name('mobile.biblioteca.lesson-notes.index');
-    Route::put('/mobile/biblioteca/licao/anotacoes', [\App\Http\Controllers\LibraryLessonNoteController::class, 'upsert'])
+    Route::put('/mobile/biblioteca/licao/anotacoes', [LibraryLessonNoteController::class, 'upsert'])
         ->name('mobile.biblioteca.lesson-notes.upsert');
 });
 Route::get('/mobile/localizacao', [MobileController::class, 'location'])->name('mobile.location');
@@ -399,21 +427,21 @@ Route::post('/voluntario/cadastro/check-duplicate', [VolunteerPublicSignupContro
 Route::get('/voluntario/cadastro/concluido', [VolunteerPublicSignupController::class, 'welcome'])
     ->name('volunteers.self-signup.welcome');
 
-Route::get('/lider/cadastro', [\App\Http\Controllers\LeaderPublicSignupController::class, 'create'])->name('leaders.self-signup');
-Route::post('/lider/cadastro', [\App\Http\Controllers\LeaderPublicSignupController::class, 'store'])
+Route::get('/lider/cadastro', [LeaderPublicSignupController::class, 'create'])->name('leaders.self-signup');
+Route::post('/lider/cadastro', [LeaderPublicSignupController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('leaders.self-signup.store');
-Route::post('/lider/cadastro/check-email', [\App\Http\Controllers\LeaderPublicSignupController::class, 'checkEmail'])
+Route::post('/lider/cadastro/check-email', [LeaderPublicSignupController::class, 'checkEmail'])
     ->middleware('throttle:30,1')
     ->name('leaders.self-signup.check-email');
 
 // Convite de ministério: link antigo redireciona para cadastro (ou mostra estado final).
-Route::get('/voluntario/convite/{token}', [\App\Http\Controllers\VolunteerMinistryInvitationPublicController::class, 'show'])
+Route::get('/voluntario/convite/{token}', [VolunteerMinistryInvitationPublicController::class, 'show'])
     ->name('volunteers.ministry-invite.show');
-Route::post('/voluntario/convite/{token}/aceitar', [\App\Http\Controllers\VolunteerMinistryInvitationPublicController::class, 'accept'])
+Route::post('/voluntario/convite/{token}/aceitar', [VolunteerMinistryInvitationPublicController::class, 'accept'])
     ->middleware('throttle:20,1')
     ->name('volunteers.ministry-invite.accept');
-Route::post('/voluntario/convite/{token}/recusar', [\App\Http\Controllers\VolunteerMinistryInvitationPublicController::class, 'decline'])
+Route::post('/voluntario/convite/{token}/recusar', [VolunteerMinistryInvitationPublicController::class, 'decline'])
     ->middleware('throttle:20,1')
     ->name('volunteers.ministry-invite.decline');
 
@@ -424,12 +452,12 @@ Route::get('/mobile/batismo', [MobileChurchSolicitationController::class, 'bapti
 Route::get('/mobile/solicitacoes', [MobileChurchSolicitationController::class, 'hub'])->name('mobile.solicitations.hub');
 
 // NS Conecta: visitantes veem explicação + login; logados usam o módulo.
-Route::get('/mobile/ns-whats', [\App\Http\Controllers\MobileNsWhatsController::class, 'index'])->name('mobile.ns-whats.index');
-Route::get('/mobile/ns-whats/nova', [\App\Http\Controllers\MobileNsWhatsController::class, 'compose'])->name('mobile.ns-whats.compose');
+Route::get('/mobile/ns-whats', [MobileNsWhatsController::class, 'index'])->name('mobile.ns-whats.index');
+Route::get('/mobile/ns-whats/nova', [MobileNsWhatsController::class, 'compose'])->name('mobile.ns-whats.compose');
 Route::get('/mobile/contact', fn () => redirect()->route('mobile.ns-whats.index'))->name('mobile.contact');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/working-church', [\App\Http\Controllers\SetWorkingChurchController::class, '__invoke'])->name('working-church.store');
+    Route::post('/working-church', [SetWorkingChurchController::class, '__invoke'])->name('working-church.store');
 
     // Tokens para Push Notifications nativas (Capacitor iOS/Android)
     Route::post('/mobile/push-tokens', [PushTokenController::class, 'store'])->name('mobile.push-tokens.store');
@@ -458,7 +486,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Usuários da igreja (app + equipe); listagem unificada em users.index.
-    Route::get('/members', fn (\Illuminate\Http\Request $request) => redirect()->route('users.index', $request->query()))
+    Route::get('/members', fn (Request $request) => redirect()->route('users.index', $request->query()))
         ->name('members.index')
         ->middleware('permission:members.view|members.manage|users.view|users.manage');
     Route::resource('members', MemberController::class)
@@ -467,25 +495,25 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:members.view|members.manage');
 
     // Escala semanal (qualquer usuário autenticado pode ver; edição validada no controller).
-    Route::get('/escalas', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('escalas.index');
-    Route::post('/escalas', [\App\Http\Controllers\ScheduleController::class, 'store'])
+    Route::get('/escalas', [ScheduleController::class, 'index'])->name('escalas.index');
+    Route::post('/escalas', [ScheduleController::class, 'store'])
         ->name('escalas.store');
-    Route::post('/escalas/coordinators', [\App\Http\Controllers\ScheduleController::class, 'storeCoordinator'])
+    Route::post('/escalas/coordinators', [ScheduleController::class, 'storeCoordinator'])
         ->name('escalas.coordinators.store');
-    Route::delete('/escalas/coordinators/{scheduleCoordinator}', [\App\Http\Controllers\ScheduleController::class, 'destroyCoordinator'])
+    Route::delete('/escalas/coordinators/{scheduleCoordinator}', [ScheduleController::class, 'destroyCoordinator'])
         ->name('escalas.coordinators.destroy');
-    Route::patch('/escalas/{assignment}', [\App\Http\Controllers\ScheduleController::class, 'update'])
+    Route::patch('/escalas/{assignment}', [ScheduleController::class, 'update'])
         ->name('escalas.update');
-    Route::post('/escalas/roles', [\App\Http\Controllers\ScheduleController::class, 'storeRole'])
+    Route::post('/escalas/roles', [ScheduleController::class, 'storeRole'])
         ->name('escalas.roles.store');
-    Route::delete('/escalas/roles/{scheduleRole}', [\App\Http\Controllers\ScheduleController::class, 'destroyRole'])
+    Route::delete('/escalas/roles/{scheduleRole}', [ScheduleController::class, 'destroyRole'])
         ->name('escalas.roles.destroy');
-    Route::delete('/escalas/{assignment}', [\App\Http\Controllers\ScheduleController::class, 'destroy'])
+    Route::delete('/escalas/{assignment}', [ScheduleController::class, 'destroy'])
         ->name('escalas.destroy');
-    Route::post('/escalas/checkin-toggle', [\App\Http\Controllers\ScheduleController::class, 'checkinToggle'])
+    Route::post('/escalas/checkin-toggle', [ScheduleController::class, 'checkinToggle'])
         ->name('escalas.checkin-toggle')
         ->middleware('permission:escalas.manage');
-    Route::post('/escalas/checkin', [\App\Http\Controllers\ScheduleController::class, 'checkin'])
+    Route::post('/escalas/checkin', [ScheduleController::class, 'checkin'])
         ->name('escalas.checkin');
 
     // Departamentos (CRUD) — listagem em caixas
@@ -510,10 +538,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/volunteers/{volunteer}', [VolunteerController::class, 'destroy'])->name('volunteers.destroy')->middleware('permission:volunteers.manage');
 
     // Voluntários — quadro do líder de voluntariado (fases, ficha, notas)
-    Route::get('/lideranca/voluntarios/central', [\App\Http\Controllers\VolunteerManagementCenterController::class, 'index'])
+    Route::get('/lideranca/voluntarios/central', [VolunteerManagementCenterController::class, 'index'])
         ->name('ministry-lead.volunteers.central')
         ->middleware('permission:volunteers.view|volunteers.manage|volunteers.ministry_operate');
-    Route::get('/lideranca/voluntarios/pedidos', [\App\Http\Controllers\VolunteerManagementCenterController::class, 'pedidos'])
+    Route::get('/lideranca/voluntarios/pedidos', [VolunteerManagementCenterController::class, 'pedidos'])
         ->name('ministry-lead.volunteers.pedidos')
         ->middleware('permission:volunteers.view|volunteers.manage|volunteers.ministry_operate');
     Route::get('/lideranca/voluntarios', [VolunteerPipelineLeadController::class, 'index'])
@@ -590,7 +618,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/lideranca/voluntarios/fases/{stage}', [VolunteerPipelineLeadController::class, 'destroyStage'])
         ->name('ministry-lead.volunteers.pipeline.stages.destroy')
         ->middleware('permission:volunteers.ministry_operate|volunteers.manage');
-    Route::post('/lideranca/voluntarios/{volunteer}/encaminhar', [\App\Http\Controllers\VolunteerMinistryInvitationController::class, 'store'])
+    Route::post('/lideranca/voluntarios/{volunteer}/encaminhar', [VolunteerMinistryInvitationController::class, 'store'])
         ->name('ministry-lead.volunteers.ministry-invite.store')
         ->middleware('permission:volunteers.ministry_operate|volunteers.manage');
     // Rotas com «ministerio/» primeiro — senão «ministerio» capturava-se como {volunteer}.
@@ -653,17 +681,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:volunteers.manage');
 
     // Salas (CRUD) — por andar
-    Route::get('/rooms', [\App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index')->middleware('permission:rooms.view|rooms.manage');
-    Route::post('/rooms', [\App\Http\Controllers\RoomController::class, 'store'])->name('rooms.store')->middleware('permission:rooms.manage');
-    Route::put('/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'update'])->name('rooms.update')->middleware('permission:rooms.manage');
-    Route::delete('/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'destroy'])->name('rooms.destroy')->middleware('permission:rooms.manage');
+    Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index')->middleware('permission:rooms.view|rooms.manage');
+    Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store')->middleware('permission:rooms.manage');
+    Route::put('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update')->middleware('permission:rooms.manage');
+    Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy')->middleware('permission:rooms.manage');
 
     // CONVIVA — turmas (sala + professor) e presenças
     // CONVIVA — cadastro de turmas + presenças (Cadastro)
-    Route::get('/conviva', [\App\Http\Controllers\ConvivaClassController::class, 'index'])->name('conviva.index')->middleware('permission:conviva.view|conviva.manage');
-    Route::post('/conviva', [\App\Http\Controllers\ConvivaClassController::class, 'store'])->name('conviva.store')->middleware('permission:conviva.manage');
-    Route::put('/conviva/{convivaClass}', [\App\Http\Controllers\ConvivaClassController::class, 'update'])->name('conviva.update')->middleware('permission:conviva.manage');
-    Route::delete('/conviva/{convivaClass}', [\App\Http\Controllers\ConvivaClassController::class, 'destroy'])->name('conviva.destroy')->middleware('permission:conviva.manage');
+    Route::get('/conviva', [ConvivaClassController::class, 'index'])->name('conviva.index')->middleware('permission:conviva.view|conviva.manage');
+    Route::post('/conviva', [ConvivaClassController::class, 'store'])->name('conviva.store')->middleware('permission:conviva.manage');
+    Route::put('/conviva/{convivaClass}', [ConvivaClassController::class, 'update'])->name('conviva.update')->middleware('permission:conviva.manage');
+    Route::delete('/conviva/{convivaClass}', [ConvivaClassController::class, 'destroy'])->name('conviva.destroy')->middleware('permission:conviva.manage');
 
     // Enquetes (admin)
     Route::get('/enquetes', [PollController::class, 'index'])->name('polls.index')->middleware('permission:polls.view|polls.manage');
@@ -671,15 +699,17 @@ Route::middleware('auth')->group(function () {
     Route::put('/enquetes/{poll}', [PollController::class, 'update'])->name('polls.update')->middleware('permission:polls.manage');
     Route::delete('/enquetes/{poll}', [PollController::class, 'destroy'])->name('polls.destroy')->middleware('permission:polls.manage');
 
-    Route::get('/programacao', [\App\Http\Controllers\WeeklyProgramController::class, 'index'])->name('programacao.index')->middleware('permission:programacao.view|programacao.manage');
-    Route::post('/programacao', [\App\Http\Controllers\WeeklyProgramController::class, 'store'])->name('programacao.store')->middleware('permission:programacao.manage');
-    Route::put('/programacao/{weeklyProgram}', [\App\Http\Controllers\WeeklyProgramController::class, 'update'])->name('programacao.update')->middleware('permission:programacao.manage');
-    Route::delete('/programacao/{weeklyProgram}', [\App\Http\Controllers\WeeklyProgramController::class, 'destroy'])->name('programacao.destroy')->middleware('permission:programacao.manage');
+    Route::get('/programacao', [WeeklyProgramController::class, 'index'])->name('programacao.index')->middleware('permission:programacao.view|programacao.manage');
+    Route::post('/programacao', [WeeklyProgramController::class, 'store'])->name('programacao.store')->middleware('permission:programacao.manage');
+    Route::put('/programacao/{weeklyProgram}', [WeeklyProgramController::class, 'update'])->name('programacao.update')->middleware('permission:programacao.manage');
+    Route::delete('/programacao/{weeklyProgram}', [WeeklyProgramController::class, 'destroy'])->name('programacao.destroy')->middleware('permission:programacao.manage');
 
-    Route::get('/programacao-sabado', [\App\Http\Controllers\SaturdayProgramController::class, 'index'])->name('programacao-sabado.index')->middleware('permission:programacao-sabado.view|programacao-sabado.manage');
-    Route::post('/programacao-sabado', [\App\Http\Controllers\SaturdayProgramController::class, 'store'])->name('programacao-sabado.store')->middleware('permission:programacao-sabado.manage');
-    Route::put('/programacao-sabado/{saturdayProgram}', [\App\Http\Controllers\SaturdayProgramController::class, 'update'])->name('programacao-sabado.update')->middleware('permission:programacao-sabado.manage');
-    Route::delete('/programacao-sabado/{saturdayProgram}', [\App\Http\Controllers\SaturdayProgramController::class, 'destroy'])->name('programacao-sabado.destroy')->middleware('permission:programacao-sabado.manage');
+    Route::get('/programacao-sabado', [SaturdayProgramController::class, 'index'])->name('programacao-sabado.index')->middleware('permission:programacao-sabado.view|programacao-sabado.manage');
+    Route::post('/programacao-sabado', [SaturdayProgramController::class, 'store'])->name('programacao-sabado.store')->middleware('permission:programacao-sabado.manage');
+    Route::put('/programacao-sabado/{saturdayProgram}', [SaturdayProgramController::class, 'update'])->name('programacao-sabado.update')->middleware('permission:programacao-sabado.manage');
+    Route::delete('/programacao-sabado/{saturdayProgram}', [SaturdayProgramController::class, 'destroy'])->name('programacao-sabado.destroy')->middleware('permission:programacao-sabado.manage');
+    Route::get('/programacao-sabado/{saturdayProgram}/live', [SaturdayProgramController::class, 'showLive'])->name('programacao-sabado.live.show')->middleware('permission:programacao-sabado.view|programacao-sabado.manage');
+    Route::patch('/programacao-sabado/{saturdayProgram}/live', [SaturdayProgramController::class, 'updateLive'])->name('programacao-sabado.live.update')->middleware('permission:programacao-sabado.manage');
     // Agendamento de salas (calendário + reservas)
     Route::get('/salas/agenda', [RoomBookingController::class, 'index'])->name('room-bookings.index')->middleware('permission:rooms.view|rooms.manage|rooms.schedule');
     Route::post('/salas/agenda', [RoomBookingController::class, 'store'])->name('room-bookings.store')->middleware('permission:rooms.schedule');
@@ -695,15 +725,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/mobile/inventario', [InventoryController::class, 'mobile'])->name('mobile.inventory')->middleware('permission:inventory.view|inventory.manage');
     // Usuários e convites
     Route::get('/users', [MemberController::class, 'index'])->name('users.index')->middleware('permission:members.view|members.manage|users.view|users.manage');
-    Route::post('/users/leader-signup-link/rotate', [\App\Http\Controllers\LeaderPublicSignupController::class, 'rotateToken'])
+    Route::post('/users/leader-signup-link/rotate', [LeaderPublicSignupController::class, 'rotateToken'])
         ->name('leaders.self-signup.rotate')
         ->middleware('permission:members.manage|users.manage');
-    Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store')->middleware('permission:users.manage');
-    Route::post('/users/{user}/invite', [\App\Http\Controllers\UserController::class, 'invite'])->name('users.invite')->middleware('permission:users.manage');
-    Route::put('/users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update')->middleware('permission:users.manage');
-    Route::delete('/users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:users.manage');
-    Route::post('/invitations', [\App\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store')->middleware('permission:users.manage');
-    Route::delete('/invitations/{invitation}', [\App\Http\Controllers\InvitationController::class, 'destroy'])->name('invitations.destroy')->middleware('permission:users.manage');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('permission:users.manage');
+    Route::post('/users/{user}/invite', [UserController::class, 'invite'])->name('users.invite')->middleware('permission:users.manage');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update')->middleware('permission:users.manage');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:users.manage');
+    Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store')->middleware('permission:users.manage');
+    Route::delete('/invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy')->middleware('permission:users.manage');
 
     // Perfis (papéis) e permissões
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index')->middleware('role:super_admin');
@@ -755,31 +785,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/missao/gestao/tailandia-mianmar/exportar', [MissionTripRegistrationController::class, 'export'])->name('mission.trip-registrations.export')->middleware('permission:mission.view|mission.manage');
     Route::post('/missao/gestao/comunicacao', [MissionVolunteerController::class, 'sendBroadcast'])->name('mission.broadcast.store')->middleware('permission:mission.manage');
 
-    Route::get('/missao/gestao/eventos', [\App\Http\Controllers\MissionContentController::class, 'eventsIndex'])->name('mission.content.events')->middleware('permission:mission.view|mission.manage');
-    Route::post('/missao/gestao/eventos', [\App\Http\Controllers\MissionContentController::class, 'storeEvent'])->name('mission.content.events.store')->middleware('permission:mission.manage');
-    Route::put('/missao/gestao/eventos/{missionEvent}', [\App\Http\Controllers\MissionContentController::class, 'updateEvent'])->name('mission.content.events.update')->middleware('permission:mission.manage');
-    Route::delete('/missao/gestao/eventos/{missionEvent}', [\App\Http\Controllers\MissionContentController::class, 'destroyEvent'])->name('mission.content.events.destroy')->middleware('permission:mission.manage');
+    Route::get('/missao/gestao/eventos', [MissionContentController::class, 'eventsIndex'])->name('mission.content.events')->middleware('permission:mission.view|mission.manage');
+    Route::post('/missao/gestao/eventos', [MissionContentController::class, 'storeEvent'])->name('mission.content.events.store')->middleware('permission:mission.manage');
+    Route::put('/missao/gestao/eventos/{missionEvent}', [MissionContentController::class, 'updateEvent'])->name('mission.content.events.update')->middleware('permission:mission.manage');
+    Route::delete('/missao/gestao/eventos/{missionEvent}', [MissionContentController::class, 'destroyEvent'])->name('mission.content.events.destroy')->middleware('permission:mission.manage');
 
-    Route::get('/missao/gestao/recados', [\App\Http\Controllers\MissionContentController::class, 'messagesIndex'])->name('mission.content.messages')->middleware('permission:mission.view|mission.manage');
-    Route::post('/missao/gestao/recados', [\App\Http\Controllers\MissionContentController::class, 'storeMessage'])->name('mission.content.messages.store')->middleware('permission:mission.manage');
-    Route::patch('/missao/gestao/recados/{missionMessage}/visibilidade', [\App\Http\Controllers\MissionContentController::class, 'toggleMessageVisibility'])->name('mission.content.messages.visibility')->middleware('permission:mission.manage');
-    Route::patch('/missao/gestao/recados/{missionMessage}/aprovar', [\App\Http\Controllers\MissionContentController::class, 'approveMessage'])->name('mission.content.messages.approve')->middleware('permission:mission.manage');
-    Route::patch('/missao/gestao/recados/{missionMessage}/rejeitar', [\App\Http\Controllers\MissionContentController::class, 'rejectMessage'])->name('mission.content.messages.reject')->middleware('permission:mission.manage');
-    Route::delete('/missao/gestao/recados/{missionMessage}', [\App\Http\Controllers\MissionContentController::class, 'destroyMessage'])->name('mission.content.messages.destroy')->middleware('permission:mission.manage');
+    Route::get('/missao/gestao/recados', [MissionContentController::class, 'messagesIndex'])->name('mission.content.messages')->middleware('permission:mission.view|mission.manage');
+    Route::post('/missao/gestao/recados', [MissionContentController::class, 'storeMessage'])->name('mission.content.messages.store')->middleware('permission:mission.manage');
+    Route::patch('/missao/gestao/recados/{missionMessage}/visibilidade', [MissionContentController::class, 'toggleMessageVisibility'])->name('mission.content.messages.visibility')->middleware('permission:mission.manage');
+    Route::patch('/missao/gestao/recados/{missionMessage}/aprovar', [MissionContentController::class, 'approveMessage'])->name('mission.content.messages.approve')->middleware('permission:mission.manage');
+    Route::patch('/missao/gestao/recados/{missionMessage}/rejeitar', [MissionContentController::class, 'rejectMessage'])->name('mission.content.messages.reject')->middleware('permission:mission.manage');
+    Route::delete('/missao/gestao/recados/{missionMessage}', [MissionContentController::class, 'destroyMessage'])->name('mission.content.messages.destroy')->middleware('permission:mission.manage');
 
-    Route::get('/missao/gestao/quem-somos', [\App\Http\Controllers\MissionContentController::class, 'aboutIndex'])->name('mission.content.about')->middleware('permission:mission.view|mission.manage');
-    Route::put('/missao/gestao/quem-somos', [\App\Http\Controllers\MissionContentController::class, 'updateAbout'])->name('mission.content.about.update')->middleware('permission:mission.manage');
+    Route::get('/missao/gestao/quem-somos', [MissionContentController::class, 'aboutIndex'])->name('mission.content.about')->middleware('permission:mission.view|mission.manage');
+    Route::put('/missao/gestao/quem-somos', [MissionContentController::class, 'updateAbout'])->name('mission.content.about.update')->middleware('permission:mission.manage');
 
-    Route::get('/missao/gestao/configuracao', [\App\Http\Controllers\MissionContentController::class, 'settingsIndex'])->name('mission.content.settings')->middleware('permission:mission.view|mission.manage');
-    Route::put('/missao/gestao/configuracao', [\App\Http\Controllers\MissionContentController::class, 'updateSettings'])->name('mission.content.settings.update')->middleware('permission:mission.manage');
+    Route::get('/missao/gestao/configuracao', [MissionContentController::class, 'settingsIndex'])->name('mission.content.settings')->middleware('permission:mission.view|mission.manage');
+    Route::put('/missao/gestao/configuracao', [MissionContentController::class, 'updateSettings'])->name('mission.content.settings.update')->middleware('permission:mission.manage');
 
     Route::get('/missao/gestao/usuarios', [MissionVolunteerController::class, 'usersIndex'])->name('mission.users.index')->middleware('permission:mission.view|mission.manage');
     Route::patch('/missao/gestao/usuarios/{user}', [MissionVolunteerController::class, 'updatePhaseLeader'])->name('mission.users.update')->middleware('permission:mission.manage');
 
-    Route::get('/missao/gestao/mural', [\App\Http\Controllers\MissionContentController::class, 'wallIndex'])->name('mission.content.wall')->middleware('permission:mission.view|mission.manage');
-    Route::post('/missao/gestao/mural', [\App\Http\Controllers\MissionContentController::class, 'storeWallItem'])->name('mission.content.wall.store')->middleware('permission:mission.manage');
-    Route::put('/missao/gestao/mural/{missionWallItem}', [\App\Http\Controllers\MissionContentController::class, 'updateWallItem'])->name('mission.content.wall.update')->middleware('permission:mission.manage');
-    Route::delete('/missao/gestao/mural/{missionWallItem}', [\App\Http\Controllers\MissionContentController::class, 'destroyWallItem'])->name('mission.content.wall.destroy')->middleware('permission:mission.manage');
+    Route::get('/missao/gestao/mural', [MissionContentController::class, 'wallIndex'])->name('mission.content.wall')->middleware('permission:mission.view|mission.manage');
+    Route::post('/missao/gestao/mural', [MissionContentController::class, 'storeWallItem'])->name('mission.content.wall.store')->middleware('permission:mission.manage');
+    Route::put('/missao/gestao/mural/{missionWallItem}', [MissionContentController::class, 'updateWallItem'])->name('mission.content.wall.update')->middleware('permission:mission.manage');
+    Route::delete('/missao/gestao/mural/{missionWallItem}', [MissionContentController::class, 'destroyWallItem'])->name('mission.content.wall.destroy')->middleware('permission:mission.manage');
 
     Route::get('/missao/gestao/{missionVolunteer}', [MissionVolunteerController::class, 'show'])->name('mission.show')->middleware('permission:mission.view|mission.manage');
     Route::get('/missao/gestao/{missionVolunteer}/detalhe', [MissionVolunteerController::class, 'detail'])->name('mission.volunteers.detail')->middleware('permission:mission.view|mission.manage');
@@ -1095,15 +1125,15 @@ Route::middleware('auth')->group(function () {
         ->name('pastors.weekly-schedule.update');
 
     Route::get('/agenda-pastoral', [PastoralAgendaController::class, 'index'])->name('pastoral-agenda.index');
-    Route::post('/pastores/{pastor}/disponibilidades', [\App\Http\Controllers\PastoralAvailabilityController::class, 'store'])
+    Route::post('/pastores/{pastor}/disponibilidades', [PastoralAvailabilityController::class, 'store'])
         ->name('pastors.pastoral-availabilities.store');
-    Route::put('/pastores/{pastor}/disponibilidades/{availability}', [\App\Http\Controllers\PastoralAvailabilityController::class, 'update'])
+    Route::put('/pastores/{pastor}/disponibilidades/{availability}', [PastoralAvailabilityController::class, 'update'])
         ->name('pastors.pastoral-availabilities.update');
-    Route::delete('/pastores/{pastor}/disponibilidades/{availability}', [\App\Http\Controllers\PastoralAvailabilityController::class, 'destroy'])
+    Route::delete('/pastores/{pastor}/disponibilidades/{availability}', [PastoralAvailabilityController::class, 'destroy'])
         ->name('pastors.pastoral-availabilities.destroy');
 
     /** Agendamentos pastor: gestão em Atendimento Pastoral; mantém URL antiga. */
-    Route::get('/pastoral-appointments', function (\Illuminate\Http\Request $request) {
+    Route::get('/pastoral-appointments', function (Request $request) {
         abort_unless($request->user()?->can('pastoral_appointments.manage'), 403);
 
         return redirect()->route('solicitations.index', ['kind' => 'pastoral']);
@@ -1114,7 +1144,7 @@ Route::middleware('auth')->group(function () {
         ->name('notifications.destroy')
         ->middleware('permission:notifications.manage');
     /** Feed leve para o poller do sino (JSON) — evita visitas Inertia que podem “resetar” modais. */
-    Route::get('/notifications/feed', \App\Http\Controllers\NotificationFeedController::class)
+    Route::get('/notifications/feed', NotificationFeedController::class)
         ->name('notifications.feed');
     Route::get('/mobile/settings', [MobileController::class, 'settings'])->name('mobile.settings');
     Route::post('/notifications/inbox/read', [MobileController::class, 'markInboxNotificationRead'])
@@ -1155,9 +1185,9 @@ Route::middleware('auth')->group(function () {
         ->name('mobile.polls.vote');
 
     // CONVIVA — check-in do aluno (sábado)
-    Route::get('/mobile/conviva', [\App\Http\Controllers\ConvivaCheckinController::class, 'show'])
+    Route::get('/mobile/conviva', [ConvivaCheckinController::class, 'show'])
         ->name('mobile.conviva.checkin');
-    Route::post('/mobile/conviva/checkin', [\App\Http\Controllers\ConvivaCheckinController::class, 'store'])
+    Route::post('/mobile/conviva/checkin', [ConvivaCheckinController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('mobile.conviva.checkin.store');
 
@@ -1201,25 +1231,25 @@ Route::middleware('auth')->group(function () {
     Route::post('/mobile/solicitacoes/{solicitation}/ocultar-para-mim', [MobileChurchSolicitationController::class, 'hideFromMemberApp'])->name('mobile.solicitations.hide-from-member');
 
     // NS Conecta (domínio church_conversations) — ações autenticadas
-    Route::post('/mobile/ns-whats', [\App\Http\Controllers\MobileNsWhatsController::class, 'store'])->name('mobile.ns-whats.store');
-    Route::get('/mobile/ns-whats/{conversation}', [\App\Http\Controllers\MobileNsWhatsController::class, 'show'])->name('mobile.ns-whats.show');
-    Route::post('/mobile/ns-whats/{conversation}/messages', [\App\Http\Controllers\MobileNsWhatsController::class, 'sendMessage'])->name('mobile.ns-whats.messages.store');
-    Route::patch('/mobile/ns-whats/mensagens/{message}', [\App\Http\Controllers\MobileNsWhatsController::class, 'editMessage'])->name('mobile.ns-whats.messages.edit');
-    Route::post('/mobile/ns-whats/mensagens/{message}/ocultar', [\App\Http\Controllers\MobileNsWhatsController::class, 'hideMessage'])->name('mobile.ns-whats.messages.hide');
-    Route::post('/mobile/ns-whats/{conversation}/arquivar', [\App\Http\Controllers\MobileNsWhatsController::class, 'archive'])->name('mobile.ns-whats.archive');
-    Route::post('/mobile/ns-whats/{conversation}/desarquivar', [\App\Http\Controllers\MobileNsWhatsController::class, 'unarchive'])->name('mobile.ns-whats.unarchive');
-    Route::post('/mobile/ns-whats/{conversation}/ler', [\App\Http\Controllers\MobileNsWhatsController::class, 'markRead'])->name('mobile.ns-whats.read');
+    Route::post('/mobile/ns-whats', [MobileNsWhatsController::class, 'store'])->name('mobile.ns-whats.store');
+    Route::get('/mobile/ns-whats/{conversation}', [MobileNsWhatsController::class, 'show'])->name('mobile.ns-whats.show');
+    Route::post('/mobile/ns-whats/{conversation}/messages', [MobileNsWhatsController::class, 'sendMessage'])->name('mobile.ns-whats.messages.store');
+    Route::patch('/mobile/ns-whats/mensagens/{message}', [MobileNsWhatsController::class, 'editMessage'])->name('mobile.ns-whats.messages.edit');
+    Route::post('/mobile/ns-whats/mensagens/{message}/ocultar', [MobileNsWhatsController::class, 'hideMessage'])->name('mobile.ns-whats.messages.hide');
+    Route::post('/mobile/ns-whats/{conversation}/arquivar', [MobileNsWhatsController::class, 'archive'])->name('mobile.ns-whats.archive');
+    Route::post('/mobile/ns-whats/{conversation}/desarquivar', [MobileNsWhatsController::class, 'unarchive'])->name('mobile.ns-whats.unarchive');
+    Route::post('/mobile/ns-whats/{conversation}/ler', [MobileNsWhatsController::class, 'markRead'])->name('mobile.ns-whats.read');
 
-    Route::get('/mobile/aniversariantes', [\App\Http\Controllers\MobileLeaderBirthdaysController::class, 'index'])
+    Route::get('/mobile/aniversariantes', [MobileLeaderBirthdaysController::class, 'index'])
         ->name('mobile.leader.birthdays');
 
-    Route::get('/mobile/ns-whats-lider', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'index'])->name('mobile.ns-whats.leader.index');
-    Route::get('/mobile/ns-whats-lider/{conversation}', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'show'])->name('mobile.ns-whats.leader.show');
-    Route::post('/mobile/ns-whats-lider/{conversation}/messages', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'sendMessage'])->name('mobile.ns-whats.leader.messages.store');
-    Route::post('/mobile/ns-whats-lider/{conversation}/assumir', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'claim'])->name('mobile.ns-whats.leader.claim');
-    Route::post('/mobile/ns-whats-lider/{conversation}/transferir', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'transfer'])->name('mobile.ns-whats.leader.transfer');
-    Route::post('/mobile/ns-whats-lider/{conversation}/encaminhar', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'forward'])->name('mobile.ns-whats.leader.forward');
-    Route::post('/mobile/ns-whats-lider/{conversation}/observacao', [\App\Http\Controllers\MobileNsWhatsLeaderController::class, 'internalNote'])->name('mobile.ns-whats.leader.internal');
+    Route::get('/mobile/ns-whats-lider', [MobileNsWhatsLeaderController::class, 'index'])->name('mobile.ns-whats.leader.index');
+    Route::get('/mobile/ns-whats-lider/{conversation}', [MobileNsWhatsLeaderController::class, 'show'])->name('mobile.ns-whats.leader.show');
+    Route::post('/mobile/ns-whats-lider/{conversation}/messages', [MobileNsWhatsLeaderController::class, 'sendMessage'])->name('mobile.ns-whats.leader.messages.store');
+    Route::post('/mobile/ns-whats-lider/{conversation}/assumir', [MobileNsWhatsLeaderController::class, 'claim'])->name('mobile.ns-whats.leader.claim');
+    Route::post('/mobile/ns-whats-lider/{conversation}/transferir', [MobileNsWhatsLeaderController::class, 'transfer'])->name('mobile.ns-whats.leader.transfer');
+    Route::post('/mobile/ns-whats-lider/{conversation}/encaminhar', [MobileNsWhatsLeaderController::class, 'forward'])->name('mobile.ns-whats.leader.forward');
+    Route::post('/mobile/ns-whats-lider/{conversation}/observacao', [MobileNsWhatsLeaderController::class, 'internalNote'])->name('mobile.ns-whats.leader.internal');
 
     // Legado «Falar com líder» → NS Conecta
     Route::post('/mobile/contact', fn () => redirect()->route('mobile.ns-whats.index'))->name('mobile.contact.store');
@@ -1229,22 +1259,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/mobile/lider/conversas/{solicitation}/finalizar', fn () => redirect()->route('mobile.ns-whats.leader.index'))->name('mobile.leader-solicitations.finalize');
     Route::post('/mobile/lider/conversas/{solicitation}/ocultar-para-mim', fn () => redirect()->route('mobile.ns-whats.leader.index'))->name('mobile.leader-solicitations.hide-from-leader');
 
-    Route::get('/ns-whats', [\App\Http\Controllers\ConversationAdminController::class, 'index'])
+    Route::get('/ns-whats', [ConversationAdminController::class, 'index'])
         ->name('conversations.index')
         ->middleware('permission:conversations.view|conversations.manage|conversations.admin');
-    Route::patch('/ns-whats/configuracoes', [\App\Http\Controllers\ConversationAdminController::class, 'updateSettings'])
+    Route::patch('/ns-whats/configuracoes', [ConversationAdminController::class, 'updateSettings'])
         ->name('conversations.settings')
         ->middleware('permission:conversations.admin');
-    Route::post('/ns-whats/{conversation}/messages', [\App\Http\Controllers\ConversationAdminController::class, 'sendMessage'])
+    Route::post('/ns-whats/{conversation}/messages', [ConversationAdminController::class, 'sendMessage'])
         ->name('conversations.messages.store')
         ->middleware('permission:conversations.manage|conversations.admin');
-    Route::post('/ns-whats/{conversation}/assumir', [\App\Http\Controllers\ConversationAdminController::class, 'claim'])
+    Route::post('/ns-whats/{conversation}/assumir', [ConversationAdminController::class, 'claim'])
         ->name('conversations.claim')
         ->middleware('permission:conversations.manage|conversations.admin');
-    Route::post('/ns-whats/{conversation}/transferir', [\App\Http\Controllers\ConversationAdminController::class, 'transfer'])
+    Route::post('/ns-whats/{conversation}/transferir', [ConversationAdminController::class, 'transfer'])
         ->name('conversations.transfer')
         ->middleware('permission:conversations.manage|conversations.admin');
-    Route::post('/ns-whats/{conversation}/encaminhar', [\App\Http\Controllers\ConversationAdminController::class, 'forward'])
+    Route::post('/ns-whats/{conversation}/encaminhar', [ConversationAdminController::class, 'forward'])
         ->name('conversations.forward')
         ->middleware('permission:conversations.manage|conversations.admin');
 
@@ -1323,10 +1353,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/churches', [ChurchController::class, 'store'])->name('churches.store')->middleware('role:super_admin');
     Route::put('/churches/{church}', [ChurchController::class, 'update'])->name('churches.update')->middleware('role:super_admin');
     Route::delete('/churches/{church}', [ChurchController::class, 'destroy'])->name('churches.destroy')->middleware('role:super_admin');
-    Route::get('/churches/{church}/services', [\App\Http\Controllers\ChurchServiceController::class, 'index'])->name('churches.services.index')->middleware('role:super_admin');
-    Route::post('/churches/{church}/services', [\App\Http\Controllers\ChurchServiceController::class, 'store'])->name('churches.services.store')->middleware('role:super_admin');
-    Route::put('/churches/{church}/services/{service}', [\App\Http\Controllers\ChurchServiceController::class, 'update'])->name('churches.services.update')->middleware('role:super_admin');
-    Route::delete('/churches/{church}/services/{service}', [\App\Http\Controllers\ChurchServiceController::class, 'destroy'])->name('churches.services.destroy')->middleware('role:super_admin');
+    Route::get('/churches/{church}/services', [ChurchServiceController::class, 'index'])->name('churches.services.index')->middleware('role:super_admin');
+    Route::post('/churches/{church}/services', [ChurchServiceController::class, 'store'])->name('churches.services.store')->middleware('role:super_admin');
+    Route::put('/churches/{church}/services/{service}', [ChurchServiceController::class, 'update'])->name('churches.services.update')->middleware('role:super_admin');
+    Route::delete('/churches/{church}/services/{service}', [ChurchServiceController::class, 'destroy'])->name('churches.services.destroy')->middleware('role:super_admin');
 });
 
 require __DIR__.'/auth.php';

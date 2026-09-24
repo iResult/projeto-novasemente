@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\SaturdayProgram;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class SaturdayProgramService
 {
@@ -86,10 +87,13 @@ class SaturdayProgramService
      *     pdf_download_url?: string|null,
      *     parse_status?: string,
      *     has_schedule?: bool,
-     *     schedule?: array<string, mixed>|null
+     *     schedule?: array<string, mixed>|null,
+     *     live_current_index?: int|null,
+     *     live_updated_at?: string|null,
+     *     can_conduct?: bool
      * }
      */
-    public function mobilePayload(?int $churchId): array
+    public function mobilePayload(?int $churchId, bool $canConduct = false): array
     {
         $program = $this->currentForChurch($churchId);
 
@@ -136,7 +140,92 @@ class SaturdayProgramService
             'parse_status' => $program->parse_status ?? SaturdayProgram::PARSE_PENDING,
             'has_schedule' => $hasSchedule,
             'schedule' => $hasSchedule ? $schedule : null,
+            ...$this->livePublicState($program),
+            'can_conduct' => $canConduct && $hasSchedule,
         ];
+    }
+
+    /**
+     * @return array{live_current_index: int|null, live_updated_at: string|null, live_active: bool}
+     */
+    public function livePublicState(SaturdayProgram $program): array
+    {
+        $index = $program->live_current_index;
+        $index = $index === null ? null : (int) $index;
+
+        return [
+            'live_current_index' => $index,
+            'live_updated_at' => $program->live_updated_at
+                ?->timezone($this->timezone())
+                ->toIso8601String(),
+            'live_active' => $index !== null,
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function scheduleItems(SaturdayProgram $program): array
+    {
+        $schedule = is_array($program->schedule) ? $program->schedule : [];
+        $items = $schedule['items'] ?? [];
+
+        return is_array($items) ? array_values($items) : [];
+    }
+
+    public function setLiveCurrentIndex(SaturdayProgram $program, ?int $index): SaturdayProgram
+    {
+        if ($index === null) {
+            $program->forceFill([
+                'live_current_index' => null,
+                'live_updated_at' => now($this->timezone()),
+            ])->save();
+
+            return $program->refresh();
+        }
+
+        $items = $this->scheduleItems($program);
+        $max = count($items);
+        if ($index < 0 || $index > $max) {
+            throw ValidationException::withMessages([
+                'live_current_index' => 'Item da programação inválido.',
+            ]);
+        }
+
+        if ($index < $max && ($items[$index]['kind'] ?? '') !== 'item') {
+            $snapped = $this->nextItemIndex($items, $index - 1);
+            $index = $snapped ?? $max;
+        }
+
+        $program->forceFill([
+            'live_current_index' => $index,
+            'live_updated_at' => now($this->timezone()),
+        ])->save();
+
+        return $program->refresh();
+    }
+
+    public function clearLiveCursor(SaturdayProgram $program): void
+    {
+        $program->forceFill([
+            'live_current_index' => null,
+            'live_updated_at' => null,
+        ]);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $items
+     */
+    public function nextItemIndex(array $items, int $fromIndex): ?int
+    {
+        $n = count($items);
+        for ($i = $fromIndex + 1; $i < $n; $i++) {
+            if (($items[$i]['kind'] ?? '') === 'item') {
+                return $i;
+            }
+        }
+
+        return null;
     }
 
     public function hasUsableSchedule(SaturdayProgram $program): bool
@@ -184,7 +273,9 @@ class SaturdayProgramService
                 'parse_status' => SaturdayProgram::PARSE_FAILED,
                 'parsed_at' => now($this->timezone()),
                 'parse_error' => 'PDF não encontrado no disco.',
-            ])->save();
+            ]);
+            $this->clearLiveCursor($program);
+            $program->save();
 
             return $program->refresh();
         }
@@ -203,7 +294,9 @@ class SaturdayProgramService
                 'parse_status' => SaturdayProgram::PARSE_OK,
                 'parsed_at' => now($this->timezone()),
                 'parse_error' => null,
-            ])->save();
+            ]);
+            $this->clearLiveCursor($program);
+            $program->save();
         } catch (\Throwable $e) {
             report($e);
             $program->forceFill([
@@ -211,7 +304,9 @@ class SaturdayProgramService
                 'parse_status' => SaturdayProgram::PARSE_FAILED,
                 'parsed_at' => now($this->timezone()),
                 'parse_error' => mb_substr($e->getMessage(), 0, 500),
-            ])->save();
+            ]);
+            $this->clearLiveCursor($program);
+            $program->save();
         }
 
         return $program->refresh();
@@ -250,6 +345,8 @@ class SaturdayProgramService
                 'parse_status' => SaturdayProgram::PARSE_PENDING,
                 'parsed_at' => null,
                 'parse_error' => null,
+                'live_current_index' => null,
+                'live_updated_at' => null,
             ]);
             $expired++;
         }
@@ -264,7 +361,7 @@ class SaturdayProgramService
     {
         $date = Carbon::parse($dateYmd, $this->timezone())->startOfDay();
         if ($date->dayOfWeek !== Carbon::SATURDAY) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'saturday_date' => 'A data deve ser um sábado.',
             ]);
         }

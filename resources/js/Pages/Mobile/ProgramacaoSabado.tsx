@@ -2,9 +2,8 @@ import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ClockIcon, DocumentTextIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import PdfOriginalViewer from '@/Components/Mobile/PdfOriginalViewer';
-import SaturdayProgramScheduleView, {
-    type SaturdaySchedule,
-} from '@/Components/Mobile/SaturdayProgramScheduleView';
+import SaturdayProgramLiveSchedule from '@/Components/ProgramacaoSabado/SaturdayProgramLiveSchedule';
+import type { SaturdaySchedule } from '@/Components/Mobile/SaturdayProgramScheduleView';
 import { useEffect, useState } from 'react';
 
 type ProgramPayload =
@@ -18,6 +17,9 @@ type ProgramPayload =
           parse_status?: string;
           has_schedule?: boolean;
           schedule?: SaturdaySchedule | null;
+          live_current_index?: number | null;
+          live_active?: boolean;
+          can_conduct?: boolean;
       }
     | {
           status: 'waiting';
@@ -135,10 +137,18 @@ export default function ProgramacaoSabado({ program }: Props) {
                     ) : null}
 
                     {showSchedule && program.schedule ? (
-                        <SaturdayProgramScheduleView
+                        <SaturdayProgramLiveSchedule
+                            programId={program.id}
                             schedule={program.schedule}
                             fallbackDateLabel={subtitle || null}
-                            contentKey={`programacao-sabado:${program.id}:${program.saturday_date ?? 'x'}`}
+                            canConduct={Boolean(program.can_conduct)}
+                            initialLiveIndex={program.live_current_index ?? null}
+                            pollUrl={route('mobile.programacao-sabado.live')}
+                            updateUrl={
+                                program.can_conduct
+                                    ? route('programacao-sabado.live.update', program.id)
+                                    : null
+                            }
                         />
                     ) : hasPdf ? (
                         <PdfOriginalViewer
