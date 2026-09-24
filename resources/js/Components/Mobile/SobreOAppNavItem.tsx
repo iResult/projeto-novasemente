@@ -1,8 +1,7 @@
 import SobreOAppModal from '@/Components/Mobile/SobreOAppModal';
-import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
 import { useMinWidthMd } from '@/hooks/useMinWidthMd';
 import { Link } from '@inertiajs/react';
-import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 const settingsRowClass =
@@ -11,21 +10,25 @@ const settingsRowClass =
 const moreCardClass =
     'group flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-zinc-200/80 transition duration-200 hover:bg-zinc-50 hover:shadow-md hover:ring-zinc-300/90 active:bg-zinc-100/80 dark:bg-zinc-900 dark:ring-zinc-700/70 dark:hover:bg-zinc-800/60 dark:hover:ring-zinc-600/70';
 
-const homeCardClass =
-    'group relative flex cursor-pointer flex-col rounded-2xl bg-white p-3.5 pr-9 text-left shadow-sm ring-1 ring-zinc-200 transition duration-200 hover:bg-zinc-50 hover:shadow-md dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/60';
+const homeFooterClass =
+    'group flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl px-1 py-2 text-left text-zinc-600 transition hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700/35 active:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100 dark:focus-visible:ring-emerald-300/40 dark:active:bg-zinc-800';
+
+function HomeFooterContent() {
+    return (
+        <>
+            <BookOpenIcon className="h-5 w-5 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
+            <span className="min-w-0 flex-1 text-sm font-medium leading-tight">Sobre o app</span>
+            <ChevronRightIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden />
+        </>
+    );
+}
 
 export default function SobreOAppNavItem({
     variant,
     from,
-    bookmark,
 }: {
-    variant: 'settings' | 'more' | 'home';
+    variant: 'settings' | 'more' | 'home-footer';
     from?: 'settings';
-    bookmark?: {
-        bookmarked: boolean;
-        onToggle: () => void;
-        disabled?: boolean;
-    };
 }) {
     const isDesktop = useMinWidthMd();
     const [open, setOpen] = useState(false);
@@ -49,34 +52,12 @@ export default function SobreOAppNavItem({
         );
     }
 
-    if (variant === 'home') {
-        const content = (
-            <>
-                {bookmark ? (
-                    <HomeCardBookmarkButton
-                        cardKey="sobre-o-app"
-                        bookmarked={bookmark.bookmarked}
-                        disabled={bookmark.disabled}
-                        onToggle={() => bookmark.onToggle()}
-                    />
-                ) : null}
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200/70 dark:bg-emerald-950/45 dark:text-emerald-200 dark:ring-emerald-800/60">
-                    <BookOpenIcon className="h-5 w-5" aria-hidden strokeWidth={2.05} />
-                </div>
-                <div className="mt-3 min-w-0">
-                    <p className="text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white">Sobre o APP</p>
-                    <p className="mt-1 text-[11px] font-medium leading-snug text-zinc-600 dark:text-zinc-300">
-                        Versão, lojas, links e suporte
-                    </p>
-                </div>
-            </>
-        );
-
+    if (variant === 'home-footer') {
         if (isDesktop) {
             return (
                 <>
-                    <button type="button" className={homeCardClass} onClick={() => setOpen(true)}>
-                        {content}
+                    <button type="button" className={homeFooterClass} onClick={() => setOpen(true)}>
+                        <HomeFooterContent />
                     </button>
                     <SobreOAppModal show={open} onClose={() => setOpen(false)} />
                 </>
@@ -84,8 +65,8 @@ export default function SobreOAppNavItem({
         }
 
         return (
-            <Link href={href} className={homeCardClass}>
-                {content}
+            <Link href={href} className={homeFooterClass}>
+                <HomeFooterContent />
             </Link>
         );
     }

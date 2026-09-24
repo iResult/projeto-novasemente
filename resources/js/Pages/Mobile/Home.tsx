@@ -381,7 +381,7 @@ export default function MobileHome({
             .filter((action) => !action.leaderOnly || isMinistryLeader)
             .map((action) => ({ kind: 'action' as const, id: action.id, label: action.label, action }));
 
-        const items = [...actions, { kind: 'sobre' as const, id: 'sobre-o-app', label: 'Sobre o APP' }];
+        const items = actions;
 
         return items.sort((a, b) => {
             const aSpotlight = spotlightRank.has(a.id);
@@ -461,24 +461,6 @@ export default function MobileHome({
                 <section aria-label="Atalhos" className="relative z-[1]">
                     <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
                         {gridItems.map((item) => {
-                            if (item.kind === 'sobre') {
-                                return (
-                                    <SobreOAppNavItem
-                                        key="sobre-o-app"
-                                        variant="home"
-                                        bookmark={
-                                            canBookmark
-                                                ? {
-                                                      bookmarked: bookmarks.includes('sobre-o-app'),
-                                                      onToggle: () => void toggleBookmark('sobre-o-app'),
-                                                      disabled: bookmarkBusy,
-                                                  }
-                                                : undefined
-                                        }
-                                    />
-                                );
-                            }
-
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const pendingBadge =
                                 id === 'ns-whats' && nsWhatsPendingReply > 0 ? nsWhatsPendingReply : null;
@@ -572,7 +554,10 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <HomeVolunteerArea />
+                <div className="flex flex-col gap-4">
+                    <HomeVolunteerArea />
+                    <SobreOAppNavItem variant="home-footer" />
+                </div>
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>
