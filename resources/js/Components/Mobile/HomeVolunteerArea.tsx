@@ -76,10 +76,10 @@ export default function HomeVolunteerArea() {
             aria-label="Área dos Voluntários"
             className="rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-700"
         >
-            <h2 className="text-[15px] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-white">
+            <h2 className="text-center text-[15px] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-white">
                 Área dos Voluntários
             </h2>
-            <div className="mt-4 grid max-w-sm grid-cols-2 gap-3">
+            <div className="mx-auto mt-4 grid max-w-sm grid-cols-2 gap-3">
                 {items.map((item) => (
                     <AreaIcon key={item.id} item={item} />
                 ))}
