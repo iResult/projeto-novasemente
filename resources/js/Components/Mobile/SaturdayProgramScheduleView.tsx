@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -136,9 +136,7 @@ export default function SaturdayProgramScheduleView({
     livePending = false,
     onLiveIndexChange,
 }: Props) {
-    const crew = schedule.crew ?? [];
     const items = schedule.items ?? [];
-    const [crewOpen, setCrewOpen] = useState(false);
     const [nowMin, setNowMin] = useState(nowMinutesOfDay);
     const currentRef = useRef<HTMLElement | null>(null);
     const didScrollRef = useRef(false);
@@ -151,7 +149,6 @@ export default function SaturdayProgramScheduleView({
         return () => window.clearInterval(id);
     }, []);
 
-    const visibleCrew = useMemo(() => (crewOpen ? crew : crew.slice(0, 4)), [crew, crewOpen]);
     const dateLabel = schedule.date_label?.trim() || fallbackDateLabel || null;
     const timedItems = useMemo(() => buildTimedItems(items), [items]);
     const finished = isLiveFinished(items, liveCurrentIndex);
@@ -219,43 +216,6 @@ export default function SaturdayProgramScheduleView({
                     ) : null}
                 </header>
             )}
-
-            {crew.length > 0 ? (
-                <section
-                    aria-label="Equipe do culto"
-                    className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-700"
-                >
-                    <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Equipe</h2>
-                        {crew.length > 4 ? (
-                            <button
-                                type="button"
-                                onClick={() => setCrewOpen((v) => !v)}
-                                className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-teal-700 hover:underline dark:text-teal-300"
-                            >
-                                {crewOpen ? 'Recolher' : `Ver todas (${crew.length})`}
-                                {crewOpen ? (
-                                    <ChevronUpIcon className="h-3.5 w-3.5" aria-hidden />
-                                ) : (
-                                    <ChevronDownIcon className="h-3.5 w-3.5" aria-hidden />
-                                )}
-                            </button>
-                        ) : null}
-                    </div>
-                    <ul className="mt-3 space-y-2.5">
-                        {visibleCrew.map((row) => (
-                            <li key={`${row.role}-${row.names}`} className="min-w-0">
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-                                    {row.role}
-                                </p>
-                                <p className="text-sm font-medium leading-snug text-zinc-800 dark:text-zinc-100">
-                                    {row.names}
-                                </p>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            ) : null}
 
             {itemTotal > 0 ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -434,30 +394,6 @@ export default function SaturdayProgramScheduleView({
                                     >
                                         {row.title}
                                     </h3>
-                                    {row.person ? (
-                                        <p
-                                            className={[
-                                                'mt-1 text-[13px] font-medium leading-snug',
-                                                isDone
-                                                    ? 'text-zinc-400 dark:text-zinc-500'
-                                                    : 'text-zinc-600 dark:text-zinc-300',
-                                            ].join(' ')}
-                                        >
-                                            {row.person}
-                                        </p>
-                                    ) : null}
-                                    {row.notes ? (
-                                        <p
-                                            className={[
-                                                'mt-1.5 text-[12px] leading-relaxed',
-                                                isDone
-                                                    ? 'text-zinc-400 dark:text-zinc-500'
-                                                    : 'text-zinc-500 dark:text-zinc-400',
-                                            ].join(' ')}
-                                        >
-                                            {row.notes}
-                                        </p>
-                                    ) : null}
                                 </div>
                             </div>
                         </article>

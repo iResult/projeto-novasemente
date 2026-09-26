@@ -143,13 +143,16 @@ class SaturdayProgramPdfParser
                     continue;
                 }
 
+                $finalTitle = $title !== '' ? $title : 'Momento';
+
                 $items[] = [
                     'kind' => 'item',
                     'start' => $this->normalizeTime($timed['start']),
                     'duration' => $duration,
-                    'title' => $title !== '' ? $title : 'Momento',
-                    'person' => $person !== null && $person !== '' ? $person : null,
-                    'notes' => $notes === [] ? null : implode(' ', $notes),
+                    'title' => $finalTitle,
+                    // App público: só horário + título (sem nomes nem descritivos).
+                    'person' => null,
+                    'notes' => null,
                 ];
 
                 continue;
@@ -176,7 +179,8 @@ class SaturdayProgramPdfParser
             'version' => self::VERSION,
             'heading' => $heading,
             'date_label' => $dateLabel,
-            'crew' => $this->dedupeCrew($crew),
+            // Equipe fica só no PDF; o app não lista nomes.
+            'crew' => [],
             'items' => $this->normalizeTimelineItems($items),
         ];
     }
@@ -407,7 +411,46 @@ class SaturdayProgramPdfParser
             }
         }
 
-        return $out;
+        return array_map(function (array $row): array {
+            if (($row['kind'] ?? '') !== 'item') {
+                return $row;
+            }
+            $row['person'] = null;
+            $row['notes'] = null;
+
+            return $row;
+        }, $out);
+    }
+
+    /**
+     * App público: sem equipe e sem nomes/descritivos nos itens.
+     *
+     * @param  array<string, mixed>|null  $schedule
+     * @return array<string, mixed>|null
+     */
+    public function sanitizeSchedule(?array $schedule): ?array
+    {
+        if ($schedule === null) {
+            return null;
+        }
+
+        $schedule['crew'] = [];
+
+        if (! is_array($schedule['items'] ?? null)) {
+            return $schedule;
+        }
+
+        $schedule['items'] = array_map(static function (mixed $row): mixed {
+            if (! is_array($row) || ($row['kind'] ?? '') !== 'item') {
+                return $row;
+            }
+            $row['person'] = null;
+            $row['notes'] = null;
+
+            return $row;
+        }, $schedule['items']);
+
+        return $schedule;
     }
 
     /**
@@ -469,25 +512,5 @@ class SaturdayProgramPdfParser
     private function isCultoBoundaryLabel(string $title): bool
     {
         return (bool) preg_match('/PR[ÉE][-\s]?ABERTURA|TRANSIÇÃO|INTERVALO|ORGANIZA/iu', $title);
-    }
-
-    /**
-     * @param  list<array{role: string, names: string}>  $crew
-     * @return list<array{role: string, names: string}>
-     */
-    private function dedupeCrew(array $crew): array
-    {
-        $seen = [];
-        $out = [];
-        foreach ($crew as $row) {
-            $key = mb_strtolower($row['role'].'|'.$row['names']);
-            if (isset($seen[$key])) {
-                continue;
-            }
-            $seen[$key] = true;
-            $out[] = $row;
-        }
-
-        return $out;
     }
 }

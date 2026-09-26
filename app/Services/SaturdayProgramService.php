@@ -112,6 +112,7 @@ class SaturdayProgramService
         }
 
         $schedule = is_array($program->schedule) ? $program->schedule : null;
+        $schedule = $this->pdfParser->sanitizeSchedule($schedule);
         $hasSchedule = $this->hasUsableSchedule($program);
 
         $pdfPath = is_string($program->pdf_path) ? trim($program->pdf_path) : '';
@@ -236,6 +237,15 @@ class SaturdayProgramService
             && is_array($schedule)
             && is_array($schedule['items'] ?? null)
             && $schedule['items'] !== [];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schedule
+     * @return array<string, mixed>|null
+     */
+    public function sanitizeSchedule(?array $schedule): ?array
+    {
+        return $this->pdfParser->sanitizeSchedule($schedule);
     }
 
     /**

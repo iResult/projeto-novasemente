@@ -233,7 +233,9 @@ class SaturdayProgramController extends Controller
         $within = $this->saturdayPrograms->isWithinWindow($item, $now);
         $expired = $this->saturdayPrograms->hasPassedExpiry($item, $now);
         $pdfPath = is_string($item->pdf_path) ? trim($item->pdf_path) : '';
-        $schedule = is_array($item->schedule) ? $item->schedule : null;
+        $schedule = $this->saturdayPrograms->sanitizeSchedule(
+            is_array($item->schedule) ? $item->schedule : null,
+        );
         $itemCount = is_array($schedule['items'] ?? null) ? count($schedule['items']) : 0;
         $hasSchedule = $this->saturdayPrograms->hasUsableSchedule($item);
 

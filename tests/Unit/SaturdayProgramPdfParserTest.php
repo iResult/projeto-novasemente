@@ -21,10 +21,7 @@ class SaturdayProgramPdfParserTest extends TestCase
         $this->assertStringContainsStringIgnoringCase('CULTO', (string) $schedule['heading']);
         $this->assertSame('5 September 2026', $schedule['date_label']);
 
-        $roles = array_column($schedule['crew'], 'role');
-        $this->assertContains('Produção', $roles);
-        $this->assertContains('Diaconato', $roles);
-        $this->assertContains('Câmeras', $roles);
+        $this->assertSame([], $schedule['crew']);
 
         $items = $schedule['items'];
         $this->assertGreaterThan(20, count($items));
@@ -46,7 +43,8 @@ class SaturdayProgramPdfParserTest extends TestCase
 
         $timed = array_values(array_filter($items, fn (array $row) => ($row['kind'] ?? '') === 'item'));
         $this->assertSame('08:00', $timed[0]['start']);
-        $this->assertNotEmpty($timed[0]['person'] ?? null);
+        $this->assertNull($timed[0]['person'] ?? null);
+        $this->assertNull($timed[0]['notes'] ?? null);
     }
 
     #[Test]
@@ -75,6 +73,51 @@ TXT;
 
         $this->assertSame('12:03:30', $items[2]['start']);
         $this->assertSame('6:00', $items[2]['duration']);
+    }
+
+    #[Test]
+    public function it_never_exposes_crew_person_or_notes(): void
+    {
+        $text = <<<'TXT'
+CULTO DE SÁBADO
+5 September 2026
+Produção: Equipe A
+Diaconato: João e Maria
+10:1440:00MENSAGEM PASTORAL
+Person:Pr. Nome Do Pregador
+Notas do sermão ocultas
+12:03:306:00LOUVOR 1: No Teu Altar	Person:Louvor | Banda
+TXT;
+
+        $parser = new SaturdayProgramPdfParser;
+        $schedule = $parser->parseText($text);
+        $this->assertSame([], $schedule['crew']);
+
+        foreach ($schedule['items'] as $row) {
+            if (($row['kind'] ?? '') !== 'item') {
+                continue;
+            }
+            $this->assertNull($row['person'] ?? null);
+            $this->assertNull($row['notes'] ?? null);
+        }
+
+        $dirty = [
+            'version' => 1,
+            'crew' => [['role' => 'Produção', 'names' => 'Equipe']],
+            'items' => [
+                [
+                    'kind' => 'item',
+                    'start' => '11:00',
+                    'title' => 'Louvor',
+                    'person' => 'Banda',
+                    'notes' => 'Letra',
+                ],
+            ],
+        ];
+        $clean = $parser->sanitizeSchedule($dirty);
+        $this->assertSame([], $clean['crew']);
+        $this->assertNull($clean['items'][0]['person']);
+        $this->assertNull($clean['items'][0]['notes']);
     }
 
     #[Test]
