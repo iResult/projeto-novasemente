@@ -17,6 +17,7 @@ import PollResultsCard from '@/Components/Polls/PollResultsCard';
 import type { PollResults } from '@/Components/Polls/pollTypes';
 import { useListModalSubmit } from '@/hooks/useListModalSubmit';
 import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
+import { appToast } from '@/utils/appToast';
 import { confirmAction } from '@/utils/confirmDialog';
 import { Head, useForm, router } from '@inertiajs/react';
 import {
@@ -415,83 +416,13 @@ export default function Index({
                 preserveState: true,
                 only: ['polls'],
                 onSuccess: () => {
+                    const message = visible
+                        ? 'Enquete visível novamente.'
+                        : 'A congregação deixou de visualizar esta enquete.';
+                    appToast(message);
                     if (editingId === poll.id) {
                         setData('status', visible ? 'open' : 'draft');
-                        showSaveMessage(
-                            visible
-                                ? 'Enquete visível novamente.'
-                                : 'A congregação deixou de visualizar esta enquete.',
-                        );
-                    }
-                },
-            },
-        );
-    };
-
-    const setVisibility = async (poll: PollRow, visible: boolean) => {
-        const ok = await confirmAction({
-            title: visible ? 'Voltar a exibir?' : 'Deixar de visualizar?',
-            text: visible
-                ? 'A enquete volta a ficar aberta e visível para a congregação.'
-                : 'A congregação deixa de ver esta enquete no app. Ela continua neste painel.',
-            confirmButtonText: visible ? 'Voltar a exibir' : 'Deixar de visualizar',
-            cancelButtonText: 'Cancelar',
-            danger: !visible,
-            icon: 'warning',
-        });
-        if (!ok) {
-            return;
-        }
-        router.patch(
-            route('polls.visibility', poll.id),
-            { visible },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['polls'],
-                onSuccess: () => {
-                    if (editingId === poll.id) {
-                        setData('status', visible ? 'open' : 'draft');
-                        showSaveMessage(
-                            visible
-                                ? 'Enquete visível novamente.'
-                                : 'A congregação deixou de visualizar esta enquete.',
-                        );
-                    }
-                },
-            },
-        );
-    };
-
-    const setVisibility = async (poll: PollRow, visible: boolean) => {
-        const ok = await confirmAction({
-            title: visible ? 'Voltar a exibir?' : 'Deixar de visualizar?',
-            text: visible
-                ? 'A enquete volta a ficar aberta e visível para a congregação.'
-                : 'A congregação deixa de ver esta enquete no app. Ela continua neste painel.',
-            confirmButtonText: visible ? 'Voltar a exibir' : 'Deixar de visualizar',
-            cancelButtonText: 'Cancelar',
-            danger: !visible,
-            icon: 'warning',
-        });
-        if (!ok) {
-            return;
-        }
-        router.patch(
-            route('polls.visibility', poll.id),
-            { visible },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['polls'],
-                onSuccess: () => {
-                    if (editingId === poll.id) {
-                        setData('status', visible ? 'open' : 'draft');
-                        showSaveMessage(
-                            visible
-                                ? 'Enquete visível novamente.'
-                                : 'A congregação deixou de visualizar esta enquete.',
-                        );
+                        showSaveMessage(message);
                     }
                 },
             },
