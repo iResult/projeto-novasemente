@@ -124,8 +124,20 @@ export function publicScheduleItemTitle(title: string): string {
             label: 'Introdução à fidelidade',
         },
         {
-            aliases: ['momento de oracao'],
+            aliases: ['momento de oracao', 'momento da oracao'],
             label: 'Momento de Oração',
+        },
+        {
+            aliases: ['oracao fidelidade'],
+            label: 'Oração de fidelidade',
+        },
+        {
+            aliases: ['oracao final'],
+            label: 'Oração final',
+        },
+        {
+            aliases: ['oracao'],
+            label: 'Oração',
         },
         {
             aliases: ['entrada do vocal'],
