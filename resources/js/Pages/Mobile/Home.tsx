@@ -14,6 +14,7 @@ import {
     PhotoIcon,
     PlayCircleIcon,
     ChartBarIcon,
+    ChatBubbleLeftRightIcon,
     ClipboardDocumentListIcon,
     SparklesIcon,
     UserGroupIcon,
@@ -238,6 +239,14 @@ const homeQuickActions: QuickAction[] = [
         icon: MusicalNoteIcon,
     },
     {
+        id: 'ns-whats',
+        label: 'NS Conecta',
+        subtitle: 'Converse com departamentos, líderes e voluntários',
+        route: 'mobile.ns-whats.index',
+        featureKey: 'ns_whats',
+        icon: ChatBubbleLeftRightIcon,
+    },
+    {
         id: 'oracao',
         label: 'Oração',
         subtitle: 'Pedidos de oração',
@@ -455,7 +464,7 @@ export default function MobileHome({
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} />
                 ) : null}
 
-                <HomeGivingShortcuts nsWhatsPendingReply={nsWhatsPendingReply} />
+                <HomeGivingShortcuts />
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
