@@ -111,20 +111,33 @@ function normalizeScheduleLabel(value: string): string {
         .toLowerCase();
 }
 
-export function shouldHideScheduleItemTitle(title: string): boolean {
+export function publicScheduleItemTitle(title: string): string {
     const normalized = normalizeScheduleLabel(title);
-    const hiddenLabels = [
-        'introducao a fidelidade',
-        'introducao a fdelidade',
-        'introducao de fidelidade',
-        'introducao fidelidade',
-        'momento de oracao',
-        'entrada do vocal',
+    const publicLabels: Array<{ aliases: string[]; label: string }> = [
+        {
+            aliases: [
+                'introducao a fidelidade',
+                'introducao a fdelidade',
+                'introducao de fidelidade',
+                'introducao fidelidade',
+            ],
+            label: 'Introdução à fidelidade',
+        },
+        {
+            aliases: ['momento de oracao'],
+            label: 'Momento de Oração',
+        },
+        {
+            aliases: ['entrada do vocal'],
+            label: 'Entrada do Vocal',
+        },
     ];
 
-    return hiddenLabels.some(
-        (label) => normalized === label || normalized.startsWith(`${label} `),
+    const matched = publicLabels.find(({ aliases }) =>
+        aliases.some((alias) => normalized === alias || normalized.startsWith(`${alias} `)),
     );
+
+    return matched?.label ?? title;
 }
 
 function cultoNumber(title: string): 1 | 2 | null {
@@ -355,7 +368,7 @@ export default function SaturdayProgramScheduleView({
                     const timed = timedItems.find((t) => t.index === index);
                     const isPastByClock = !liveActive && timed != null && nowMin >= timed.endMin && !isNow;
                     const durationLabel = formatDurationLabel(row.duration ?? null);
-                    const showTitle = !shouldHideScheduleItemTitle(row.title);
+                    const publicTitle = publicScheduleItemTitle(row.title);
 
                     return (
                         <Fragment key={`item-${index}-${row.start}-${row.title}`}>
@@ -365,7 +378,6 @@ export default function SaturdayProgramScheduleView({
                             <article
                                 ref={isNow ? currentRef : undefined}
                                 aria-current={isNow ? 'true' : undefined}
-                                aria-label={showTitle ? undefined : `${formatScheduleClock(row.start)} — item da programação`}
                                 className={[
                                     'relative overflow-hidden rounded-2xl p-3.5 shadow-sm transition-colors',
                                     canConduct ? 'pr-12' : '',
@@ -461,20 +473,18 @@ export default function SaturdayProgramScheduleView({
                                 />
 
                                 <div className="min-w-0 flex-1">
-                                    {showTitle ? (
-                                        <h3
-                                            className={[
-                                                'text-[15px] font-semibold leading-snug',
-                                                isDone
-                                                    ? 'text-zinc-500 line-through decoration-zinc-300 dark:text-zinc-400 dark:decoration-zinc-600'
-                                                    : isNow
-                                                      ? 'text-zinc-950 dark:text-white'
-                                                      : 'text-zinc-900 dark:text-white',
-                                            ].join(' ')}
-                                        >
-                                            {row.title}
-                                        </h3>
-                                    ) : null}
+                                    <h3
+                                        className={[
+                                            'text-[15px] font-semibold leading-snug',
+                                            isDone
+                                                ? 'text-zinc-500 line-through decoration-zinc-300 dark:text-zinc-400 dark:decoration-zinc-600'
+                                                : isNow
+                                                  ? 'text-zinc-950 dark:text-white'
+                                                  : 'text-zinc-900 dark:text-white',
+                                        ].join(' ')}
+                                    >
+                                        {publicTitle}
+                                    </h3>
                                 </div>
                             </div>
                             </article>
