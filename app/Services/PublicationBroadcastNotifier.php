@@ -204,6 +204,18 @@ class PublicationBroadcastNotifier
         );
     }
 
+    public function retractPoll(\App\Models\Poll $poll): void
+    {
+        $suffix = '/mobile/enquetes/'.$poll->id;
+
+        AppNotification::query()
+            ->where(function ($query) use ($suffix) {
+                $query->where('action_url', 'like', '%'.$suffix)
+                    ->orWhere('action_url', 'like', '%'.$suffix.'?%');
+            })
+            ->delete();
+    }
+
     private function create(
         ?int $churchId,
         string $prefix,

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AppNotification;
 use App\Models\Church;
 use App\Models\Poll;
 use App\Models\PollVote;
@@ -78,5 +79,53 @@ class PollVisibilityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('polls.0.id', $poll->id));
+    }
+
+    public function test_closed_or_removed_poll_leaves_the_app_even_after_a_vote(): void
+    {
+        $this->seed([RolePermissionSeeder::class, ChurchSeeder::class]);
+        Role::firstOrCreate(['name' => 'membro', 'guard_name' => 'web']);
+
+        $churchId = (int) Church::query()->orderBy('id')->value('id');
+        $member = User::factory()->create(['church_id' => $churchId]);
+        $member->assignRole('membro');
+
+        $poll = Poll::query()->create([
+            'church_id' => $churchId,
+            'created_by' => $member->id,
+            'question' => 'Qual culto você prefere?',
+            'allow_multiple' => false,
+            'response_type' => Poll::RESPONSE_CHOICE,
+            'status' => Poll::STATUS_CLOSED,
+        ]);
+
+        PollVote::query()->create([
+            'poll_id' => $poll->id,
+            'user_id' => $member->id,
+            'voter_key' => 'u:'.$member->id,
+        ]);
+
+        AppNotification::query()->create([
+            'church_id' => $churchId,
+            'title' => 'Nova enquete: Qual culto você prefere?',
+            'body' => 'Vote e veja o resultado da congregação.',
+            'action_url' => route('mobile.polls.show', ['poll' => $poll->id], absolute: true),
+            'created_by' => $member->id,
+        ]);
+
+        $this->actingAs($member)
+            ->get(route('mobile.polls.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('polls', []));
+
+        $this->actingAs($member)
+            ->get(route('mobile.polls.show', $poll))
+            ->assertNotFound();
+
+        app(\App\Services\PublicationBroadcastNotifier::class)->retractPoll($poll);
+
+        $this->assertDatabaseMissing('app_notifications', [
+            'action_url' => route('mobile.polls.show', ['poll' => $poll->id], absolute: true),
+        ]);
     }
 }

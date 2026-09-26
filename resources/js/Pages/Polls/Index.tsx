@@ -106,7 +106,7 @@ const STATUS_META: Record<string, { dot: string; active: string; hint: string }>
         dot: 'bg-zinc-400',
         active:
             'border-zinc-400 bg-zinc-100 text-zinc-900 shadow-sm dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100',
-        hint: 'Não aceita novos votos',
+        hint: 'Some do app e não aceita novos votos',
     },
 };
 

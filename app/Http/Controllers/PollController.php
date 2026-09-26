@@ -144,7 +144,9 @@ class PollController extends Controller
         });
 
         $poll->refresh();
-        if ((! $wasOpen || ! $wasInFeed) && $poll->status === Poll::STATUS_OPEN && $poll->publish_to_feed) {
+        if ($poll->status !== Poll::STATUS_OPEN) {
+            $this->publicationBroadcast->retractPoll($poll);
+        } elseif ((! $wasOpen || ! $wasInFeed) && $poll->publish_to_feed) {
             $this->publicationBroadcast->notifyPoll($poll, $request->user()?->id);
         }
 
@@ -154,6 +156,7 @@ class PollController extends Controller
     public function destroy(Poll $poll)
     {
         $this->assertSameChurch($poll);
+        $this->publicationBroadcast->retractPoll($poll);
         $poll->delete();
 
         return redirect()->route('polls.index')->with('success', 'Enquete excluída com sucesso!');
@@ -173,6 +176,10 @@ class PollController extends Controller
         $poll->update([
             'status' => $visible ? Poll::STATUS_OPEN : Poll::STATUS_DRAFT,
         ]);
+
+        if (! $visible) {
+            $this->publicationBroadcast->retractPoll($poll);
+        }
 
         if (! $wasOpen && $visible && $poll->publish_to_feed) {
             $this->publicationBroadcast->notifyPoll($poll, $request->user()?->id);

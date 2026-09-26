@@ -34,21 +34,7 @@ class PollMobileController extends Controller
                 'options' => fn ($q) => $q->orderBy('sort_order')->orderBy('id'),
                 'options.votes',
             ])
-            ->where(function ($q) use ($user) {
-                $q->where('status', Poll::STATUS_OPEN)
-                    ->orWhere(function ($closed) use ($user) {
-                        $closed->where('status', Poll::STATUS_CLOSED)
-                            ->whereExists(function ($sub) use ($user) {
-                                $sub->selectRaw('1')
-                                    ->from('poll_votes')
-                                    ->whereColumn('poll_votes.poll_id', 'polls.id')
-                                    ->where(function ($inner) use ($user) {
-                                        $inner->where('poll_votes.user_id', $user->id)
-                                            ->orWhere('poll_votes.voter_key', 'u:'.$user->id);
-                                    });
-                            });
-                    });
-            })
+            ->open()
             // Enquete de sugestão (texto livre) sempre por último.
             ->orderByRaw("CASE WHEN response_type = ? THEN 1 ELSE 0 END", [Poll::RESPONSE_TEXT])
             ->latest()
@@ -70,7 +56,7 @@ class PollMobileController extends Controller
     {
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $this->assertVisible($poll, $user->id);
+        $this->assertVisible($poll);
 
         $ip = PollVoting::clientIp($request);
         $hasVoted = PollVoting::hasVoted($poll, $user, $ip);
@@ -136,15 +122,11 @@ class PollMobileController extends Controller
         }
     }
 
-    private function assertVisible(Poll $poll, int $userId): void
+    private function assertVisible(Poll $poll): void
     {
         $this->assertSameChurch($poll);
 
         if ($poll->isOpen()) {
-            return;
-        }
-
-        if ($poll->status === Poll::STATUS_CLOSED && $poll->userHasVoted($userId)) {
             return;
         }
 
