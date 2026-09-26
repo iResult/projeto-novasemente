@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-09-19T04:16:28.184Z",
         "reason": "Agent: false positive — text-zinc-700 is the filename on the white modal surface; file:bg-teal-50 applies only to the native file button via Tailwind file: prefix"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Polls/Index.tsx"
+        ],
+        "createdAt": "2026-09-26T05:57:17.590Z",
+        "reason": "Agent: false positive on the dark live-panel preview (slate captions and SVG track), not gray text sitting on a colored UI surface"
       }
     ]
   }

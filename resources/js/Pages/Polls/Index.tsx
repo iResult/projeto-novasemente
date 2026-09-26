@@ -26,6 +26,8 @@ import {
     Bars3Icon,
     ChartBarIcon,
     ClipboardDocumentIcon,
+    EyeIcon,
+    EyeSlashIcon,
     PencilIcon,
     PlusIcon,
     TrashIcon,
@@ -391,6 +393,111 @@ export default function Index({
         }
     };
 
+    const setVisibility = async (poll: PollRow, visible: boolean) => {
+        const ok = await confirmAction({
+            title: visible ? 'Voltar a exibir?' : 'Deixar de visualizar?',
+            text: visible
+                ? 'A enquete volta a ficar aberta e visível para a congregação.'
+                : 'A congregação deixa de ver esta enquete no app. Ela continua neste painel.',
+            confirmButtonText: visible ? 'Voltar a exibir' : 'Deixar de visualizar',
+            cancelButtonText: 'Cancelar',
+            danger: !visible,
+            icon: 'warning',
+        });
+        if (!ok) {
+            return;
+        }
+        router.patch(
+            route('polls.visibility', poll.id),
+            { visible },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['polls'],
+                onSuccess: () => {
+                    if (editingId === poll.id) {
+                        setData('status', visible ? 'open' : 'draft');
+                        showSaveMessage(
+                            visible
+                                ? 'Enquete visível novamente.'
+                                : 'A congregação deixou de visualizar esta enquete.',
+                        );
+                    }
+                },
+            },
+        );
+    };
+
+    const setVisibility = async (poll: PollRow, visible: boolean) => {
+        const ok = await confirmAction({
+            title: visible ? 'Voltar a exibir?' : 'Deixar de visualizar?',
+            text: visible
+                ? 'A enquete volta a ficar aberta e visível para a congregação.'
+                : 'A congregação deixa de ver esta enquete no app. Ela continua neste painel.',
+            confirmButtonText: visible ? 'Voltar a exibir' : 'Deixar de visualizar',
+            cancelButtonText: 'Cancelar',
+            danger: !visible,
+            icon: 'warning',
+        });
+        if (!ok) {
+            return;
+        }
+        router.patch(
+            route('polls.visibility', poll.id),
+            { visible },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['polls'],
+                onSuccess: () => {
+                    if (editingId === poll.id) {
+                        setData('status', visible ? 'open' : 'draft');
+                        showSaveMessage(
+                            visible
+                                ? 'Enquete visível novamente.'
+                                : 'A congregação deixou de visualizar esta enquete.',
+                        );
+                    }
+                },
+            },
+        );
+    };
+
+    const setVisibility = async (poll: PollRow, visible: boolean) => {
+        const ok = await confirmAction({
+            title: visible ? 'Voltar a exibir?' : 'Deixar de visualizar?',
+            text: visible
+                ? 'A enquete volta a ficar aberta e visível para a congregação.'
+                : 'A congregação deixa de ver esta enquete no app. Ela continua neste painel.',
+            confirmButtonText: visible ? 'Voltar a exibir' : 'Deixar de visualizar',
+            cancelButtonText: 'Cancelar',
+            danger: !visible,
+            icon: 'warning',
+        });
+        if (!ok) {
+            return;
+        }
+        router.patch(
+            route('polls.visibility', poll.id),
+            { visible },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['polls'],
+                onSuccess: () => {
+                    if (editingId === poll.id) {
+                        setData('status', visible ? 'open' : 'draft');
+                        showSaveMessage(
+                            visible
+                                ? 'Enquete visível novamente.'
+                                : 'A congregação deixou de visualizar esta enquete.',
+                        );
+                    }
+                },
+            },
+        );
+    };
+
     const handleDelete = async (id: number) => {
         const ok = await confirmAction({
             title: 'Excluir enquete?',
@@ -513,6 +620,21 @@ export default function Index({
                                         {canManage ? (
                                             <>
                                                 <ListCardIconActionButton
+                                                    label={
+                                                        poll.status === 'draft'
+                                                            ? 'Voltar a exibir'
+                                                            : 'Deixar de visualizar'
+                                                    }
+                                                    icon={
+                                                        poll.status === 'draft' ? (
+                                                            <EyeIcon className="h-4 w-4" />
+                                                        ) : (
+                                                            <EyeSlashIcon className="h-4 w-4" />
+                                                        )
+                                                    }
+                                                    onClick={() => void setVisibility(poll, poll.status === 'draft')}
+                                                />
+                                                <ListCardIconActionButton
                                                     label="Editar"
                                                     icon={<PencilIcon className="h-4 w-4" />}
                                                     onClick={() => openEditModal(poll)}
@@ -537,16 +659,34 @@ export default function Index({
                 onClose={closeModal}
                 maxWidth="lg"
                 footer={
-                    canManage && (modalTab === 'enquete' || modalTab === 'exibicao') ? (
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                            <PrimaryButton
-                                type="submit"
-                                form="poll-form"
-                                className="cursor-pointer"
-                                disabled={saving}
-                            >
-                                {saving ? 'Salvando…' : 'Salvar'}
-                            </PrimaryButton>
+                    canManage ? (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            {isEditing && editingPoll ? (
+                                <SecondaryButton
+                                    type="button"
+                                    className="cursor-pointer"
+                                    onClick={() => void setVisibility(editingPoll, editingPoll.status === 'draft')}
+                                >
+                                    {editingPoll.status === 'draft' ? (
+                                        <EyeIcon className="mr-1.5 h-4 w-4" />
+                                    ) : (
+                                        <EyeSlashIcon className="mr-1.5 h-4 w-4" />
+                                    )}
+                                    {editingPoll.status === 'draft' ? 'Voltar a exibir' : 'Deixar de visualizar'}
+                                </SecondaryButton>
+                            ) : (
+                                <span />
+                            )}
+                            {(modalTab === 'enquete' || modalTab === 'exibicao') && (
+                                <PrimaryButton
+                                    type="submit"
+                                    form="poll-form"
+                                    className="cursor-pointer"
+                                    disabled={saving}
+                                >
+                                    {saving ? 'Salvando…' : 'Salvar'}
+                                </PrimaryButton>
+                            )}
                         </div>
                     ) : undefined
                 }

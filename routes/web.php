@@ -697,6 +697,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/enquetes', [PollController::class, 'index'])->name('polls.index')->middleware('permission:polls.view|polls.manage');
     Route::post('/enquetes', [PollController::class, 'store'])->name('polls.store')->middleware('permission:polls.manage');
     Route::put('/enquetes/{poll}', [PollController::class, 'update'])->name('polls.update')->middleware('permission:polls.manage');
+    Route::patch('/enquetes/{poll}/visibilidade', [PollController::class, 'setVisibility'])->name('polls.visibility')->middleware('permission:polls.manage');
     Route::delete('/enquetes/{poll}', [PollController::class, 'destroy'])->name('polls.destroy')->middleware('permission:polls.manage');
 
     Route::get('/programacao', [WeeklyProgramController::class, 'index'])->name('programacao.index')->middleware('permission:programacao.view|programacao.manage');

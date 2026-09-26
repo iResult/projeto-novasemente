@@ -36,13 +36,16 @@ class PollMobileController extends Controller
             ])
             ->where(function ($q) use ($user) {
                 $q->where('status', Poll::STATUS_OPEN)
-                    ->orWhereExists(function ($sub) use ($user) {
-                        $sub->selectRaw('1')
-                            ->from('poll_votes')
-                            ->whereColumn('poll_votes.poll_id', 'polls.id')
-                            ->where(function ($inner) use ($user) {
-                                $inner->where('poll_votes.user_id', $user->id)
-                                    ->orWhere('poll_votes.voter_key', 'u:'.$user->id);
+                    ->orWhere(function ($closed) use ($user) {
+                        $closed->where('status', Poll::STATUS_CLOSED)
+                            ->whereExists(function ($sub) use ($user) {
+                                $sub->selectRaw('1')
+                                    ->from('poll_votes')
+                                    ->whereColumn('poll_votes.poll_id', 'polls.id')
+                                    ->where(function ($inner) use ($user) {
+                                        $inner->where('poll_votes.user_id', $user->id)
+                                            ->orWhere('poll_votes.voter_key', 'u:'.$user->id);
+                                    });
                             });
                     });
             })
@@ -141,7 +144,7 @@ class PollMobileController extends Controller
             return;
         }
 
-        if ($poll->userHasVoted($userId)) {
+        if ($poll->status === Poll::STATUS_CLOSED && $poll->userHasVoted($userId)) {
             return;
         }
 

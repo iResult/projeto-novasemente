@@ -1,10 +1,9 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ClockIcon, DocumentTextIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { ClockIcon } from '@heroicons/react/24/outline';
 import PdfOriginalViewer from '@/Components/Mobile/PdfOriginalViewer';
 import SaturdayProgramLiveSchedule from '@/Components/ProgramacaoSabado/SaturdayProgramLiveSchedule';
 import type { SaturdaySchedule } from '@/Components/Mobile/SaturdayProgramScheduleView';
-import { useEffect, useState } from 'react';
 
 type ProgramPayload =
     | {
@@ -31,7 +30,6 @@ interface Props {
 }
 
 type PageProps = { appUrl?: string };
-type ViewMode = 'schedule' | 'pdf';
 
 function imageSrc(url: string, appUrl: string): string {
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -51,9 +49,6 @@ function formatSaturday(iso: string | null): string {
     });
 }
 
-const segmentBtn =
-    'inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition';
-
 export default function ProgramacaoSabado({ program }: Props) {
     const appUrl = (usePage().props as PageProps).appUrl ?? '';
     const backHref = route('mobile.conheca');
@@ -62,21 +57,11 @@ export default function ProgramacaoSabado({ program }: Props) {
     const pdfRaw =
         program.status === 'available' && typeof program.pdf_url === 'string' ? program.pdf_url.trim() : '';
     const hasPdf = pdfRaw !== '';
-    const [mode, setMode] = useState<ViewMode>(hasSchedule ? 'schedule' : 'pdf');
-
-    useEffect(() => {
-        if (hasSchedule) {
-            setMode('schedule');
-        } else if (hasPdf) {
-            setMode('pdf');
-        }
-    }, [hasSchedule, hasPdf, program.status === 'available' ? program.id : null]);
 
     if (program.status === 'available' && (hasSchedule || hasPdf)) {
         const pdf = hasPdf ? imageSrc(pdfRaw, appUrl) : '';
         const subtitle = formatSaturday(program.saturday_date);
-        const showTabs = hasSchedule && hasPdf;
-        const showSchedule = mode === 'schedule' && hasSchedule && program.schedule;
+        const showSchedule = hasSchedule && program.schedule;
 
         return (
             <MobileLayout>
@@ -98,43 +83,6 @@ export default function ProgramacaoSabado({ program }: Props) {
                             </p>
                         ) : null}
                     </div>
-
-                    {showTabs ? (
-                        <div
-                            role="tablist"
-                            aria-label="Modo de visualização"
-                            className="flex gap-1 rounded-2xl bg-zinc-100 p-1 dark:bg-zinc-800/80"
-                        >
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={mode === 'schedule'}
-                                className={`${segmentBtn} ${
-                                    mode === 'schedule'
-                                        ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
-                                        : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                                }`}
-                                onClick={() => setMode('schedule')}
-                            >
-                                <ListBulletIcon className="h-4 w-4 shrink-0" aria-hidden />
-                                Programação
-                            </button>
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={mode === 'pdf'}
-                                className={`${segmentBtn} ${
-                                    mode === 'pdf'
-                                        ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
-                                        : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                                }`}
-                                onClick={() => setMode('pdf')}
-                            >
-                                <DocumentTextIcon className="h-4 w-4 shrink-0" aria-hidden />
-                                PDF
-                            </button>
-                        </div>
-                    ) : null}
 
                     {showSchedule && program.schedule ? (
                         <SaturdayProgramLiveSchedule

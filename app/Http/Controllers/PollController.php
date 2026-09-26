@@ -10,6 +10,7 @@ use App\Models\Poll;
 use App\Models\PollOption;
 use App\Services\PublicationBroadcastNotifier;
 use App\Support\PollPresenter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -156,6 +157,33 @@ class PollController extends Controller
         $poll->delete();
 
         return redirect()->route('polls.index')->with('success', 'Enquete excluída com sucesso!');
+    }
+
+    public function setVisibility(Request $request, Poll $poll): RedirectResponse
+    {
+        $this->assertSameChurch($poll);
+
+        $data = $request->validate([
+            'visible' => ['required', 'boolean'],
+        ]);
+
+        $visible = (bool) $data['visible'];
+        $wasOpen = $poll->status === Poll::STATUS_OPEN;
+
+        $poll->update([
+            'status' => $visible ? Poll::STATUS_OPEN : Poll::STATUS_DRAFT,
+        ]);
+
+        if (! $wasOpen && $visible && $poll->publish_to_feed) {
+            $this->publicationBroadcast->notifyPoll($poll, $request->user()?->id);
+        }
+
+        return redirect()->route('polls.index')->with(
+            'success',
+            $visible
+                ? 'Enquete visível novamente para a congregação.'
+                : 'A congregação deixou de visualizar esta enquete.'
+        );
     }
 
     /**

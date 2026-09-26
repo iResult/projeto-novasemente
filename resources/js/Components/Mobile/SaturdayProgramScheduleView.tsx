@@ -1,6 +1,6 @@
 import { CheckIcon } from '@heroicons/react/24/outline';
 import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
     computeToggleLiveIndex,
     isLiveFinished,
@@ -102,6 +102,66 @@ function nowMinutesOfDay(): number {
     return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
 }
 
+function normalizeScheduleLabel(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/gi, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+export function shouldHideScheduleItemTitle(title: string): boolean {
+    const normalized = normalizeScheduleLabel(title);
+    const hiddenLabels = [
+        'introducao a fidelidade',
+        'introducao a fdelidade',
+        'introducao de fidelidade',
+        'introducao fidelidade',
+        'momento de oracao',
+        'entrada do vocal',
+    ];
+
+    return hiddenLabels.some(
+        (label) => normalized === label || normalized.startsWith(`${label} `),
+    );
+}
+
+function cultoNumber(title: string): 1 | 2 | null {
+    const normalized = normalizeScheduleLabel(title);
+    if (/^(1|1o|primeiro) culto\b/.test(normalized)) return 1;
+    if (/^(2|2o|segundo) culto\b/.test(normalized)) return 2;
+    return null;
+}
+
+function CultoDivider({ number }: { number: 1 | 2 }) {
+    const isFirst = number === 1;
+
+    return (
+        <div className="sticky top-0 z-[1] -mx-1 px-1 py-1.5">
+            <div
+                className={[
+                    'rounded-xl px-3 py-2.5 text-center ring-1 ring-inset backdrop-blur',
+                    isFirst
+                        ? 'bg-teal-50/95 ring-teal-200/80 dark:bg-teal-950/90 dark:ring-teal-800/80'
+                        : 'bg-amber-50/95 ring-amber-200/80 dark:bg-amber-950/80 dark:ring-amber-800/70',
+                ].join(' ')}
+            >
+                <p
+                    className={[
+                        'text-[11px] font-bold uppercase tracking-[0.12em]',
+                        isFirst
+                            ? 'text-teal-800 dark:text-teal-200'
+                            : 'text-amber-800 dark:text-amber-200',
+                    ].join(' ')}
+                >
+                    {number}º culto
+                </p>
+            </div>
+        </div>
+    );
+}
+
 function buildTimedItems(items: ScheduleItemRow[]): TimedItem[] {
     const timed: TimedItem[] = [];
     items.forEach((row, index) => {
@@ -189,6 +249,10 @@ export default function SaturdayProgramScheduleView({
     }, [items, liveActive, liveCurrentIndex]);
 
     const itemTotal = timedItems.length;
+    const firstItemIndex = items.findIndex((row) => row.kind === 'item');
+    const hasFirstCultoDivider = items.some(
+        (row) => row.kind === 'section' && cultoNumber(row.title) === 1,
+    );
 
     const handleToggle = (index: number) => {
         if (!canConduct || !onLiveIndexChange || livePending) return;
@@ -260,6 +324,16 @@ export default function SaturdayProgramScheduleView({
             <section aria-label="Timeline da programação" className="space-y-2.5">
                 {items.map((row, index) => {
                     if (row.kind === 'section') {
+                        const sectionCultoNumber = cultoNumber(row.title);
+                        if (sectionCultoNumber !== null) {
+                            return (
+                                <CultoDivider
+                                    key={`section-${index}-${row.title}`}
+                                    number={sectionCultoNumber}
+                                />
+                            );
+                        }
+
                         return (
                             <div
                                 key={`section-${index}-${row.title}`}
@@ -281,24 +355,29 @@ export default function SaturdayProgramScheduleView({
                     const timed = timedItems.find((t) => t.index === index);
                     const isPastByClock = !liveActive && timed != null && nowMin >= timed.endMin && !isNow;
                     const durationLabel = formatDurationLabel(row.duration ?? null);
+                    const showTitle = !shouldHideScheduleItemTitle(row.title);
 
                     return (
-                        <article
-                            key={`item-${index}-${row.start}-${row.title}`}
-                            ref={isNow ? currentRef : undefined}
-                            aria-current={isNow ? 'true' : undefined}
-                            className={[
-                                'relative overflow-hidden rounded-2xl p-3.5 shadow-sm transition-colors',
-                                canConduct ? 'pr-12' : '',
-                                isNow
-                                    ? 'bg-teal-50 ring-2 ring-teal-500/80 dark:bg-teal-950 dark:ring-teal-400'
-                                    : isDone
-                                      ? 'bg-zinc-100/90 ring-1 ring-zinc-200/80 dark:bg-zinc-800/60 dark:ring-zinc-700/80'
-                                      : isPastByClock
-                                        ? 'bg-white/80 ring-1 ring-zinc-200/70 opacity-80 dark:bg-zinc-900/70 dark:ring-zinc-700/70'
-                                        : 'bg-white ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-700',
-                            ].join(' ')}
-                        >
+                        <Fragment key={`item-${index}-${row.start}-${row.title}`}>
+                            {index === firstItemIndex && !hasFirstCultoDivider ? (
+                                <CultoDivider number={1} />
+                            ) : null}
+                            <article
+                                ref={isNow ? currentRef : undefined}
+                                aria-current={isNow ? 'true' : undefined}
+                                aria-label={showTitle ? undefined : `${formatScheduleClock(row.start)} — item da programação`}
+                                className={[
+                                    'relative overflow-hidden rounded-2xl p-3.5 shadow-sm transition-colors',
+                                    canConduct ? 'pr-12' : '',
+                                    isNow
+                                        ? 'bg-teal-50 ring-2 ring-teal-500/80 dark:bg-teal-950 dark:ring-teal-400'
+                                        : isDone
+                                          ? 'bg-zinc-100/90 ring-1 ring-zinc-200/80 dark:bg-zinc-800/60 dark:ring-zinc-700/80'
+                                          : isPastByClock
+                                            ? 'bg-white/80 ring-1 ring-zinc-200/70 opacity-80 dark:bg-zinc-900/70 dark:ring-zinc-700/70'
+                                            : 'bg-white ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-700',
+                                ].join(' ')}
+                            >
                             {isNow ? (
                                 <span className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-teal-500 dark:bg-teal-400" />
                             ) : null}
@@ -382,21 +461,24 @@ export default function SaturdayProgramScheduleView({
                                 />
 
                                 <div className="min-w-0 flex-1">
-                                    <h3
-                                        className={[
-                                            'text-[15px] font-semibold leading-snug',
-                                            isDone
-                                                ? 'text-zinc-500 line-through decoration-zinc-300 dark:text-zinc-400 dark:decoration-zinc-600'
-                                                : isNow
-                                                  ? 'text-zinc-950 dark:text-white'
-                                                  : 'text-zinc-900 dark:text-white',
-                                        ].join(' ')}
-                                    >
-                                        {row.title}
-                                    </h3>
+                                    {showTitle ? (
+                                        <h3
+                                            className={[
+                                                'text-[15px] font-semibold leading-snug',
+                                                isDone
+                                                    ? 'text-zinc-500 line-through decoration-zinc-300 dark:text-zinc-400 dark:decoration-zinc-600'
+                                                    : isNow
+                                                      ? 'text-zinc-950 dark:text-white'
+                                                      : 'text-zinc-900 dark:text-white',
+                                            ].join(' ')}
+                                        >
+                                            {row.title}
+                                        </h3>
+                                    ) : null}
                                 </div>
                             </div>
-                        </article>
+                            </article>
+                        </Fragment>
                     );
                 })}
             </section>
