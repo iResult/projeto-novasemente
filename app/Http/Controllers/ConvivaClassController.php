@@ -44,7 +44,7 @@ class ConvivaClassController extends Controller
 
         $presenceDate = $request->string('date')->toString();
         if ($presenceDate === '' || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $presenceDate)) {
-            $presenceDate = ConvivaSaturday::referenceSaturdayString();
+            $presenceDate = ConvivaSaturday::defaultPresenceDate();
         }
 
         $filterClassId = $request->integer('class_id') ?: null;

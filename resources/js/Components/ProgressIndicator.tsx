@@ -15,16 +15,19 @@ function visitFromFinishEvent(event: Event): VisitLike | null {
 }
 
 const LOADING_SAFETY_MS = 12_000;
+const SHOW_AFTER_MS = 3_000;
 
 /** Indicador de carregamento (spinner) visível durante navegação Inertia. */
 export default function ProgressIndicator() {
-    const [loading, setLoading] = useState(false);
+    const [pending, setPending] = useState(false);
+    const [visible, setVisible] = useState(false);
     /** Visitas com `showProgress: false` (ex.: reload parcial async) não incrementam — evita overlay a cada poll. */
     const blockingDepth = useRef(0);
 
     const resetOverlay = () => {
         blockingDepth.current = 0;
-        setLoading(false);
+        setPending(false);
+        setVisible(false);
     };
 
     useEffect(() => {
@@ -32,12 +35,17 @@ export default function ProgressIndicator() {
     }, []);
 
     useEffect(() => {
-        if (!loading) {
+        if (!pending) {
+            setVisible(false);
             return;
         }
+        const show = window.setTimeout(() => setVisible(true), SHOW_AFTER_MS);
         const safety = window.setTimeout(resetOverlay, LOADING_SAFETY_MS);
-        return () => window.clearTimeout(safety);
-    }, [loading]);
+        return () => {
+            window.clearTimeout(show);
+            window.clearTimeout(safety);
+        };
+    }, [pending]);
 
     useEffect(() => {
         const handleStart = (event: Event) => {
@@ -46,14 +54,14 @@ export default function ProgressIndicator() {
                 return;
             }
             blockingDepth.current += 1;
-            setLoading(true);
+            setPending(true);
         };
         const handleFinish = (event: Event) => {
             const visit = visitFromFinishEvent(event);
             if (visit?.showProgress !== false) {
                 blockingDepth.current = Math.max(0, blockingDepth.current - 1);
             }
-            setLoading(blockingDepth.current > 0);
+            setPending(blockingDepth.current > 0);
         };
         const unstart = router.on('start', handleStart);
         const unfinish = router.on('finish', handleFinish);
@@ -88,7 +96,7 @@ export default function ProgressIndicator() {
         };
     }, []);
 
-    if (!loading) return null;
+    if (!visible) return null;
 
     return (
         <div

@@ -21,6 +21,35 @@ final class ConvivaSaturday
         return ($moment ?? self::now())->isSaturday();
     }
 
+    /**
+     * Sábado de culto, ou um dia extra combinado (treinamento).
+     *
+     * @return list<string>
+     */
+    public static function extraOpenDates(): array
+    {
+        return ['2026-10-02'];
+    }
+
+    public static function isCheckinOpen(?Carbon $moment = null): bool
+    {
+        $moment = ($moment ?? self::now())->copy();
+
+        return $moment->isSaturday()
+            || in_array($moment->toDateString(), self::extraOpenDates(), true);
+    }
+
+    /** Dia mostrado na presença: o sábado de referência, ou hoje se o check-in foi aberto fora do sábado. */
+    public static function defaultPresenceDate(?Carbon $moment = null): string
+    {
+        $moment = $moment ?? self::now();
+        if (self::isCheckinOpen($moment) && ! self::isSaturday($moment)) {
+            return $moment->copy()->toDateString();
+        }
+
+        return self::referenceSaturdayString($moment);
+    }
+
     /** Sábado de referência: hoje se for sábado; senão o sábado anterior. */
     public static function referenceSaturday(?Carbon $moment = null): Carbon
     {

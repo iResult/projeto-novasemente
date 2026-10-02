@@ -124,6 +124,30 @@ class ConvivaCheckinTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_checkin_open_on_training_day(): void
+    {
+        ['churchId' => $churchId, 'member' => $member, 'class' => $class] = $this->seedBase();
+
+        Carbon::setTestNow(Carbon::parse('2026-10-02 15:00:00', config('app.timezone')));
+
+        $this->actingAs($member)
+            ->post(route('mobile.conviva.checkin.store'), [
+                'conviva_class_id' => $class->id,
+            ])
+            ->assertRedirect(route('mobile.conviva.checkin'));
+
+        $this->assertTrue(
+            ConvivaCheckin::query()
+                ->where('church_id', $churchId)
+                ->where('user_id', $member->id)
+                ->where('conviva_class_id', $class->id)
+                ->whereDate('checkin_date', '2026-10-02')
+                ->exists()
+        );
+
+        Carbon::setTestNow();
+    }
+
     public function test_member_can_checkin_on_saturday_and_switch_class(): void
     {
         ['churchId' => $churchId, 'member' => $member, 'class' => $class, 'classB' => $classB] = $this->seedBase();

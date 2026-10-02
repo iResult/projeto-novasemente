@@ -29,6 +29,7 @@ class ConvivaCheckinController extends Controller
         $churchId = $this->resolveChurchId($request);
         $user = $request->user();
         $isSaturday = ConvivaSaturday::isSaturday();
+        $checkinOpen = ConvivaSaturday::isCheckinOpen();
         $today = ConvivaSaturday::todayDateString();
 
         $classes = ConvivaClass::query()
@@ -65,6 +66,7 @@ class ConvivaCheckinController extends Controller
             'classes' => $classes,
             'suggestedClassId' => $suggestedClassId ? (int) $suggestedClassId : null,
             'isSaturday' => $isSaturday,
+            'checkinOpen' => $checkinOpen,
             'today' => $today,
             'todayLabel' => ConvivaSaturday::now()->translatedFormat('d \d\e F'),
             'checkin' => $todayCheckin ? [
@@ -88,7 +90,7 @@ class ConvivaCheckinController extends Controller
             ]);
         }
 
-        if (! ConvivaSaturday::isSaturday()) {
+        if (! ConvivaSaturday::isCheckinOpen()) {
             throw ValidationException::withMessages([
                 'conviva_class_id' => 'O check-in do CONVIVA só está disponível aos sábados.',
             ]);

@@ -22,6 +22,7 @@ interface Props {
     classes: ConvivaClassOption[];
     suggestedClassId: number | null;
     isSaturday: boolean;
+    checkinOpen: boolean;
     today: string;
     todayLabel: string;
     checkin: TodayCheckin | null;
@@ -31,6 +32,7 @@ export default function ConvivaCheckin({
     classes,
     suggestedClassId,
     isSaturday,
+    checkinOpen,
     todayLabel,
     checkin,
 }: Props) {
@@ -62,7 +64,7 @@ export default function ConvivaCheckin({
 
     const selected = classes.find((c) => c.id === selectedId) ?? null;
     const alreadyHere = checkin != null && checkin.class_id === selectedId;
-    const canSubmit = isSaturday && selectedId != null && !submitting && classes.length > 0;
+    const canSubmit = checkinOpen && selectedId != null && !submitting && classes.length > 0;
 
     const doCheckin = () => {
         if (!canSubmit || selectedId == null) return;
@@ -105,13 +107,23 @@ export default function ConvivaCheckin({
                     <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{todayLabel}</p>
                 </div>
 
-                {!isSaturday && (
+                {!checkinOpen && (
                     <div
                         className={`relative mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200 transition duration-700 delay-100 ${
                             entered ? 'opacity-100' : 'opacity-0'
                         }`}
                     >
                         O check-in do CONVIVA fica disponível aos sábados, no culto.
+                    </div>
+                )}
+
+                {checkinOpen && !isSaturday && (
+                    <div
+                        className={`relative mt-6 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-950 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-100 ${
+                            entered ? 'opacity-100' : 'opacity-0'
+                        }`}
+                    >
+                        Check-in liberado hoje para o treinamento.
                     </div>
                 )}
 
@@ -239,7 +251,7 @@ export default function ConvivaCheckin({
                                 : 'bg-gradient-to-br from-teal-600 via-teal-500 to-emerald-500 shadow-teal-600/30 hover:scale-[1.03] active:scale-[0.98]'
                         } ${justCheckedIn && !alreadyHere ? 'animate-pulse' : ''}`}
                     >
-                        {!alreadyHere && isSaturday && canSubmit ? (
+                        {!alreadyHere && checkinOpen && canSubmit ? (
                             <span
                                 aria-hidden
                                 className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-teal-400/25"
@@ -259,7 +271,7 @@ export default function ConvivaCheckin({
                     </button>
 
                     <p className="mt-4 max-w-xs text-center text-xs text-zinc-500 dark:text-zinc-400">
-                        {!isSaturday
+                        {!checkinOpen
                             ? 'Volte no sábado para registrar sua presença.'
                             : alreadyHere
                               ? 'Você já está nesta turma hoje.'
