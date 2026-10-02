@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { PencilIcon, TrashIcon, BookOpenIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { convivaColorFor, convivaColors } from '@/constants/convivaColors';
 import AddButton from '@/Components/AddButton';
 import Modal from '@/Components/Modal';
 import InputLabel from '@/Components/InputLabel';
@@ -275,7 +276,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
             <Head title="CONVIVA" />
             <PageHeader
                 title="CONVIVA"
-                subtitle="Turmas de estudo bíblico no culto — cada turma é o número dela, com o professor, e a presença da semana."
+                subtitle="Turmas de estudo bíblico no culto. Cada uma leva o nome de uma cor."
                 actions={
                     canManage && tab === 'turmas' ? (
                         <AddButton variant="label" onClick={openCreateModal} title="Nova turma">
@@ -319,14 +320,13 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex min-w-0 items-center gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-200/80 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-800/60">
-                                                <BookOpenIcon className="h-5 w-5" />
-                                            </div>
+                                            <h3
+                                                className={`inline-flex min-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-3 py-2 text-base font-semibold ${convivaColorFor(row.room_name).plate} ${convivaColorFor(row.room_name).label}`}
+                                            >
+                                                {row.room_name}
+                                            </h3>
                                             <div className="min-w-0">
-                                                <h3 className="truncate text-lg font-semibold tabular-nums text-zinc-900 dark:text-white">
-                                                    {row.room_name}
-                                                </h3>
-                                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                                                <p className="truncate text-sm text-zinc-700 dark:text-zinc-200">
                                                     {row.teacher_name}
                                                 </p>
                                                 {!row.is_active && (
@@ -415,15 +415,19 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                     className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
                                 >
                                     <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-                                        <div className="min-w-0">
-                                            <h3 className="font-semibold tabular-nums text-zinc-900 dark:text-white">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <h3
+                                                className={`inline-flex min-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-3 py-2 text-base font-semibold ${convivaColorFor(group.room_name).plate} ${convivaColorFor(group.room_name).label}`}
+                                            >
                                                 {group.room_name}
                                             </h3>
-                                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                            <p className="truncate text-sm text-zinc-600 dark:text-zinc-300">
                                                 {group.teacher_name}
                                             </p>
                                         </div>
-                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800 ring-1 ring-teal-200 dark:bg-teal-950/40 dark:text-teal-200 dark:ring-teal-800">
+                                        <span
+                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${convivaColorFor(group.room_name).badge}`}
+                                        >
                                             <UserGroupIcon className="h-4 w-4" />
                                             {group.count}
                                         </span>
@@ -478,15 +482,33 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                         </p>
                     ) : null}
                     <div>
-                        <InputLabel htmlFor="room_name" value="Número" />
-                        <TextInput
-                            id="room_name"
-                            inputMode="numeric"
-                            value={data.room_name}
-                            onChange={(e) => setData('room_name', e.target.value)}
-                            className="mt-1 block w-full tabular-nums"
-                            placeholder="1"
-                        />
+                        <InputLabel value="Cor" />
+                        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            {convivaColors.map((color) => {
+                                const taken =
+                                    classes.some(
+                                        (row) => row.room_name === color.name && row.id !== editingId,
+                                    ) && data.room_name !== color.name;
+                                const chosen = data.room_name === color.name;
+
+                                return (
+                                    <button
+                                        key={color.name}
+                                        type="button"
+                                        aria-pressed={chosen}
+                                        disabled={taken}
+                                        onClick={() => setData('room_name', color.name)}
+                                        className={`cursor-pointer rounded-xl px-3 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 dark:focus-visible:ring-offset-zinc-900 ${color.plate} ${color.label} ${
+                                            chosen
+                                                ? `ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${color.selectedRing}`
+                                                : ''
+                                        }`}
+                                    >
+                                        {color.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
                         <InputError message={errors.room_name} className="mt-1" />
                     </div>
                     <div className="mt-4">

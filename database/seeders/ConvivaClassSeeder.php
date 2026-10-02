@@ -22,12 +22,11 @@ class ConvivaClassSeeder extends Seeder
         }
 
         $examples = [
-            ['room_name' => '1', 'teacher_name' => 'Maria Silva', 'sort_order' => 1],
-            ['room_name' => '2', 'teacher_name' => 'João Pereira', 'sort_order' => 2],
-            ['room_name' => '3', 'teacher_name' => 'Ana Costa', 'sort_order' => 3],
-            ['room_name' => '4', 'teacher_name' => 'Pedro Oliveira', 'sort_order' => 4],
-            ['room_name' => '5', 'teacher_name' => 'Juliana Santos', 'sort_order' => 5],
-            ['room_name' => '6', 'teacher_name' => 'Lucas Ferreira', 'sort_order' => 6],
+            ['room_name' => 'Azul', 'teacher_name' => 'Maria Silva', 'sort_order' => 1],
+            ['room_name' => 'Verde', 'teacher_name' => 'João Pereira', 'sort_order' => 2],
+            ['room_name' => 'Amarelo', 'teacher_name' => 'Ana Costa', 'sort_order' => 3],
+            ['room_name' => 'Branco', 'teacher_name' => 'Pedro Oliveira', 'sort_order' => 4],
+            ['room_name' => 'Laranja', 'teacher_name' => 'Juliana Santos', 'sort_order' => 5],
         ];
 
         foreach ($examples as $row) {

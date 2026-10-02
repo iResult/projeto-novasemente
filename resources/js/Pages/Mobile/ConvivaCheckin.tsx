@@ -2,6 +2,7 @@ import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import { useEffect, useState } from 'react';
+import { convivaColorFor } from '@/constants/convivaColors';
 
 type ConvivaClassOption = {
     id: number;
@@ -121,7 +122,7 @@ export default function ConvivaCheckin({
                         }`}
                     >
                         <div className="flex items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600 text-white shadow-sm shadow-teal-600/30">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-700 text-white">
                                 <CheckIcon className="h-5 w-5" />
                             </div>
                             <div className="min-w-0">
@@ -129,11 +130,16 @@ export default function ConvivaCheckin({
                                     Check-in feito
                                     {checkin.checked_in_at ? ` às ${checkin.checked_in_at}` : ''}
                                 </p>
-                                <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-300">
-                                    {checkin.room_name} · {checkin.teacher_name}
+                                <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
+                                    <span
+                                        className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${convivaColorFor(checkin.room_name).plate} ${convivaColorFor(checkin.room_name).label}`}
+                                    >
+                                        {checkin.room_name}
+                                    </span>
+                                    <span>{checkin.teacher_name}</span>
                                 </p>
                                 <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                    Pode trocar de turma abaixo se mudou de sala.
+                                    Pode trocar de turma abaixo, se foi para outra.
                                 </p>
                             </div>
                         </div>
@@ -149,7 +155,7 @@ export default function ConvivaCheckin({
                         Sua turma
                     </h2>
                     <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                        O número da turma e o professor — toque para escolher.
+                        Toque na cor da sua turma.
                     </p>
 
                     {classes.length === 0 ? (
@@ -161,6 +167,7 @@ export default function ConvivaCheckin({
                             {classes.map((c, index) => {
                                 const selected = selectedId === c.id;
                                 const suggested = suggestedClassId === c.id && !checkin;
+                                const color = convivaColorFor(c.room_name);
                                 return (
                                     <li
                                         key={c.id}
@@ -172,36 +179,34 @@ export default function ConvivaCheckin({
                                         <button
                                             type="button"
                                             onClick={() => setSelectedId(c.id)}
-                                            className={`group relative w-full cursor-pointer overflow-hidden rounded-2xl p-4 text-left shadow-sm ring-1 transition duration-200 active:scale-[0.99] ${
+                                            className={`group relative w-full cursor-pointer overflow-hidden rounded-2xl bg-white p-4 text-left text-zinc-900 shadow-sm ring-1 transition duration-200 active:scale-[0.99] dark:bg-zinc-900 dark:text-white ${
                                                 selected
-                                                    ? 'bg-teal-600 text-white ring-teal-700 shadow-teal-600/20 dark:bg-teal-500 dark:ring-teal-400'
-                                                    : 'bg-white text-zinc-900 ring-zinc-200/90 hover:ring-teal-300 dark:bg-zinc-900 dark:text-white dark:ring-zinc-700 dark:hover:ring-teal-700'
+                                                    ? `ring-2 ${color.selectedRing}`
+                                                    : `ring-zinc-200/90 dark:ring-zinc-700 ${color.hoverRing}`
                                             }`}
                                         >
-                                            {suggested && !selected ? (
-                                                <span className="absolute right-3 top-3 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-700 ring-1 ring-teal-200 dark:bg-teal-950/50 dark:text-teal-200 dark:ring-teal-800">
-                                                    Sua turma
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span
+                                                    className={`inline-flex min-w-[5.5rem] items-center justify-center rounded-lg px-3 py-2 text-lg font-semibold ${color.plate} ${color.label}`}
+                                                >
+                                                    {c.room_name}
                                                 </span>
-                                            ) : null}
-                                            {selected ? (
-                                                <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white/20">
-                                                    <CheckIcon className="h-3.5 w-3.5" />
-                                                </span>
-                                            ) : null}
-                                            <p
-                                                className={`pr-10 text-2xl font-semibold tabular-nums tracking-tight ${
-                                                    selected ? 'text-white' : 'text-zinc-900 dark:text-white'
-                                                }`}
-                                            >
-                                                {c.room_name}
-                                            </p>
-                                            <p
-                                                className={`mt-1 text-sm ${
-                                                    selected
-                                                        ? 'text-teal-50'
-                                                        : 'text-zinc-500 dark:text-zinc-400'
-                                                }`}
-                                            >
+                                                {suggested && !selected ? (
+                                                    <span
+                                                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ${color.badge}`}
+                                                    >
+                                                        Sua turma
+                                                    </span>
+                                                ) : null}
+                                                {selected ? (
+                                                    <span
+                                                        className={`flex h-6 w-6 items-center justify-center rounded-full bg-white ring-1 ring-zinc-200 ${color.mark}`}
+                                                    >
+                                                        <CheckIcon className="h-3.5 w-3.5" />
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
                                                 {c.teacher_name}
                                             </p>
                                         </button>

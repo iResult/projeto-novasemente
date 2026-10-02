@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreConvivaClassRequest;
 use App\Http\Requests\UpdateConvivaClassRequest;
 use App\Http\Support\ListModalRedirect;
+use App\Support\ConvivaColors;
 use App\Models\Church;
 use App\Models\ConvivaCheckin;
 use App\Models\ConvivaClass;
@@ -107,7 +108,7 @@ class ConvivaClassController extends Controller
             'room_name' => $data['room_name'],
             'teacher_name' => $data['teacher_name'],
             'is_active' => $data['is_active'] ?? true,
-            'sort_order' => (int) $data['room_name'],
+            'sort_order' => ConvivaColors::sortOrder($data['room_name']),
         ]);
 
         return ListModalRedirect::toIndexEdit('conviva.index', $class, 'Turma CONVIVA criada com sucesso!');
@@ -122,7 +123,7 @@ class ConvivaClassController extends Controller
             'room_name' => $data['room_name'],
             'teacher_name' => $data['teacher_name'],
             'is_active' => $data['is_active'] ?? $convivaClass->is_active,
-            'sort_order' => (int) $data['room_name'],
+            'sort_order' => ConvivaColors::sortOrder($data['room_name']),
         ]);
 
         return ListModalRedirect::toIndexEdit('conviva.index', $convivaClass, 'Turma CONVIVA atualizada com sucesso!');
