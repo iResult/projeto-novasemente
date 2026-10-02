@@ -14,6 +14,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { FormEventHandler, useMemo, useState } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { compressImageForUpload, ImageCompressError } from '@/utils/compressImageForUpload';
@@ -86,7 +87,7 @@ export default function PhotoAlbumsIndex({ albums, canManage, hasDriveApiKey }: 
             drive_folder_url: a.drive_folder_url,
             cover_image_url: a.cover_image_url ?? '',
             cover_image_file: null,
-            published_at: a.published_at ? a.published_at.substring(0, 16) : '',
+            published_at: toDatetimeLocalInput(a.published_at),
         });
         clearErrors();
         setCoverCompressing(false);

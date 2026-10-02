@@ -14,6 +14,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { useCallback, useEffect, useState, FormEventHandler } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import { submitListModalDelete } from '@/utils/listModalFetchSave';
 import { useListModalSubmit } from '@/hooks/useListModalSubmit';
 import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
@@ -80,7 +81,7 @@ export default function CultoIndex({ cultos: cultosProp }: Props) {
             setData({
                 title: c.title,
                 youtube_url: c.youtube_url,
-                published_at: c.published_at ? c.published_at.substring(0, 16) : '',
+                published_at: toDatetimeLocalInput(c.published_at),
             });
         },
         [setData],

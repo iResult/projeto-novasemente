@@ -15,6 +15,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { CalendarDaysIcon, CameraIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { FormEventHandler, useMemo, useState } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { compressImageForUpload, ImageCompressError } from '@/utils/compressImageForUpload';
 import { GALLERY_IMAGE_ACCEPT } from '@/utils/mobilePhotoPick';
@@ -93,7 +94,7 @@ export default function MissionWallAdmin({ items, canManage, hasDriveApiKey }: P
             drive_folder_url: a.drive_folder_url,
             cover_image_url: a.cover_image_url ?? '',
             cover_image_file: null,
-            published_at: a.published_at ? a.published_at.substring(0, 16) : '',
+            published_at: toDatetimeLocalInput(a.published_at),
             sort_order: String(a.sort_order),
         });
         clearErrors();

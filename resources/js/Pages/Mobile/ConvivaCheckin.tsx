@@ -98,7 +98,7 @@ export default function ConvivaCheckin({
                     <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-teal-700 dark:text-teal-300">
                         Estudo bíblico
                     </p>
-                    <h1 className="mt-2 bg-gradient-to-br from-teal-800 via-teal-600 to-emerald-500 bg-clip-text text-5xl font-black tracking-tight text-transparent sm:text-6xl dark:from-teal-200 dark:via-teal-300 dark:to-emerald-300">
+                    <h1 className="mt-2 text-5xl font-black tracking-tight text-teal-800 sm:text-6xl dark:text-teal-200">
                         CONVIVA
                     </h1>
                     <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{todayLabel}</p>
@@ -149,7 +149,7 @@ export default function ConvivaCheckin({
                         Sua turma
                     </h2>
                     <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                        Sala e professor juntos — toque para escolher.
+                        O número da turma e o professor — toque para escolher.
                     </p>
 
                     {classes.length === 0 ? (
@@ -189,7 +189,7 @@ export default function ConvivaCheckin({
                                                 </span>
                                             ) : null}
                                             <p
-                                                className={`pr-10 text-base font-bold tracking-tight ${
+                                                className={`pr-10 text-2xl font-semibold tabular-nums tracking-tight ${
                                                     selected ? 'text-white' : 'text-zinc-900 dark:text-white'
                                                 }`}
                                             >

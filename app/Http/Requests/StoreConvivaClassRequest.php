@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Church;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreConvivaClassRequest extends FormRequest
 {
@@ -13,23 +15,46 @@ class StoreConvivaClassRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $this->normalizeClassNumber();
+
         if ($this->has('is_active')) {
             $this->merge([
                 'is_active' => filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
             ]);
         }
-        if ($this->has('sort_order') && $this->input('sort_order') === '') {
-            $this->merge(['sort_order' => 0]);
-        }
     }
 
     public function rules(): array
     {
+        $churchId = Church::resolveWorkingId($this);
+
         return [
-            'room_name' => ['required', 'string', 'max:255'],
+            'room_name' => [
+                'required',
+                'regex:/^[1-9][0-9]{0,3}$/',
+                Rule::unique('conviva_classes', 'room_name')->where(
+                    fn ($query) => $churchId !== null ? $query->where('church_id', $churchId) : $query
+                ),
+            ],
             'teacher_name' => ['required', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
-            'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'room_name.required' => 'Informe o número da turma.',
+            'room_name.regex' => 'Use só o número da turma, de 1 a 9999.',
+            'room_name.unique' => 'Já existe uma turma com esse número.',
+        ];
+    }
+
+    private function normalizeClassNumber(): void
+    {
+        $raw = trim((string) $this->input('room_name', ''));
+        if (preg_match('/^[0-9]+$/', $raw) === 1) {
+            $this->merge(['room_name' => (string) (int) $raw]);
+        }
     }
 }

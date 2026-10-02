@@ -107,7 +107,7 @@ class ConvivaClassController extends Controller
             'room_name' => $data['room_name'],
             'teacher_name' => $data['teacher_name'],
             'is_active' => $data['is_active'] ?? true,
-            'sort_order' => $data['sort_order'] ?? 0,
+            'sort_order' => (int) $data['room_name'],
         ]);
 
         return ListModalRedirect::toIndexEdit('conviva.index', $class, 'Turma CONVIVA criada com sucesso!');
@@ -122,7 +122,7 @@ class ConvivaClassController extends Controller
             'room_name' => $data['room_name'],
             'teacher_name' => $data['teacher_name'],
             'is_active' => $data['is_active'] ?? $convivaClass->is_active,
-            'sort_order' => $data['sort_order'] ?? $convivaClass->sort_order,
+            'sort_order' => (int) $data['room_name'],
         ]);
 
         return ListModalRedirect::toIndexEdit('conviva.index', $convivaClass, 'Turma CONVIVA atualizada com sucesso!');

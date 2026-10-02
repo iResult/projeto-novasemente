@@ -17,6 +17,7 @@ import SaturdayProgramLiveSchedule from '@/Components/ProgramacaoSabado/Saturday
 import type { SaturdaySchedule } from '@/Components/Mobile/SaturdayProgramScheduleView';
 import { FormEventHandler, useEffect, useState } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 
 interface SaturdayProgramRow {
     id: number;
@@ -151,7 +152,7 @@ export default function ProgramacaoSabadoIndex({ items, canManage }: Props) {
         setData({
             saturday_date: row.saturday_date ?? '',
             title: row.title ?? '',
-            published_at: row.published_at ? row.published_at.slice(0, 16) : '',
+            published_at: toDatetimeLocalInput(row.published_at),
             is_active: row.is_active,
             pdf_file: null,
         });

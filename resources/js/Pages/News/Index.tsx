@@ -31,6 +31,7 @@ import { useDebouncedServerSearch } from '@/hooks/useDebouncedServerSearch';
 import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
 import { confirmAction } from '@/utils/confirmDialog';
 import { buildNewsFormData } from '@/utils/buildNewsFormData';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import {
     applyListModalFormErrors,
     editIdFromListModalRedirect,
@@ -201,11 +202,6 @@ function LinkField({
     );
 }
 
-function localDatetimeInputValue(date = new Date()): string {
-    const offsetMs = date.getTimezoneOffset() * 60_000;
-    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
-}
-
 export default function Index({ posts, filters, canManage, config }: Props) {
     const resolvedConfig = config ?? {};
     const entityTitle = resolvedConfig.entityTitle ?? 'Notícias';
@@ -321,7 +317,7 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                 youtube_url: p.youtube_url ?? '',
                 instagram_url: p.instagram_url ?? '',
                 image_url: p.image_url ?? '',
-                published_at: p.published_at ? p.published_at.substring(0, 16) : '',
+                published_at: toDatetimeLocalInput(p.published_at),
                 has_video: Boolean(p.has_video),
                 image_file: null,
                 video_file: null,
@@ -1148,7 +1144,7 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                                                 type="button"
                                                 onClick={() => {
                                                     if (!data.published_at) {
-                                                        setData('published_at', localDatetimeInputValue());
+                                                        setData('published_at', toDatetimeLocalInput(new Date()));
                                                     }
                                                 }}
                                                 className={`flex-1 cursor-pointer rounded-xl px-3 py-2.5 text-sm font-semibold transition ${

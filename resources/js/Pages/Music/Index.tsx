@@ -14,6 +14,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { useCallback, useState, FormEventHandler } from 'react';
 import { confirmAction } from '@/utils/confirmDialog';
+import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import { useListModalSubmit } from '@/hooks/useListModalSubmit';
 import {
     useListModalEditUrl,
@@ -68,7 +69,7 @@ export default function MusicIndex({ musicas, canManage }: Props) {
             setData({
                 title: m.title,
                 youtube_url: m.youtube_url,
-                published_at: m.published_at ? m.published_at.substring(0, 16) : '',
+                published_at: toDatetimeLocalInput(m.published_at),
             });
         },
         [setData],

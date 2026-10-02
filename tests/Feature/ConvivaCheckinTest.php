@@ -29,7 +29,7 @@ class ConvivaCheckinTest extends TestCase
 
         $class = ConvivaClass::query()->create([
             'church_id' => $churchId,
-            'room_name' => 'Sala 1',
+            'room_name' => '1',
             'teacher_name' => 'Maria Silva',
             'is_active' => true,
             'sort_order' => 1,
@@ -37,7 +37,7 @@ class ConvivaCheckinTest extends TestCase
 
         $classB = ConvivaClass::query()->create([
             'church_id' => $churchId,
-            'room_name' => 'Sala 2',
+            'room_name' => '2',
             'teacher_name' => 'João Pereira',
             'is_active' => true,
             'sort_order' => 2,
@@ -56,7 +56,7 @@ class ConvivaCheckinTest extends TestCase
         $this->actingAs($admin)
             ->withSession(['working_church_id' => $churchId])
             ->post(route('conviva.store'), [
-                'room_name' => 'Mezanino A',
+                'room_name' => '7',
                 'teacher_name' => 'Ana Costa',
                 'is_active' => true,
             ])
@@ -64,7 +64,45 @@ class ConvivaCheckinTest extends TestCase
 
         $this->assertDatabaseHas('conviva_classes', [
             'church_id' => $churchId,
-            'room_name' => 'Mezanino A',
+            'room_name' => '7',
+            'teacher_name' => 'Ana Costa',
+            'sort_order' => 7,
+        ]);
+    }
+
+    public function test_class_number_must_be_digits_and_unique(): void
+    {
+        $this->seed([RolePermissionSeeder::class, ChurchSeeder::class]);
+        $churchId = (int) Church::query()->orderBy('id')->value('id');
+        $admin = User::factory()->create(['church_id' => $churchId]);
+        $admin->assignRole('admin');
+
+        ConvivaClass::query()->create([
+            'church_id' => $churchId,
+            'room_name' => '1',
+            'teacher_name' => 'Maria Silva',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['working_church_id' => $churchId])
+            ->post(route('conviva.store'), [
+                'room_name' => 'Sala 1',
+                'teacher_name' => 'Ana Costa',
+            ])
+            ->assertSessionHasErrors('room_name');
+
+        $this->actingAs($admin)
+            ->withSession(['working_church_id' => $churchId])
+            ->post(route('conviva.store'), [
+                'room_name' => '01',
+                'teacher_name' => 'Ana Costa',
+            ])
+            ->assertSessionHasErrors('room_name');
+
+        $this->assertDatabaseMissing('conviva_classes', [
+            'church_id' => $churchId,
             'teacher_name' => 'Ana Costa',
         ]);
     }

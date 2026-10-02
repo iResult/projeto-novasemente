@@ -275,7 +275,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
             <Head title="CONVIVA" />
             <PageHeader
                 title="CONVIVA"
-                subtitle="Turmas de estudo bíblico no culto — cadastre sala e professor juntos e acompanhe a presença semanal."
+                subtitle="Turmas de estudo bíblico no culto — cada turma é o número dela, com o professor, e a presença da semana."
                 actions={
                     canManage && tab === 'turmas' ? (
                         <AddButton variant="label" onClick={openCreateModal} title="Nova turma">
@@ -323,7 +323,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                                 <BookOpenIcon className="h-5 w-5" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="truncate font-medium text-zinc-900 dark:text-white">
+                                                <h3 className="truncate text-lg font-semibold tabular-nums text-zinc-900 dark:text-white">
                                                     {row.room_name}
                                                 </h3>
                                                 <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
@@ -416,7 +416,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                 >
                                     <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
                                         <div className="min-w-0">
-                                            <h3 className="font-semibold text-zinc-900 dark:text-white">
+                                            <h3 className="font-semibold tabular-nums text-zinc-900 dark:text-white">
                                                 {group.room_name}
                                             </h3>
                                             <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -478,13 +478,14 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                         </p>
                     ) : null}
                     <div>
-                        <InputLabel htmlFor="room_name" value="Sala" />
+                        <InputLabel htmlFor="room_name" value="Número" />
                         <TextInput
                             id="room_name"
+                            inputMode="numeric"
                             value={data.room_name}
                             onChange={(e) => setData('room_name', e.target.value)}
-                            className="mt-1 block w-full"
-                            placeholder="Ex: Sala 1"
+                            className="mt-1 block w-full tabular-nums"
+                            placeholder="1"
                         />
                         <InputError message={errors.room_name} className="mt-1" />
                     </div>
