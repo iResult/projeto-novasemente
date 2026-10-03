@@ -36,41 +36,59 @@ interface Props {
     classmates?: Classmate[];
 }
 
-const classDots: Record<string, string> = {
-    'Riva Alencar': 'bg-blue-600',
-    'Fernando Arruda': 'bg-emerald-600',
-    'Geferson Arantes': 'bg-amber-500',
-    'Rogério Ferreira': 'bg-violet-500',
-    'Sandra Sabaté': 'bg-rose-500',
-    'Inflexão - Wesley Moura': 'bg-teal-600',
-    'Visitantes - Márcio Desenzi': 'bg-sky-600',
-    'Backstage - Alexandre Romano': 'bg-zinc-700 dark:bg-zinc-300',
-    'Pais - Antonio/Aída': 'bg-orange-500',
-    Jovens: 'bg-indigo-500',
+type ClassTone = { dot: string; fill: string };
+
+/** `fill` é o fundo do card selecionado: tons claros sobem para 600 para o texto branco continuar legível. */
+const classTones: Record<string, ClassTone> = {
+    'Riva Alencar': { dot: 'bg-blue-600', fill: 'bg-blue-600' },
+    'Fernando Arruda': { dot: 'bg-emerald-600', fill: 'bg-emerald-600' },
+    'Geferson Arantes': { dot: 'bg-amber-500', fill: 'bg-amber-600' },
+    'Rogério Ferreira': { dot: 'bg-violet-500', fill: 'bg-violet-600' },
+    'Sandra Sabaté': { dot: 'bg-rose-500', fill: 'bg-rose-600' },
+    'Inflexão - Wesley Moura': { dot: 'bg-teal-600', fill: 'bg-teal-600' },
+    'Visitantes - Márcio Desenzi': { dot: 'bg-sky-600', fill: 'bg-sky-600' },
+    'Backstage - Alexandre Romano': { dot: 'bg-zinc-700 dark:bg-zinc-300', fill: 'bg-zinc-700' },
+    'Pais - Antonio/Aída': { dot: 'bg-orange-500', fill: 'bg-orange-600' },
+    Jovens: { dot: 'bg-indigo-500', fill: 'bg-indigo-600' },
 };
 
-const fallbackDots = ['bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-teal-600'];
+const fallbackTones: ClassTone[] = [
+    { dot: 'bg-blue-600', fill: 'bg-blue-600' },
+    { dot: 'bg-emerald-600', fill: 'bg-emerald-600' },
+    { dot: 'bg-amber-500', fill: 'bg-amber-600' },
+    { dot: 'bg-violet-500', fill: 'bg-violet-600' },
+    { dot: 'bg-rose-500', fill: 'bg-rose-600' },
+    { dot: 'bg-teal-600', fill: 'bg-teal-600' },
+];
 
-function classDot(name: string | null | undefined): string {
+function classTone(name: string | null | undefined): ClassTone {
     const label = name?.trim() ?? '';
-    if (label !== '' && classDots[label]) {
-        return classDots[label];
+    if (label !== '' && classTones[label]) {
+        return classTones[label];
     }
 
     let hash = 0;
     for (let i = 0; i < label.length; i += 1) {
-        hash = (hash + label.charCodeAt(i)) % fallbackDots.length;
+        hash = (hash + label.charCodeAt(i)) % fallbackTones.length;
     }
 
-    return fallbackDots[hash] ?? fallbackDots[0];
+    return fallbackTones[hash] ?? fallbackTones[0];
 }
 
 function ClassDot({ name, large = false }: { name: string | null | undefined; large?: boolean }) {
     return (
         <span
-            className={`shrink-0 rounded-full ring-2 ring-white dark:ring-zinc-900 ${large ? 'mt-2 h-3.5 w-3.5' : 'h-3 w-3'} ${classDot(name)}`}
+            className={`shrink-0 rounded-full ring-2 ring-white dark:ring-zinc-900 ${large ? 'mt-2 h-3.5 w-3.5' : 'h-3 w-3'} ${classTone(name).dot}`}
             aria-hidden
         />
+    );
+}
+
+function SelectedMark() {
+    return (
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-2 ring-white" aria-hidden>
+            <span className="h-2.5 w-2.5 rounded-full bg-white" />
+        </span>
     );
 }
 
@@ -247,40 +265,68 @@ export default function ConvivaCheckin({
                 )}
 
                 <div>
-                    <h2 className="text-lg font-bold tracking-tight text-zinc-950 dark:text-white">Sua classe</h2>
+                    <h2 className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-zinc-800 dark:text-zinc-200">
+                        Classe
+                    </h2>
                     {classes.length === 0 ? (
                         <div className="mt-3 rounded-2xl bg-zinc-100 px-4 py-3 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300">
                             Nenhuma classe ativa no momento. Peça à secretaria para cadastrar.
                         </div>
                     ) : (
-                        <ul className="mt-3 flex flex-col gap-2">
+                        <ul className="mt-3 flex flex-col gap-3">
                             {classes.map((c) => {
                                 const selected = selectedId === c.id;
                                 const yours = suggestedClassId === c.id && !selected;
+
+                                if (selected) {
+                                    return (
+                                        <li key={c.id}>
+                                            <div className={`rounded-2xl p-4 ${classTone(c.room_name).fill}`}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedId(c.id)}
+                                                    aria-pressed
+                                                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                                                >
+                                                    <SelectedMark />
+                                                    <span className="min-w-0 flex-1">
+                                                        <span className="block truncate text-lg font-semibold tracking-tight text-white">
+                                                            {c.room_name}
+                                                        </span>
+                                                        <span className="mt-0.5 block text-sm font-medium text-white/90">
+                                                            Selecionada
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    disabled={!canSubmit}
+                                                    onClick={doCheckin}
+                                                    className="mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-white text-sm font-semibold text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    {submitting ? 'Salvando…' : 'Check-in'}
+                                                </button>
+                                            </div>
+                                        </li>
+                                    );
+                                }
 
                                 return (
                                     <li key={c.id}>
                                         <button
                                             type="button"
                                             onClick={() => setSelectedId(c.id)}
-                                            aria-pressed={selected}
-                                            className={`flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-4 text-left ring-1 ring-zinc-200 transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:bg-zinc-900 dark:ring-zinc-700 dark:focus-visible:ring-white ${
-                                                selected
-                                                    ? 'ring-2 ring-zinc-950 dark:ring-white'
-                                                    : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'
-                                            }`}
+                                            aria-pressed={false}
+                                            className="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-4 text-left ring-1 ring-zinc-200 transition hover:bg-zinc-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:bg-zinc-900 dark:ring-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:ring-white"
                                         >
                                             <ClassDot name={c.room_name} />
                                             <span className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
                                                 {c.room_name}
                                             </span>
                                             {yours ? (
-                                                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-300 dark:text-zinc-400 dark:ring-zinc-600">
-                                                    Sua classe
+                                                <span className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-300 dark:text-zinc-400 dark:ring-zinc-600">
+                                                    Minha classe
                                                 </span>
-                                            ) : null}
-                                            {selected ? (
-                                                <CheckIcon className="h-5 w-5 shrink-0 text-zinc-950 dark:text-white" />
                                             ) : null}
                                         </button>
                                     </li>
@@ -290,28 +336,18 @@ export default function ConvivaCheckin({
                     )}
                 </div>
 
-                <div className="flex flex-col gap-2">
+                {changing ? (
                     <button
                         type="button"
-                        disabled={!canSubmit}
-                        onClick={doCheckin}
-                        className="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-2xl bg-zinc-950 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-950 dark:focus-visible:ring-white dark:focus-visible:ring-offset-zinc-950"
+                        onClick={() => {
+                            setSelectedId(checkin?.class_id ?? suggestedClassId);
+                            setChanging(false);
+                        }}
+                        className="cursor-pointer py-2 text-sm font-semibold text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:text-zinc-400"
                     >
-                        {submitting ? 'Salvando…' : 'Fazer check-in'}
+                        Cancelar
                     </button>
-                    {changing ? (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setSelectedId(checkin?.class_id ?? suggestedClassId);
-                                setChanging(false);
-                            }}
-                            className="cursor-pointer py-2 text-sm font-semibold text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:text-zinc-400"
-                        >
-                            Cancelar
-                        </button>
-                    ) : null}
-                </div>
+                ) : null}
             </div>
         </MobileLayout>
     );

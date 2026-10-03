@@ -40,7 +40,7 @@ type Row = {
     icon: typeof InboxIcon;
     href?: string;
     onClick?: 'logout';
-    tone?: 'member' | 'public' | 'critical';
+    tone?: 'member' | 'public' | 'critical' | 'inverted';
     /** Navegação completa (o servidor responde com redirecionamento). */
     native?: boolean;
     /** Contagem no canto do card; `null` omite o badge. */
@@ -63,6 +63,9 @@ function formatBirthDateBr(iso: string | null | undefined): string | null {
 }
 
 function countBadgeClass(tone: Row['tone']): string {
+    if (tone === 'inverted') {
+        return 'bg-white text-black shadow-sm ring-2 ring-black';
+    }
     if (tone === 'critical') {
         return 'bg-brand-600 text-white shadow-sm shadow-brand-600/25 ring-2 ring-white dark:bg-brand-500 dark:ring-zinc-900';
     }
@@ -106,37 +109,49 @@ function RowItem({ row }: { row: Row }) {
 
     const tone = row.tone ?? 'member';
     const cardClass =
-        tone === 'critical'
-            ? 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-brand-50/90 via-white to-brand-50/50 p-4 shadow-sm ring-1 ring-brand-200/70 transition duration-200 hover:bg-brand-600 hover:bg-none hover:shadow-md hover:ring-brand-700 active:scale-[0.99] dark:from-brand-950/50 dark:via-zinc-900 dark:to-brand-950/30 dark:ring-brand-800/50 dark:hover:bg-brand-500 dark:hover:bg-none dark:hover:ring-brand-400'
-            : tone === 'member'
-              ? 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-brand-50/40 p-4 shadow-sm ring-1 ring-zinc-200/80 transition duration-200 hover:bg-zinc-950 hover:bg-none hover:shadow-md hover:ring-zinc-800 active:scale-[0.99] dark:from-zinc-900 dark:via-zinc-900 dark:to-brand-950/30 dark:ring-zinc-700/70 dark:hover:bg-white dark:hover:bg-none dark:hover:ring-zinc-200/80'
-              : 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-zinc-50 p-4 shadow-sm ring-1 ring-zinc-200/80 transition duration-200 hover:bg-zinc-950 hover:bg-none hover:shadow-md hover:ring-zinc-800 active:scale-[0.99] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/40 dark:ring-zinc-700/70 dark:hover:bg-white dark:hover:bg-none dark:hover:ring-zinc-200/80';
+        tone === 'inverted'
+            ? 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-black p-4 shadow-sm ring-1 ring-black transition duration-200 hover:bg-zinc-900 hover:shadow-md hover:ring-zinc-800 active:scale-[0.99] dark:bg-black dark:ring-zinc-700 dark:hover:bg-zinc-900 dark:hover:ring-zinc-600'
+            : tone === 'critical'
+              ? 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-brand-50/90 via-white to-brand-50/50 p-4 shadow-sm ring-1 ring-brand-200/70 transition duration-200 hover:bg-brand-600 hover:bg-none hover:shadow-md hover:ring-brand-700 active:scale-[0.99] dark:from-brand-950/50 dark:via-zinc-900 dark:to-brand-950/30 dark:ring-brand-800/50 dark:hover:bg-brand-500 dark:hover:bg-none dark:hover:ring-brand-400'
+              : tone === 'member'
+                ? 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-brand-50/40 p-4 shadow-sm ring-1 ring-zinc-200/80 transition duration-200 hover:bg-zinc-950 hover:bg-none hover:shadow-md hover:ring-zinc-800 active:scale-[0.99] dark:from-zinc-900 dark:via-zinc-900 dark:to-brand-950/30 dark:ring-zinc-700/70 dark:hover:bg-white dark:hover:bg-none dark:hover:ring-zinc-200/80'
+                : 'group relative block cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-zinc-50 p-4 shadow-sm ring-1 ring-zinc-200/80 transition duration-200 hover:bg-zinc-950 hover:bg-none hover:shadow-md hover:ring-zinc-800 active:scale-[0.99] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/40 dark:ring-zinc-700/70 dark:hover:bg-white dark:hover:bg-none dark:hover:ring-zinc-200/80';
     const iconWrapClass =
-        tone === 'critical'
-            ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200/80 transition duration-200 group-hover:bg-white/15 group-hover:text-white group-hover:ring-white/30 dark:bg-brand-950/45 dark:text-brand-300 dark:ring-brand-800/60 dark:group-hover:bg-white/15 dark:group-hover:text-white dark:group-hover:ring-white/30'
-            : tone === 'member'
-              ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-50 text-zinc-800 ring-1 ring-inset ring-zinc-200/80 transition duration-200 group-hover:bg-white/10 group-hover:text-white group-hover:ring-white/25 dark:bg-zinc-800/60 dark:text-zinc-200 dark:ring-zinc-700/70 dark:group-hover:bg-zinc-50 dark:group-hover:text-zinc-800 dark:group-hover:ring-zinc-200/80'
-              : 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-50 text-zinc-600 ring-1 ring-inset ring-zinc-200/80 transition duration-200 group-hover:bg-white/10 group-hover:text-white group-hover:ring-white/25 dark:bg-zinc-800/50 dark:text-zinc-300 dark:ring-zinc-700/60 dark:group-hover:bg-zinc-50 dark:group-hover:text-zinc-600 dark:group-hover:ring-zinc-200/80';
+        tone === 'inverted'
+            ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-inset ring-white/25'
+            : tone === 'critical'
+              ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200/80 transition duration-200 group-hover:bg-white/15 group-hover:text-white group-hover:ring-white/30 dark:bg-brand-950/45 dark:text-brand-300 dark:ring-brand-800/60 dark:group-hover:bg-white/15 dark:group-hover:text-white dark:group-hover:ring-white/30'
+              : tone === 'member'
+                ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-50 text-zinc-800 ring-1 ring-inset ring-zinc-200/80 transition duration-200 group-hover:bg-white/10 group-hover:text-white group-hover:ring-white/25 dark:bg-zinc-800/60 dark:text-zinc-200 dark:ring-zinc-700/70 dark:group-hover:bg-zinc-50 dark:group-hover:text-zinc-800 dark:group-hover:ring-zinc-200/80'
+                : 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-50 text-zinc-600 ring-1 ring-inset ring-zinc-200/80 transition duration-200 group-hover:bg-white/10 group-hover:text-white group-hover:ring-white/25 dark:bg-zinc-800/50 dark:text-zinc-300 dark:ring-zinc-700/60 dark:group-hover:bg-zinc-50 dark:group-hover:text-zinc-600 dark:group-hover:ring-zinc-200/80';
     const glowClass =
-        tone === 'critical'
-            ? 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-400/15 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-brand-500/10 dark:group-hover:bg-white/10'
-            : tone === 'member'
-              ? 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-400/10 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-brand-500/8 dark:group-hover:bg-brand-400/15'
-              : 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-zinc-400/10 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-zinc-500/10 dark:group-hover:bg-zinc-400/20';
+        tone === 'inverted'
+            ? 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/10 blur-2xl'
+            : tone === 'critical'
+              ? 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-400/15 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-brand-500/10 dark:group-hover:bg-white/10'
+              : tone === 'member'
+                ? 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-400/10 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-brand-500/8 dark:group-hover:bg-brand-400/15'
+                : 'pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-zinc-400/10 blur-2xl transition duration-300 group-hover:bg-white/10 dark:bg-zinc-500/10 dark:group-hover:bg-zinc-400/20';
     const chevronClass =
-        tone === 'critical'
-            ? 'h-5 w-5 shrink-0 text-brand-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-brand-800 dark:group-hover:text-white'
-            : tone === 'member'
-              ? 'h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-zinc-600 dark:group-hover:text-zinc-500'
-              : 'h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-zinc-600 dark:group-hover:text-zinc-500';
+        tone === 'inverted'
+            ? 'h-5 w-5 shrink-0 text-white/70 transition group-hover:translate-x-0.5 group-hover:text-white'
+            : tone === 'critical'
+              ? 'h-5 w-5 shrink-0 text-brand-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-brand-800 dark:group-hover:text-white'
+              : tone === 'member'
+                ? 'h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-zinc-600 dark:group-hover:text-zinc-500'
+                : 'h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-white dark:text-zinc-600 dark:group-hover:text-zinc-500';
     const titleClass =
-        tone === 'critical'
-            ? 'font-semibold text-zinc-900 transition group-hover:text-white dark:text-white dark:group-hover:text-white'
-            : 'font-semibold text-zinc-900 transition group-hover:text-white dark:text-white dark:group-hover:text-zinc-900';
+        tone === 'inverted'
+            ? 'font-semibold text-white'
+            : tone === 'critical'
+              ? 'font-semibold text-zinc-900 transition group-hover:text-white dark:text-white dark:group-hover:text-white'
+              : 'font-semibold text-zinc-900 transition group-hover:text-white dark:text-white dark:group-hover:text-zinc-900';
     const descriptionClass =
-        tone === 'critical'
-            ? 'mt-0.5 text-sm text-zinc-500 transition group-hover:text-brand-100 dark:text-zinc-400 dark:group-hover:text-brand-100'
-            : 'mt-0.5 text-sm text-zinc-500 transition group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-500';
+        tone === 'inverted'
+            ? 'mt-0.5 text-sm text-white/80'
+            : tone === 'critical'
+              ? 'mt-0.5 text-sm text-zinc-500 transition group-hover:text-brand-100 dark:text-zinc-400 dark:group-hover:text-brand-100'
+              : 'mt-0.5 text-sm text-zinc-500 transition group-hover:text-zinc-300 dark:text-zinc-400 dark:group-hover:text-zinc-500';
     const painelBadgeClass =
         'shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-800 ring-1 ring-inset ring-brand-200/80 transition group-hover:bg-white/15 group-hover:text-white group-hover:ring-white/30 dark:bg-brand-950/50 dark:text-brand-200 dark:ring-brand-800/70 dark:group-hover:bg-white/15 dark:group-hover:text-white dark:group-hover:ring-white/30';
     const iconClass = 'h-6 w-6';
@@ -246,7 +261,7 @@ export default function MobileProfile({
                   description: 'Entrar sem digitar senha',
                   icon: ClockIcon,
                   href: route('nstimer.sso'),
-                  tone: 'member',
+                  tone: 'inverted',
                   native: true,
               }
             : null;
