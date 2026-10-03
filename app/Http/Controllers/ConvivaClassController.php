@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreConvivaClassRequest;
 use App\Http\Requests\UpdateConvivaClassRequest;
 use App\Http\Support\ListModalRedirect;
-use App\Support\ConvivaColors;
 use App\Models\Church;
 use App\Models\ConvivaCheckin;
 use App\Models\ConvivaClass;
@@ -103,15 +102,16 @@ class ConvivaClassController extends Controller
         }
 
         $data = $request->validated();
+        $nextOrder = (int) ConvivaClass::query()->where('church_id', $churchId)->max('sort_order');
         $class = ConvivaClass::create([
             'church_id' => $churchId,
             'room_name' => $data['room_name'],
-            'teacher_name' => $data['teacher_name'],
+            'teacher_name' => $data['teacher_name'] ?? '',
             'is_active' => $data['is_active'] ?? true,
-            'sort_order' => ConvivaColors::sortOrder($data['room_name']),
+            'sort_order' => $nextOrder + 1,
         ]);
 
-        return ListModalRedirect::toIndexEdit('conviva.index', $class, 'Turma CONVIVA criada com sucesso!');
+        return ListModalRedirect::toIndexEdit('conviva.index', $class, 'Classe CONVIVA criada com sucesso!');
     }
 
     public function update(UpdateConvivaClassRequest $request, ConvivaClass $convivaClass)
@@ -121,12 +121,11 @@ class ConvivaClassController extends Controller
         $data = $request->validated();
         $convivaClass->update([
             'room_name' => $data['room_name'],
-            'teacher_name' => $data['teacher_name'],
+            'teacher_name' => $data['teacher_name'] ?? '',
             'is_active' => $data['is_active'] ?? $convivaClass->is_active,
-            'sort_order' => ConvivaColors::sortOrder($data['room_name']),
         ]);
 
-        return ListModalRedirect::toIndexEdit('conviva.index', $convivaClass, 'Turma CONVIVA atualizada com sucesso!');
+        return ListModalRedirect::toIndexEdit('conviva.index', $convivaClass, 'Classe CONVIVA atualizada com sucesso!');
     }
 
     public function destroy(ConvivaClass $convivaClass)
@@ -136,11 +135,11 @@ class ConvivaClassController extends Controller
         if ($convivaClass->checkins()->exists()) {
             return redirect()
                 ->route('conviva.index')
-                ->with('error', 'Esta turma já tem check-ins. Desative-a em vez de excluir.');
+                ->with('error', 'Esta classe já tem check-ins. Desative-a em vez de excluir.');
         }
 
         $convivaClass->delete();
 
-        return redirect()->route('conviva.index')->with('success', 'Turma CONVIVA removida com sucesso!');
+        return redirect()->route('conviva.index')->with('success', 'Classe CONVIVA removida com sucesso!');
     }
 }

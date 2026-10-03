@@ -4,7 +4,6 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
-import { convivaColorFor } from '@/constants/convivaColors';
 
 type ConvivaClassOption = {
     id: number;
@@ -35,6 +34,12 @@ interface Props {
     todayLabel: string;
     checkin: TodayCheckin | null;
     classmates?: Classmate[];
+}
+
+function classInitial(name: string | null | undefined): string {
+    const letter = name?.trim().charAt(0);
+
+    return letter ? letter.toLocaleUpperCase('pt-BR') : '?';
 }
 
 function Header({ todayLabel, showDate = true }: { todayLabel: string; showDate?: boolean }) {
@@ -90,8 +95,6 @@ export default function ConvivaCheckin({
     };
 
     if (checkin && !changing) {
-        const color = convivaColorFor(checkin.room_name);
-
         return (
             <MobileLayout>
                 <Head title="CONVIVA" />
@@ -106,7 +109,7 @@ export default function ConvivaCheckin({
                         Check-in realizado!
                     </h2>
 
-                    <div className={`w-full rounded-3xl px-6 pb-5 pt-7 text-left shadow-md ${color.plate} ${color.label}`}>
+                    <div className="w-full rounded-3xl bg-emerald-700 px-6 pb-5 pt-7 text-left text-white shadow-md dark:bg-emerald-700 dark:text-white">
                         <div className="flex items-start justify-between gap-4">
                             <p className="min-w-0 truncate text-4xl font-semibold leading-none tracking-tight">
                                 {firstName}
@@ -118,13 +121,13 @@ export default function ConvivaCheckin({
                             ) : null}
                         </div>
                         <p className="mt-4 text-sm font-medium leading-none tracking-wide">{todayLabel}</p>
-                        <div className="mt-8 flex items-center gap-3 border-t border-current/25 pt-4">
-                            <span className="inline-flex shrink-0 rounded-full p-px ring-2 ring-current" aria-hidden>
-                                <span className={`block h-3 w-3 rounded-full ${color.dot}`} />
-                            </span>
-                            <p className="min-w-0 truncate text-xl font-semibold uppercase leading-none tracking-wide">
+                        <div className="mt-8 border-t border-white/25 pt-4">
+                            <p className="truncate text-xl font-semibold uppercase leading-none tracking-wide">
                                 Classe {checkin.room_name}
                             </p>
+                            {checkin.teacher_name ? (
+                                <p className="mt-2 truncate text-sm font-medium leading-none">{checkin.teacher_name}</p>
+                            ) : null}
                         </div>
                     </div>
 
@@ -226,8 +229,6 @@ export default function ConvivaCheckin({
                             {classes.map((c) => {
                                 const selected = selectedId === c.id;
                                 const yours = suggestedClassId === c.id && !selected;
-                                const color = convivaColorFor(c.room_name);
-                                const branca = c.room_name === 'Branca';
 
                                 return (
                                     <li key={c.id}>
@@ -242,15 +243,28 @@ export default function ConvivaCheckin({
                                             }`}
                                         >
                                             <span
-                                                className={
-                                                    branca
-                                                        ? `h-3.5 w-3.5 shrink-0 rounded-full border-2 border-zinc-400 bg-white ${selected ? 'ring-2 ring-emerald-100 dark:ring-emerald-950' : ''}`
-                                                        : `h-2.5 w-2.5 shrink-0 rounded-full ring-2 ${selected ? 'ring-emerald-100 dark:ring-emerald-950' : 'ring-zinc-100 dark:ring-zinc-800'} ${color.dot}`
-                                                }
+                                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                                                    selected
+                                                        ? 'bg-emerald-600 text-white'
+                                                        : 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/45 dark:text-emerald-200'
+                                                }`}
                                                 aria-hidden
-                                            />
-                                            <span className="min-w-0 flex-1 truncate text-base font-semibold">
-                                                {c.room_name}
+                                            >
+                                                {classInitial(c.room_name)}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-base font-semibold">{c.room_name}</span>
+                                                {c.teacher_name ? (
+                                                    <span
+                                                        className={`mt-0.5 block truncate text-sm font-medium ${
+                                                            selected
+                                                                ? 'text-emerald-800 dark:text-emerald-200'
+                                                                : 'text-zinc-500 dark:text-zinc-400'
+                                                        }`}
+                                                    >
+                                                        {c.teacher_name}
+                                                    </span>
+                                                ) : null}
                                             </span>
                                             {yours ? (
                                                 <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">

@@ -29,16 +29,16 @@ class ConvivaCheckinTest extends TestCase
 
         $class = ConvivaClass::query()->create([
             'church_id' => $churchId,
-            'room_name' => 'Azul',
-            'teacher_name' => 'Maria Silva',
+            'room_name' => 'Riva',
+            'teacher_name' => 'Alencar',
             'is_active' => true,
             'sort_order' => 1,
         ]);
 
         $classB = ConvivaClass::query()->create([
             'church_id' => $churchId,
-            'room_name' => 'Verde',
-            'teacher_name' => 'João Pereira',
+            'room_name' => 'Fernando',
+            'teacher_name' => 'Arruda',
             'is_active' => true,
             'sort_order' => 2,
         ]);
@@ -56,21 +56,21 @@ class ConvivaCheckinTest extends TestCase
         $this->actingAs($admin)
             ->withSession(['working_church_id' => $churchId])
             ->post(route('conviva.store'), [
-                'room_name' => 'Azul',
-                'teacher_name' => 'Ana Costa',
+                'room_name' => 'Riva',
+                'teacher_name' => 'Alencar',
                 'is_active' => true,
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('conviva_classes', [
             'church_id' => $churchId,
-            'room_name' => 'Azul',
-            'teacher_name' => 'Ana Costa',
+            'room_name' => 'Riva',
+            'teacher_name' => 'Alencar',
             'sort_order' => 1,
         ]);
     }
 
-    public function test_class_color_must_be_from_palette_and_unique(): void
+    public function test_class_name_is_unique_and_teacher_is_optional(): void
     {
         $this->seed([RolePermissionSeeder::class, ChurchSeeder::class]);
         $churchId = (int) Church::query()->orderBy('id')->value('id');
@@ -79,8 +79,8 @@ class ConvivaCheckinTest extends TestCase
 
         ConvivaClass::query()->create([
             'church_id' => $churchId,
-            'room_name' => 'Azul',
-            'teacher_name' => 'Maria Silva',
+            'room_name' => 'Riva',
+            'teacher_name' => 'Alencar',
             'is_active' => true,
             'sort_order' => 1,
         ]);
@@ -88,22 +88,24 @@ class ConvivaCheckinTest extends TestCase
         $this->actingAs($admin)
             ->withSession(['working_church_id' => $churchId])
             ->post(route('conviva.store'), [
-                'room_name' => 'Sala 1',
-                'teacher_name' => 'Ana Costa',
+                'room_name' => 'Riva',
+                'teacher_name' => 'Outra pessoa',
             ])
             ->assertSessionHasErrors('room_name');
 
         $this->actingAs($admin)
             ->withSession(['working_church_id' => $churchId])
             ->post(route('conviva.store'), [
-                'room_name' => 'Azul',
-                'teacher_name' => 'Ana Costa',
+                'room_name' => 'Jovens',
+                'teacher_name' => '',
             ])
-            ->assertSessionHasErrors('room_name');
+            ->assertRedirect();
 
-        $this->assertDatabaseMissing('conviva_classes', [
+        $this->assertDatabaseHas('conviva_classes', [
             'church_id' => $churchId,
-            'teacher_name' => 'Ana Costa',
+            'room_name' => 'Jovens',
+            'teacher_name' => '',
+            'sort_order' => 2,
         ]);
     }
 

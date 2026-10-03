@@ -3,26 +3,15 @@
 namespace App\Support;
 
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 final class ConvivaColors
 {
     /**
-     * Nome da turma, na ordem de exibição.
+     * Nome curto da classe, único por igreja.
      *
-     * @return list<string>
+     * @return list<string|Unique>
      */
-    public static function names(): array
-    {
-        return ['Azul', 'Verde', 'Amarela', 'Branca', 'Laranja'];
-    }
-
-    public static function sortOrder(string $name): int
-    {
-        $index = array_search($name, self::names(), true);
-
-        return $index === false ? 0 : $index + 1;
-    }
-
     public static function nameRules(?int $churchId, int|string|null $ignoreId = null): array
     {
         $unique = Rule::unique('conviva_classes', 'room_name');
@@ -32,7 +21,8 @@ final class ConvivaColors
 
         return [
             'required',
-            Rule::in(self::names()),
+            'string',
+            'max:80',
             $unique->where(
                 fn ($query) => $churchId !== null ? $query->where('church_id', $churchId) : $query
             ),

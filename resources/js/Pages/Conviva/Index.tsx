@@ -1,7 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import { convivaColorFor, convivaColors } from '@/constants/convivaColors';
 import AddButton from '@/Components/AddButton';
 import Modal from '@/Components/Modal';
 import InputLabel from '@/Components/InputLabel';
@@ -210,10 +209,10 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                 return;
             }
             if (isEditing) {
-                showSaveMessage('Turma atualizada.');
+                showSaveMessage('Classe atualizada.');
                 return;
             }
-            showSaveMessage('Turma criada.');
+            showSaveMessage('Classe criada.');
             const newId = outcome.createdId;
             if (newId) {
                 syncFormAfterReloadRef.current = true;
@@ -229,8 +228,8 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
 
     const handleDelete = async (id: number) => {
         const ok = await confirmAction({
-            title: 'Excluir turma CONVIVA?',
-            text: 'Só é possível excluir turmas sem check-ins. Esta ação não pode ser desfeita.',
+            title: 'Excluir classe CONVIVA?',
+            text: 'Só é possível excluir classes sem check-ins. Esta ação não pode ser desfeita.',
             confirmButtonText: 'Excluir',
             danger: true,
             icon: 'warning',
@@ -276,11 +275,11 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
             <Head title="CONVIVA" />
             <PageHeader
                 title="CONVIVA"
-                subtitle="Turmas de estudo bíblico no culto. Cada uma leva o nome de uma cor."
+                subtitle="Classes de estudo bíblico no culto. O aluno escolhe pelo nome."
                 actions={
                     canManage && tab === 'turmas' ? (
-                        <AddButton variant="label" onClick={openCreateModal} title="Nova turma">
-                            Nova turma
+                        <AddButton variant="label" onClick={openCreateModal} title="Nova classe">
+                            Nova classe
                         </AddButton>
                     ) : undefined
                 }
@@ -292,7 +291,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                     onClick={() => goTab('turmas')}
                     className={`${tabBtn} ${tab === 'turmas' ? tabActive : tabIdle}`}
                 >
-                    Turmas
+                    Classes
                 </button>
                 <button
                     type="button"
@@ -308,8 +307,8 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                     {classes.length === 0 ? (
                         <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-12 text-center text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400">
                             {canManage
-                                ? 'Nenhuma turma cadastrada. Toque em Nova turma para criar a primeira.'
-                                : 'Nenhuma turma cadastrada.'}
+                                ? 'Nenhuma classe cadastrada. Toque em Nova classe para criar a primeira.'
+                                : 'Nenhuma classe cadastrada.'}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -319,16 +318,16 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                     className="flex flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
                                 >
                                     <div className="flex items-start justify-between gap-2">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <h3
-                                                className={`inline-flex min-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-3 py-2 text-base font-semibold ${convivaColorFor(row.room_name).plate} ${convivaColorFor(row.room_name).label}`}
-                                            >
+                                        <div className="min-w-0">
+                                            <h3 className="truncate text-base font-semibold text-zinc-900 dark:text-white">
                                                 {row.room_name}
                                             </h3>
                                             <div className="min-w-0">
-                                                <p className="truncate text-sm text-zinc-700 dark:text-zinc-200">
-                                                    {row.teacher_name}
-                                                </p>
+                                                {row.teacher_name ? (
+                                                    <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                                                        {row.teacher_name}
+                                                    </p>
+                                                ) : null}
                                                 {!row.is_active && (
                                                     <span className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                                                         Inativa
@@ -379,17 +378,17 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                 />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <InputLabel htmlFor="presence-class" value="Turma" />
+                                <InputLabel htmlFor="presence-class" value="Classe" />
                                 <select
                                     id="presence-class"
                                     defaultValue={presence.class_id ? String(presence.class_id) : ''}
                                     onChange={(e) => applyPresenceFilters(presence.date, e.target.value)}
                                     className="mt-1 block h-11 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-transparent focus:ring-2 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
                                 >
-                                    <option value="">Todas as turmas</option>
+                                    <option value="">Todas as classes</option>
                                     {classes.map((c) => (
                                         <option key={c.id} value={c.id}>
-                                            {c.room_name} · {c.teacher_name}
+                                            {c.teacher_name ? `${c.room_name} · ${c.teacher_name}` : c.room_name}
                                         </option>
                                     ))}
                                 </select>
@@ -415,19 +414,17 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                     className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
                                 >
                                     <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <h3
-                                                className={`inline-flex min-w-[5.5rem] shrink-0 items-center justify-center rounded-lg px-3 py-2 text-base font-semibold ${convivaColorFor(group.room_name).plate} ${convivaColorFor(group.room_name).label}`}
-                                            >
+                                        <div className="min-w-0">
+                                            <h3 className="truncate text-base font-semibold text-zinc-900 dark:text-white">
                                                 {group.room_name}
                                             </h3>
-                                            <p className="truncate text-sm text-zinc-600 dark:text-zinc-300">
-                                                {group.teacher_name}
-                                            </p>
+                                            {group.teacher_name ? (
+                                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                                                    {group.teacher_name}
+                                                </p>
+                                            ) : null}
                                         </div>
-                                        <span
-                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${convivaColorFor(group.room_name).badge}`}
-                                        >
+                                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-800">
                                             <UserGroupIcon className="h-4 w-4" />
                                             {group.count}
                                         </span>
@@ -474,7 +471,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
             <Modal show={isModalOpen} onClose={closeModal}>
                 <form onSubmit={submit} className="p-6">
                     <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-white">
-                        {isEditing ? 'Editar turma CONVIVA' : 'Nova turma CONVIVA'}
+                        {isEditing ? 'Editar classe CONVIVA' : 'Nova classe CONVIVA'}
                     </h2>
                     {saveMessage ? (
                         <p className="mb-4 text-sm font-medium text-emerald-700 dark:text-emerald-300" role="status">
@@ -482,33 +479,15 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                         </p>
                     ) : null}
                     <div>
-                        <InputLabel value="Cor" />
-                        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                            {convivaColors.map((color) => {
-                                const taken =
-                                    classes.some(
-                                        (row) => row.room_name === color.name && row.id !== editingId,
-                                    ) && data.room_name !== color.name;
-                                const chosen = data.room_name === color.name;
-
-                                return (
-                                    <button
-                                        key={color.name}
-                                        type="button"
-                                        aria-pressed={chosen}
-                                        disabled={taken}
-                                        onClick={() => setData('room_name', color.name)}
-                                        className={`cursor-pointer rounded-xl px-3 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 dark:focus-visible:ring-offset-zinc-900 ${color.plate} ${color.label} ${
-                                            chosen
-                                                ? `ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${color.selectedRing}`
-                                                : ''
-                                        }`}
-                                    >
-                                        {color.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        <InputLabel htmlFor="room_name" value="Nome da classe" />
+                        <TextInput
+                            id="room_name"
+                            value={data.room_name}
+                            onChange={(e) => setData('room_name', e.target.value)}
+                            className="mt-1 block w-full"
+                            placeholder="Ex.: Riva"
+                            required
+                        />
                         <InputError message={errors.room_name} className="mt-1" />
                     </div>
                     <div className="mt-4">
@@ -518,7 +497,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                             value={data.teacher_name}
                             onChange={(e) => setData('teacher_name', e.target.value)}
                             className="mt-1 block w-full"
-                            placeholder="Ex: Maria Silva"
+                            placeholder="Ex.: Alencar"
                         />
                         <InputError message={errors.teacher_name} className="mt-1" />
                     </div>
@@ -530,7 +509,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                             onChange={(e) => setData('is_active', e.target.checked)}
                             className="h-4 w-4 cursor-pointer rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
                         />
-                        <InputLabel htmlFor="is_active" value="Turma ativa" className="!mb-0 cursor-pointer" />
+                        <InputLabel htmlFor="is_active" value="Classe ativa" className="!mb-0 cursor-pointer" />
                     </div>
                     <div className="mt-6 flex justify-end gap-2">
                         <SecondaryButton type="button" onClick={closeModal}>

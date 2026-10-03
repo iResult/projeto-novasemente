@@ -230,7 +230,7 @@ export default function MobileProfile({ user, profileCounts, volunteerSignupComp
             ? ([
                   {
                       title: 'CONVIVA',
-                      description: 'Check-in na sua turma de estudo bíblico',
+                      description: 'Check-in na sua classe de estudo bíblico',
                       icon: BookOpenIcon,
                       href: route('mobile.conviva.checkin'),
                       tone: 'member',

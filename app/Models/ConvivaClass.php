@@ -39,6 +39,8 @@ class ConvivaClass extends Model
 
     public function label(): string
     {
-        return trim($this->room_name.' · '.$this->teacher_name);
+        $teacher = trim((string) $this->teacher_name);
+
+        return $teacher === '' ? (string) $this->room_name : trim($this->room_name.' · '.$teacher);
     }
 }

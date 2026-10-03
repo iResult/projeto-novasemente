@@ -22,11 +22,16 @@ class ConvivaClassSeeder extends Seeder
         }
 
         $examples = [
-            ['room_name' => 'Azul', 'teacher_name' => 'Maria Silva', 'sort_order' => 1],
-            ['room_name' => 'Verde', 'teacher_name' => 'João Pereira', 'sort_order' => 2],
-            ['room_name' => 'Amarela', 'teacher_name' => 'Ana Costa', 'sort_order' => 3],
-            ['room_name' => 'Branca', 'teacher_name' => 'Pedro Oliveira', 'sort_order' => 4],
-            ['room_name' => 'Laranja', 'teacher_name' => 'Juliana Santos', 'sort_order' => 5],
+            ['room_name' => 'Riva', 'teacher_name' => 'Alencar', 'sort_order' => 1],
+            ['room_name' => 'Fernando', 'teacher_name' => 'Arruda', 'sort_order' => 2],
+            ['room_name' => 'Geferson', 'teacher_name' => 'Arantes', 'sort_order' => 3],
+            ['room_name' => 'Rogério', 'teacher_name' => 'Ferreira', 'sort_order' => 4],
+            ['room_name' => 'Sandra', 'teacher_name' => 'Sabaté', 'sort_order' => 5],
+            ['room_name' => 'Inflexão', 'teacher_name' => 'Wesley Moura', 'sort_order' => 6],
+            ['room_name' => 'Visitantes', 'teacher_name' => 'Márcio Desenzi', 'sort_order' => 7],
+            ['room_name' => 'Backstage', 'teacher_name' => 'Alexandre Romano', 'sort_order' => 8],
+            ['room_name' => 'Pais', 'teacher_name' => 'Antonio e Aída', 'sort_order' => 9],
+            ['room_name' => 'Jovens', 'teacher_name' => '', 'sort_order' => 10],
         ];
 
         foreach ($examples as $row) {

@@ -16,11 +16,16 @@ class UpdateConvivaClassRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $merge = [
+            'room_name' => trim((string) $this->input('room_name', '')),
+            'teacher_name' => trim((string) $this->input('teacher_name', '')),
+        ];
+
         if ($this->has('is_active')) {
-            $this->merge([
-                'is_active' => filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
-            ]);
+            $merge['is_active'] = filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
         }
+
+        $this->merge($merge);
     }
 
     public function rules(): array
@@ -31,7 +36,7 @@ class UpdateConvivaClassRequest extends FormRequest
 
         return [
             'room_name' => ConvivaColors::nameRules($churchId, $ignoreId),
-            'teacher_name' => ['required', 'string', 'max:255'],
+            'teacher_name' => ['nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
@@ -39,9 +44,9 @@ class UpdateConvivaClassRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'room_name.required' => 'Escolha a cor da turma.',
-            'room_name.in' => 'Escolha uma das cores disponíveis.',
-            'room_name.unique' => 'Já existe uma turma com essa cor.',
+            'room_name.required' => 'Informe o nome da classe.',
+            'room_name.max' => 'O nome da classe deve ter no máximo 80 caracteres.',
+            'room_name.unique' => 'Já existe uma classe com esse nome.',
         ];
     }
 }
