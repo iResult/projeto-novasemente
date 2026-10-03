@@ -30,6 +30,8 @@ interface Props {
         /** Notificações pessoais ainda não lidas (mesmo critério do sino). */
         notifications: number;
     };
+    /** Atalho do NS Timer: só quem pertence ao departamento de Programação. */
+    canOpenNsTimer?: boolean;
 }
 
 type Row = {
@@ -39,6 +41,8 @@ type Row = {
     href?: string;
     onClick?: 'logout';
     tone?: 'member' | 'public' | 'critical';
+    /** Navegação completa (o servidor responde com redirecionamento). */
+    native?: boolean;
     /** Contagem no canto do card; `null` omite o badge. */
     badgeCount?: number | null;
     /** Singular/plural para acessibilidade do badge (ex.: não lida / não lidas). */
@@ -137,8 +141,8 @@ function RowItem({ row }: { row: Row }) {
         'shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-800 ring-1 ring-inset ring-brand-200/80 transition group-hover:bg-white/15 group-hover:text-white group-hover:ring-white/30 dark:bg-brand-950/50 dark:text-brand-200 dark:ring-brand-800/70 dark:group-hover:bg-white/15 dark:group-hover:text-white dark:group-hover:ring-white/30';
     const iconClass = 'h-6 w-6';
 
-    return (
-        <Link href={row.href ?? '#'} className={cardClass}>
+    const body = (
+        <>
             <span className={glowClass} aria-hidden />
             <div className="relative flex items-center gap-4">
                 <div className={iconWrapClass}>
@@ -162,11 +166,30 @@ function RowItem({ row }: { row: Row }) {
                 ) : null}
                 <ChevronRightIcon className={chevronClass} aria-hidden />
             </div>
+        </>
+    );
+
+    if (row.native) {
+        return (
+            <a href={row.href ?? '#'} className={cardClass}>
+                {body}
+            </a>
+        );
+    }
+
+    return (
+        <Link href={row.href ?? '#'} className={cardClass}>
+            {body}
         </Link>
     );
 }
 
-export default function MobileProfile({ user, profileCounts, volunteerSignupCompletion = null }: Props) {
+export default function MobileProfile({
+    user,
+    profileCounts,
+    volunteerSignupCompletion = null,
+    canOpenNsTimer = false,
+}: Props) {
     const birthDateLabel = formatBirthDateBr(user.birth_date);
     const page = usePage();
     const auth = (page.props as {
@@ -215,6 +238,18 @@ export default function MobileProfile({ user, profileCounts, volunteerSignupComp
     const { isEnabled } = useAppFeatures();
     const canShowConviva =
         route().has('mobile.conviva.checkin') && isEnabled('conviva');
+
+    const nsTimerRow: Row | null =
+        canOpenNsTimer && route().has('nstimer.sso')
+            ? {
+                  title: 'NS Timer',
+                  description: 'Entrar sem digitar senha',
+                  icon: ClockIcon,
+                  href: route('nstimer.sso'),
+                  tone: 'member',
+                  native: true,
+              }
+            : null;
 
     const memberRows: Row[] = [
         {
@@ -412,6 +447,8 @@ export default function MobileProfile({ user, profileCounts, volunteerSignupComp
                 {volunteerSignupCompletion ? (
                     <VolunteerSignupIncompleteBanner completion={volunteerSignupCompletion} />
                 ) : null}
+
+                {nsTimerRow ? <RowItem row={nsTimerRow} /> : null}
 
                 {adminRows.length > 0 ? (
                     <div className="space-y-3">

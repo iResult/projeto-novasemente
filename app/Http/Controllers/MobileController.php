@@ -46,6 +46,7 @@ use App\Support\HomeCardKeys;
 use App\Support\HomeModuleSpotlight;
 use App\Support\NewsLaunchDeepLinks;
 use App\Support\NotificationFeed;
+use App\Support\NsTimerSso;
 use App\Support\NsWhatsAccess;
 use App\Support\PendingAppNovelty;
 use App\Support\PublicationEngagement;
@@ -2227,6 +2228,7 @@ class MobileController extends Controller
                 'notifications' => $notificationsUnread,
             ],
             'volunteerSignupCompletion' => $volunteerSignupCompletion,
+            'canOpenNsTimer' => NsTimerSso::belongsToProgramacao($user),
         ]);
     }
 

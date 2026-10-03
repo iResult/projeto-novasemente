@@ -35,6 +35,7 @@ final class PageViewRouteLabels
         'varios.notifications' => 'Notificações — ver todas',
         'mobile.profile' => 'Perfil',
         'mobile.profile.edit' => 'Editar perfil',
+        'nstimer.sso' => 'NS Timer',
         'volunteers.self-signup.edit' => 'Cadastro de voluntário',
         'profile.edit' => 'Editar perfil (conta)',
         'login' => 'Login',

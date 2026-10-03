@@ -60,6 +60,7 @@ use App\Http\Controllers\MusicaController;
 use App\Http\Controllers\MyMinistryVolunteersController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationFeedController;
+use App\Http\Controllers\NsTimerSsoController;
 use App\Http\Controllers\OfferingLandingController;
 use App\Http\Controllers\OperationsDashboardController;
 use App\Http\Controllers\PastoralAgendaController;
@@ -346,6 +347,9 @@ Route::get('/mobile/notifications', [MobileController::class, 'notifications'])-
 Route::get('/mobile/profile', [MobileController::class, 'profile'])
     ->middleware('auth')
     ->name('mobile.profile');
+Route::get('/mobile/ns-timer', [NsTimerSsoController::class, 'redirect'])
+    ->middleware(['auth', 'throttle:20,1'])
+    ->name('nstimer.sso');
 Route::get('/mobile/perfil/editar', [MobileController::class, 'profileEdit'])
     ->middleware('auth')
     ->name('mobile.profile.edit');

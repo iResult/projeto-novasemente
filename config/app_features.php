@@ -1,9 +1,11 @@
 <?php
 
+use App\Support\ChurchAppFeatures;
+
 /**
  * Funcionalidades do app (membros): chaves estáveis, rótulos e rotas cobertas pelo middleware.
  *
- * @see App\Support\ChurchAppFeatures
+ * @see ChurchAppFeatures
  * @see resources/js/Pages/Settings/AppFeatures.tsx
  */
 return [
@@ -24,6 +26,7 @@ return [
         'mobile.sobre-o-app',
         'mobile.profile',
         'mobile.profile.edit',
+        'nstimer.sso',
         'mobile.publications-feed',
         'oferta',
         'app',
