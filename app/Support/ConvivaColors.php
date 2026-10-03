@@ -13,7 +13,7 @@ final class ConvivaColors
      */
     public static function names(): array
     {
-        return ['Azul', 'Verde', 'Amarelo', 'Branco', 'Laranja'];
+        return ['Azul', 'Verde', 'Amarela', 'Branca', 'Laranja'];
     }
 
     public static function sortOrder(string $name): int

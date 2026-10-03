@@ -76,6 +76,22 @@ class ConvivaCheckinController extends Controller
                 'teacher_name' => $todayCheckin->convivaClass?->teacher_name,
                 'checked_in_at' => $todayCheckin->created_at?->timezone(config('app.timezone'))->format('H:i'),
             ] : null,
+            'classmates' => $todayCheckin
+                ? ConvivaCheckin::query()
+                    ->with('user:id,name,photo_url')
+                    ->where('church_id', $churchId)
+                    ->where('conviva_class_id', $todayCheckin->conviva_class_id)
+                    ->whereDate('checkin_date', $today)
+                    ->get()
+                    ->sortBy(fn (ConvivaCheckin $row) => mb_strtolower((string) ($row->user?->name ?? '')))
+                    ->values()
+                    ->map(fn (ConvivaCheckin $row) => [
+                        'id' => $row->user_id,
+                        'name' => $row->user?->name ?? '—',
+                        'photo_url' => $row->user?->photo_url,
+                    ])
+                    ->all()
+                : [],
         ]);
     }
 
