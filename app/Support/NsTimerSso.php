@@ -19,6 +19,11 @@ final class NsTimerSso
     /** Valor enviado no JWT. O NS Timer recusa outro departamento. */
     public const DEPARTMENT_CLAIM = 'Programação';
 
+    public static function canOpen(User $user): bool
+    {
+        return self::belongsToProgramacao($user) || $user->hasAnyRole(['admin', 'super_admin']);
+    }
+
     public static function belongsToProgramacao(User $user): bool
     {
         return self::departmentLabel($user) !== null;
@@ -29,7 +34,7 @@ final class NsTimerSso
      */
     public static function attempt(User $user): array
     {
-        if (self::departmentLabel($user) === null) {
+        if (! self::canOpen($user)) {
             return ['status' => 'forbidden'];
         }
 

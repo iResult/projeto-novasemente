@@ -2228,7 +2228,7 @@ class MobileController extends Controller
                 'notifications' => $notificationsUnread,
             ],
             'volunteerSignupCompletion' => $volunteerSignupCompletion,
-            'canOpenNsTimer' => NsTimerSso::belongsToProgramacao($user),
+            'canOpenNsTimer' => NsTimerSso::canOpen($user),
         ]);
     }
 

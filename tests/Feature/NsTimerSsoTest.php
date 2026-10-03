@@ -7,6 +7,7 @@ use App\Models\Ministry;
 use App\Models\User;
 use App\Support\NsTimerSso;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class NsTimerSsoTest extends TestCase
@@ -54,6 +55,46 @@ class NsTimerSsoTest extends TestCase
                 ->where('canOpenNsTimer', true))
             ->assertDontSee(self::SECRET, false)
             ->assertDontSee('auth/conecta?token=', false);
+    }
+
+    public function test_admin_sees_shortcut_without_belonging_to_programacao(): void
+    {
+        Role::findOrCreate('admin');
+        Role::findOrCreate('pastor');
+
+        $church = $this->church();
+        $admin = User::factory()->create([
+            'church_id' => $church->id,
+            'name' => 'Administrador',
+            'email' => 'admin@novasemente.com.br',
+        ]);
+        $admin->assignRole('admin');
+
+        $pastor = User::factory()->create([
+            'church_id' => $church->id,
+            'name' => 'Pastor',
+            'email' => 'pastor@novasemente.com.br',
+        ]);
+        $pastor->assignRole('pastor');
+
+        $this->actingAs($admin)
+            ->get(route('mobile.profile'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canOpenNsTimer', true));
+
+        $claims = $this->assertNsTimerRedirect(
+            $this->actingAs($admin)->get(route('nstimer.sso'))->headers->get('Location'),
+            $admin,
+            'Programação',
+        );
+        $this->assertArrayNotHasKey('role', $claims);
+
+        $this->actingAs($pastor)
+            ->get(route('mobile.profile'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('canOpenNsTimer', false));
+
+        $this->actingAs($pastor)->get(route('nstimer.sso'))->assertForbidden();
     }
 
     public function test_click_redirects_with_a_short_lived_signed_token(): void

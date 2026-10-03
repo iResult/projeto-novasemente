@@ -30,7 +30,7 @@ interface Props {
         /** Notificações pessoais ainda não lidas (mesmo critério do sino). */
         notifications: number;
     };
-    /** Atalho do NS Timer: só quem pertence ao departamento de Programação. */
+    /** Atalho do NS Timer: departamento de Programação ou administrador. */
     canOpenNsTimer?: boolean;
 }
 
