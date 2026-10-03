@@ -36,6 +36,7 @@ class ConvivaClassController extends Controller
         $classes = ConvivaClass::query()
             ->when($churchId !== null, fn ($q) => $q->where('church_id', $churchId))
             ->when($churchId === null, fn ($q) => $q->whereRaw('1 = 0'))
+            ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('room_name')
             ->orderBy('teacher_name')
@@ -64,7 +65,7 @@ class ConvivaClassController extends Controller
             'photo_url' => $c->user?->photo_url ?? null,
             'class_id' => $c->conviva_class_id,
             'room_name' => $c->convivaClass?->room_name ?? '—',
-            'teacher_name' => $c->convivaClass?->teacher_name ?? '—',
+            'teacher_name' => '',
             'checked_in_at' => $c->created_at?->timezone(config('app.timezone'))->format('H:i'),
         ]);
 

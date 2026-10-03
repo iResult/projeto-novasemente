@@ -194,7 +194,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
         void (async () => {
             const payload = {
                 room_name: data.room_name,
-                teacher_name: data.teacher_name,
+                teacher_name: '',
                 is_active: data.is_active,
                 sort_order: Number(data.sort_order) || 0,
             };
@@ -319,15 +319,10 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <h3 className="truncate text-base font-semibold text-zinc-900 dark:text-white">
+                                            <h3 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
                                                 {row.room_name}
                                             </h3>
                                             <div className="min-w-0">
-                                                {row.teacher_name ? (
-                                                    <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
-                                                        {row.teacher_name}
-                                                    </p>
-                                                ) : null}
                                                 {!row.is_active && (
                                                     <span className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                                                         Inativa
@@ -388,7 +383,7 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                     <option value="">Todas as classes</option>
                                     {classes.map((c) => (
                                         <option key={c.id} value={c.id}>
-                                            {c.teacher_name ? `${c.room_name} · ${c.teacher_name}` : c.room_name}
+                                            {c.room_name}
                                         </option>
                                     ))}
                                 </select>
@@ -415,16 +410,11 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                                 >
                                     <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
                                         <div className="min-w-0">
-                                            <h3 className="truncate text-base font-semibold text-zinc-900 dark:text-white">
+                                            <h3 className="truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
                                                 {group.room_name}
                                             </h3>
-                                            {group.teacher_name ? (
-                                                <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
-                                                    {group.teacher_name}
-                                                </p>
-                                            ) : null}
                                         </div>
-                                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-800">
+                                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-800 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-600">
                                             <UserGroupIcon className="h-4 w-4" />
                                             {group.count}
                                         </span>
@@ -485,21 +475,10 @@ export default function Index({ tab, classes, canManage = false, presence }: Pro
                             value={data.room_name}
                             onChange={(e) => setData('room_name', e.target.value)}
                             className="mt-1 block w-full"
-                            placeholder="Ex.: Riva"
+                                            placeholder="Ex.: Riva Alencar"
                             required
                         />
                         <InputError message={errors.room_name} className="mt-1" />
-                    </div>
-                    <div className="mt-4">
-                        <InputLabel htmlFor="teacher_name" value="Professor" />
-                        <TextInput
-                            id="teacher_name"
-                            value={data.teacher_name}
-                            onChange={(e) => setData('teacher_name', e.target.value)}
-                            className="mt-1 block w-full"
-                            placeholder="Ex.: Alencar"
-                        />
-                        <InputError message={errors.teacher_name} className="mt-1" />
                     </div>
                     <div className="mt-4 flex items-center gap-2">
                         <input

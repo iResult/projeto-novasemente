@@ -36,16 +36,10 @@ interface Props {
     classmates?: Classmate[];
 }
 
-function classInitial(name: string | null | undefined): string {
-    const letter = name?.trim().charAt(0);
-
-    return letter ? letter.toLocaleUpperCase('pt-BR') : '?';
-}
-
 function Header({ todayLabel, showDate = true }: { todayLabel: string; showDate?: boolean }) {
     return (
         <div className="text-center">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-400">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
                 Estudo bíblico
             </p>
             <h1 className="mt-1 text-4xl font-black tracking-tight text-zinc-950 dark:text-white">CONVIVA</h1>
@@ -101,7 +95,7 @@ export default function ConvivaCheckin({
                 <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-5 text-center">
                     <Header todayLabel={todayLabel} showDate={false} />
 
-                    <div className="mt-2 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-600 text-white">
+                    <div className="mt-2 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950">
                         <CheckIcon className="h-10 w-10" />
                     </div>
 
@@ -109,24 +103,17 @@ export default function ConvivaCheckin({
                         Check-in realizado!
                     </h2>
 
-                    <div className="w-full rounded-3xl bg-emerald-700 px-6 pb-5 pt-7 text-left text-white shadow-md dark:bg-emerald-700 dark:text-white">
-                        <div className="flex items-start justify-between gap-4">
-                            <p className="min-w-0 truncate text-4xl font-semibold leading-none tracking-tight">
-                                {firstName}
-                            </p>
+                    <div className="w-full rounded-3xl bg-white px-6 pb-6 pt-7 text-left shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
+                        <p className="text-3xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-white">
+                            {checkin.room_name}
+                        </p>
+                        <p className="mt-3 text-base font-medium text-zinc-500 dark:text-zinc-400">{firstName}</p>
+                        <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{todayLabel}</p>
                             {checkin.checked_in_at ? (
-                                <p className="shrink-0 pt-1.5 text-lg font-medium tabular-nums leading-none">
+                                <p className="shrink-0 text-lg font-medium tabular-nums leading-none text-zinc-950 dark:text-white">
                                     {checkin.checked_in_at}
                                 </p>
-                            ) : null}
-                        </div>
-                        <p className="mt-4 text-sm font-medium leading-none tracking-wide">{todayLabel}</p>
-                        <div className="mt-8 border-t border-white/25 pt-4">
-                            <p className="truncate text-xl font-semibold uppercase leading-none tracking-wide">
-                                Classe {checkin.room_name}
-                            </p>
-                            {checkin.teacher_name ? (
-                                <p className="mt-2 truncate text-sm font-medium leading-none">{checkin.teacher_name}</p>
                             ) : null}
                         </div>
                     </div>
@@ -177,7 +164,7 @@ export default function ConvivaCheckin({
                             <button
                                 type="button"
                                 onClick={() => setChanging(true)}
-                                className="cursor-pointer text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:text-emerald-300"
+                                className="cursor-pointer text-sm font-semibold text-zinc-900 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:text-white dark:focus-visible:ring-white"
                             >
                                 Alterar check-in
                             </button>
@@ -202,11 +189,11 @@ export default function ConvivaCheckin({
                 <Header todayLabel={todayLabel} />
 
                 {checkinOpen ? (
-                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200">
+                    <div className="flex items-center gap-3 rounded-2xl bg-white px-3 py-3 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                             <CalendarDaysIcon className="h-5 w-5" />
                         </span>
-                        <p className="text-sm font-medium leading-snug">
+                        <p className="text-sm font-medium leading-snug text-zinc-800 dark:text-zinc-100">
                             {isSaturday
                                 ? 'Check-in liberado hoje, no culto.'
                                 : 'Check-in liberado hoje para o treinamento.'}
@@ -236,43 +223,22 @@ export default function ConvivaCheckin({
                                             type="button"
                                             onClick={() => setSelectedId(c.id)}
                                             aria-pressed={selected}
-                                            className={`flex w-full cursor-pointer items-center gap-3 rounded-2xl px-4 py-3 text-left transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${
+                                            className={`flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-4 text-left ring-1 ring-zinc-200 transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:bg-zinc-900 dark:ring-zinc-700 dark:focus-visible:ring-white ${
                                                 selected
-                                                    ? 'bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-50'
-                                                    : 'bg-zinc-100 text-zinc-950 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700'
+                                                    ? 'ring-2 ring-zinc-950 dark:ring-white'
+                                                    : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'
                                             }`}
                                         >
-                                            <span
-                                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                                                    selected
-                                                        ? 'bg-emerald-600 text-white'
-                                                        : 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/45 dark:text-emerald-200'
-                                                }`}
-                                                aria-hidden
-                                            >
-                                                {classInitial(c.room_name)}
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block truncate text-base font-semibold">{c.room_name}</span>
-                                                {c.teacher_name ? (
-                                                    <span
-                                                        className={`mt-0.5 block truncate text-sm font-medium ${
-                                                            selected
-                                                                ? 'text-emerald-800 dark:text-emerald-200'
-                                                                : 'text-zinc-500 dark:text-zinc-400'
-                                                        }`}
-                                                    >
-                                                        {c.teacher_name}
-                                                    </span>
-                                                ) : null}
+                                            <span className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
+                                                {c.room_name}
                                             </span>
                                             {yours ? (
-                                                <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                                                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-500 ring-1 ring-zinc-300 dark:text-zinc-400 dark:ring-zinc-600">
                                                     Sua classe
                                                 </span>
                                             ) : null}
                                             {selected ? (
-                                                <CheckIcon className="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                                                <CheckIcon className="h-5 w-5 shrink-0 text-zinc-950 dark:text-white" />
                                             ) : null}
                                         </button>
                                     </li>
