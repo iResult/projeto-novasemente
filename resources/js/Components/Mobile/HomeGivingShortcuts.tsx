@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { BanknotesIcon, ClipboardDocumentCheckIcon, HandRaisedIcon } from '@heroicons/react/24/outline';
+import { AcademicCapIcon, BanknotesIcon, HandRaisedIcon } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
-import { BEHAVIORAL_TEST_URL } from '@/constants/externalLinks';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
@@ -32,11 +31,11 @@ const ITEMS: ShortcutItem[] = [
         icon: HandRaisedIcon,
     },
     {
-        id: 'teste-comportamental',
-        label: 'Teste Comportamental',
-        externalHref: BEHAVIORAL_TEST_URL,
-        icon: ClipboardDocumentCheckIcon,
-        badge: 'NOVO',
+        id: 'conviva',
+        label: 'CONVIVA',
+        route: 'mobile.conviva.checkin',
+        featureKey: 'conviva',
+        icon: AcademicCapIcon,
     },
 ];
 

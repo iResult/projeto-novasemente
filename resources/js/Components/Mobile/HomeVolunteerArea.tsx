@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { ClipboardDocumentCheckIcon, UserGroupIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
-import { BEHAVIORAL_TEST_URL } from '@/constants/externalLinks';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
@@ -13,7 +12,6 @@ type AreaItem = {
     icon: MenuIcon;
     featureKey?: string;
     href: string;
-    external?: boolean;
 };
 
 const ITEMS: AreaItem[] = [
@@ -24,14 +22,6 @@ const ITEMS: AreaItem[] = [
         icon: UserPlusIcon,
         featureKey: 'volunteer_signup',
         href: 'volunteers.public-signup.page',
-    },
-    {
-        id: 'teste-comportamental',
-        label: 'Teste Comportamental',
-        description: 'Conheça mais sobre o seu perfil',
-        icon: ClipboardDocumentCheckIcon,
-        href: BEHAVIORAL_TEST_URL,
-        external: true,
     },
 ];
 
@@ -55,16 +45,6 @@ function AreaCard({ item }: { item: AreaItem }) {
             </span>
         </>
     );
-
-    if (item.external) {
-        return (
-            <li className="min-w-0">
-                <a href={item.href} target="_blank" rel="noopener noreferrer" className={cardClass}>
-                    {content}
-                </a>
-            </li>
-        );
-    }
 
     return (
         <li className="min-w-0">
