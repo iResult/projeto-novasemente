@@ -36,6 +36,44 @@ interface Props {
     classmates?: Classmate[];
 }
 
+const classDots: Record<string, string> = {
+    'Riva Alencar': 'bg-blue-600',
+    'Fernando Arruda': 'bg-emerald-600',
+    'Geferson Arantes': 'bg-amber-500',
+    'Rogério Ferreira': 'bg-violet-500',
+    'Sandra Sabaté': 'bg-rose-500',
+    'Inflexão - Wesley Moura': 'bg-teal-600',
+    'Visitantes - Márcio Desenzi': 'bg-sky-600',
+    'Backstage - Alexandre Romano': 'bg-zinc-700 dark:bg-zinc-300',
+    'Pais - Antonio/Aída': 'bg-orange-500',
+    Jovens: 'bg-indigo-500',
+};
+
+const fallbackDots = ['bg-blue-600', 'bg-emerald-600', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-teal-600'];
+
+function classDot(name: string | null | undefined): string {
+    const label = name?.trim() ?? '';
+    if (label !== '' && classDots[label]) {
+        return classDots[label];
+    }
+
+    let hash = 0;
+    for (let i = 0; i < label.length; i += 1) {
+        hash = (hash + label.charCodeAt(i)) % fallbackDots.length;
+    }
+
+    return fallbackDots[hash] ?? fallbackDots[0];
+}
+
+function ClassDot({ name, large = false }: { name: string | null | undefined; large?: boolean }) {
+    return (
+        <span
+            className={`shrink-0 rounded-full ring-2 ring-white dark:ring-zinc-900 ${large ? 'mt-2 h-3.5 w-3.5' : 'h-3 w-3'} ${classDot(name)}`}
+            aria-hidden
+        />
+    );
+}
+
 function Header({ todayLabel, showDate = true }: { todayLabel: string; showDate?: boolean }) {
     return (
         <div className="text-center">
@@ -104,9 +142,12 @@ export default function ConvivaCheckin({
                     </h2>
 
                     <div className="w-full rounded-3xl bg-white px-6 pb-6 pt-7 text-left shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
-                        <p className="text-3xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-white">
-                            {checkin.room_name}
-                        </p>
+                        <div className="flex items-start gap-3">
+                            <ClassDot name={checkin.room_name} large />
+                            <p className="min-w-0 text-3xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-white">
+                                {checkin.room_name}
+                            </p>
+                        </div>
                         <p className="mt-3 text-base font-medium text-zinc-500 dark:text-zinc-400">{firstName}</p>
                         <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{todayLabel}</p>
@@ -229,6 +270,7 @@ export default function ConvivaCheckin({
                                                     : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'
                                             }`}
                                         >
+                                            <ClassDot name={c.room_name} />
                                             <span className="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
                                                 {c.room_name}
                                             </span>
