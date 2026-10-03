@@ -104,6 +104,7 @@ const items: MoreMenuItem[] = [
     },
     { name: 'Séries', description: 'Veja todas as séries já passadas na Nova Semente', route: 'mobile.acervo', featureKey: 'acervo', icon: PlayCircleIcon },
     { name: 'Classe Começos', description: 'Estudo bíblico presencial ou on-line', route: 'varios.classe-comecos', featureKey: 'classe_comecos', icon: AcademicCapIcon },
+    { name: 'CONVIVA', description: 'Check-in na sua classe de estudo bíblico', route: 'mobile.conviva.checkin', featureKey: 'conviva', icon: AcademicCapIcon },
 ];
 
 export default function MobileMore(_: Props) {
