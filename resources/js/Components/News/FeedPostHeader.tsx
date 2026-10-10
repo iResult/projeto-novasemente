@@ -1,4 +1,5 @@
 import { PhotoPreviewButton } from '@/Components/PhotoPreview';
+import { CHURCH_TIMEZONE, parseInstant } from '@/utils/datetimeLocal';
 
 export interface FeedPostAuthor {
     name: string;
@@ -16,11 +17,15 @@ interface Props {
 }
 
 function formatFeedDate(iso: string | null): string {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('pt-BR', {
+    const date = parseInstant(iso);
+    if (!date) return '';
+    return date.toLocaleString('pt-BR', {
+        timeZone: CHURCH_TIMEZONE,
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
     });
 }
 

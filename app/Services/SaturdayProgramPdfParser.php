@@ -71,12 +71,14 @@ class SaturdayProgramPdfParser
             if ($heading === null && $this->looksLikeHeading($line)) {
                 $heading = $line;
                 $i++;
+
                 continue;
             }
 
             if ($dateLabel === null && $this->looksLikeDateLabel($line)) {
                 $dateLabel = $line;
                 $i++;
+
                 continue;
             }
 
@@ -110,18 +112,21 @@ class SaturdayProgramPdfParser
                     if (preg_match('/^Person:\s*(.+)$/iu', $next, $pm)) {
                         $person = trim(($person ? $person.' ' : '').$pm[1]);
                         $i++;
+
                         continue;
                     }
 
                     if (preg_match('/^Ministro:\s*(.+)$/iu', $next, $mm)) {
                         $person = trim(($person ? $person.' · ' : '').'Ministro: '.$mm[1]);
                         $i++;
+
                         continue;
                     }
 
                     if (preg_match('/^Responsável:\s*(.+)$/iu', $next, $rm)) {
                         $person = trim(($person ? $person.' · ' : '').'Responsável: '.$rm[1]);
                         $i++;
+
                         continue;
                     }
 
@@ -129,6 +134,7 @@ class SaturdayProgramPdfParser
                     if ($person !== null && preg_match('/^(Ayudes|Adriana|,)/u', $next)) {
                         $person = trim($person.' '.$next);
                         $i++;
+
                         continue;
                     }
 
@@ -164,6 +170,7 @@ class SaturdayProgramPdfParser
                     'title' => $line,
                 ];
                 $i++;
+
                 continue;
             }
 
@@ -210,6 +217,7 @@ class SaturdayProgramPdfParser
                     $j++;
                 }
                 $i = $j - 1;
+
                 continue;
             }
 
@@ -301,10 +309,10 @@ class SaturdayProgramPdfParser
             'Rede social',
         ];
 
-        $pattern = '/(' . implode('|', array_map(
+        $pattern = '/('.implode('|', array_map(
             static fn (string $r) => preg_quote($r, '/'),
             $roles,
-        )) . ')\s*:\s*/iu';
+        )).')\s*:\s*/iu';
 
         if (! preg_match($pattern, $line)) {
             return [];
@@ -393,10 +401,12 @@ class SaturdayProgramPdfParser
                     && $this->isRundownTotalLine((string) ($row['title'] ?? ''), (string) ($row['duration'] ?? ''))
                 ) {
                     $i++;
+
                     continue;
                 }
                 $out[] = $row;
                 $i++;
+
                 continue;
             }
 
@@ -410,6 +420,8 @@ class SaturdayProgramPdfParser
                 $out[] = ['kind' => 'section', 'title' => $title];
             }
         }
+
+        $out = $this->placeBoundarySections($out);
 
         return array_map(function (array $row): array {
             if (($row['kind'] ?? '') !== 'item') {
@@ -475,6 +487,7 @@ class SaturdayProgramPdfParser
                     $seen[$key] = true;
                     $kept[] = 'CONVIVA';
                 }
+
                 continue;
             }
 
@@ -484,6 +497,7 @@ class SaturdayProgramPdfParser
                     $seen[$key] = true;
                     $kept[] = $title;
                 }
+
                 continue;
             }
 
@@ -500,6 +514,7 @@ class SaturdayProgramPdfParser
                     $emittedCulto[$cultoKey] = true;
                     $kept[] = $cultoKey;
                 }
+
                 continue;
             }
 
@@ -512,5 +527,169 @@ class SaturdayProgramPdfParser
     private function isCultoBoundaryLabel(string $title): bool
     {
         return (bool) preg_match('/PR[ÉE][-\s]?ABERTURA|TRANSIÇÃO|INTERVALO|ORGANIZA/iu', $title);
+    }
+
+    /**
+     * A coluna de fases do Planning Center sai depois dos horários da página.
+     * Quando a página mistura o fim do 1º culto com o começo do 2º, Conviva,
+     * intervalo e o divisor do 2º culto precisam voltar para o item que abre cada bloco.
+     *
+     * @param  list<array<string, mixed>>  $items
+     * @return list<array<string, mixed>>
+     */
+    private function placeBoundarySections(array $items): array
+    {
+        $lessonAt = null;
+        $countdowns = [];
+        $vocals = [];
+        $noonAt = null;
+
+        foreach ($items as $index => $row) {
+            if (($row['kind'] ?? '') !== 'item') {
+                continue;
+            }
+
+            $title = (string) ($row['title'] ?? '');
+            if (preg_match('/COUNT\s*-?\s*DOWN/iu', $title)) {
+                $countdowns[] = $index;
+            }
+            if (preg_match('/ENTRADA DO VOCAL/iu', $title)) {
+                $vocals[] = $index;
+            }
+            if ($lessonAt === null && preg_match('/EXPLANA[CÇ][AÃ]O DA LI[CÇ][AÃ]O|\bLI[CÇ][AÃ]O\b|\bCONVIVA\b/iu', $title)) {
+                $lessonAt = $index;
+            }
+
+            $minutes = $this->startMinutes((string) ($row['start'] ?? ''));
+            if ($noonAt === null && $minutes !== null && $minutes >= 12 * 60
+                && ! preg_match('/\bLI[CÇ][AÃ]O\b/iu', $title)
+            ) {
+                $noonAt = $index;
+            }
+        }
+
+        $secondCultoAt = $countdowns[1] ?? $vocals[1] ?? $noonAt;
+        $moved = [];
+
+        foreach ($items as $index => $row) {
+            if (! $this->isMovableBoundary($row)) {
+                continue;
+            }
+
+            $target = $this->boundaryTargetIndex((string) ($row['title'] ?? ''), $items, $lessonAt, $secondCultoAt);
+            if ($target !== null && $target < $index) {
+                $moved[$index] = $target;
+            }
+        }
+
+        if ($moved === []) {
+            return $items;
+        }
+
+        $insertAt = [];
+        foreach ($moved as $from => $target) {
+            $insertAt[$target][] = $items[$from];
+        }
+        foreach ($insertAt as &$group) {
+            usort($group, function (array $a, array $b): int {
+                return $this->boundaryRank((string) ($a['title'] ?? '')) <=> $this->boundaryRank((string) ($b['title'] ?? ''));
+            });
+        }
+        unset($group);
+
+        $out = [];
+        foreach ($items as $index => $row) {
+            foreach ($insertAt[$index] ?? [] as $section) {
+                $out[] = $section;
+            }
+            if (! isset($moved[$index])) {
+                $out[] = $row;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function isMovableBoundary(array $row): bool
+    {
+        if (($row['kind'] ?? '') !== 'section') {
+            return false;
+        }
+
+        return (bool) preg_match('/^(CONVIVA|INTERVALO|\d+[ºª]\s*CULTO)\b/iu', (string) ($row['title'] ?? ''));
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $items
+     */
+    private function boundaryTargetIndex(string $title, array $items, ?int $lessonAt, ?int $secondCultoAt): ?int
+    {
+        if (preg_match('/^CONVIVA\b/iu', $title)) {
+            return $lessonAt;
+        }
+
+        if (preg_match('/^INTERVALO\b/iu', $title)) {
+            if ($lessonAt === null) {
+                return $secondCultoAt;
+            }
+
+            $afterLesson = $this->nextItemIndex($items, $lessonAt);
+            if ($afterLesson === null) {
+                return $secondCultoAt;
+            }
+            if ($secondCultoAt !== null && $afterLesson >= $secondCultoAt) {
+                return $secondCultoAt;
+            }
+
+            return $afterLesson;
+        }
+
+        if (preg_match('/\d+[ºª]\s*CULTO/iu', $title)) {
+            return $secondCultoAt;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $items
+     */
+    private function nextItemIndex(array $items, int $after): ?int
+    {
+        $n = count($items);
+        for ($index = $after + 1; $index < $n; $index++) {
+            if (($items[$index]['kind'] ?? '') === 'item') {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    private function boundaryRank(string $title): int
+    {
+        if (preg_match('/^CONVIVA\b/iu', $title)) {
+            return 0;
+        }
+        if (preg_match('/^INTERVALO\b/iu', $title)) {
+            return 1;
+        }
+        if (preg_match('/\d+[ºª]\s*CULTO/iu', $title)) {
+            return 2;
+        }
+
+        return 3;
+    }
+
+    private function startMinutes(string $start): ?int
+    {
+        if (! preg_match('/^(\d{1,2}):(\d{2})/', $start, $matches)) {
+            return null;
+        }
+
+        return ((int) $matches[1]) * 60 + (int) $matches[2];
     }
 }

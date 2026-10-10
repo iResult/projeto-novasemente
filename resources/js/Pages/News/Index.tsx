@@ -31,7 +31,7 @@ import { useDebouncedServerSearch } from '@/hooks/useDebouncedServerSearch';
 import { usePublicationAppPreview } from '@/hooks/usePublicationAppPreview';
 import { confirmAction } from '@/utils/confirmDialog';
 import { buildNewsFormData } from '@/utils/buildNewsFormData';
-import { toDatetimeLocalInput } from '@/utils/datetimeLocal';
+import { formatChurchDateTime, toDatetimeLocalInput } from '@/utils/datetimeLocal';
 import {
     applyListModalFormErrors,
     editIdFromListModalRedirect,
@@ -730,9 +730,7 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                                         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                                             <CalendarDaysIcon className="h-4 w-4 shrink-0" />
                                             <span>
-                                                {p.published_at
-                                                    ? new Date(p.published_at).toLocaleDateString('pt-BR')
-                                                    : 'Rascunho'}
+                                                {p.published_at ? formatChurchDateTime(p.published_at) : 'Rascunho'}
                                             </span>
                                             {!isActive && (
                                                 <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
@@ -758,7 +756,7 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                                                         ? imageSrc(coverOrImage, appUrl)
                                                         : youtubeThumb,
                                                     publishedLabel: p.published_at
-                                                        ? new Date(p.published_at).toLocaleDateString('pt-BR')
+                                                        ? formatChurchDateTime(p.published_at)
                                                         : 'Rascunho',
                                                     meta: [typeShortLabel(p.content_type ?? 'article')],
                                                     backLabel: '← Publicações',
@@ -1263,11 +1261,7 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                                             </h3>
                                             {data.published_at && (
                                                 <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                                    {new Date(data.published_at).toLocaleDateString('pt-BR', {
-                                                        day: '2-digit',
-                                                        month: 'long',
-                                                        year: 'numeric',
-                                                    })}
+                                                    {formatChurchDateTime(data.published_at)}
                                                 </p>
                                             )}
                                             <p className="mt-3 line-clamp-4 text-sm text-zinc-600 dark:text-zinc-300">

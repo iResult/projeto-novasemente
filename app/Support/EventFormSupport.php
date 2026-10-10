@@ -92,7 +92,38 @@ class EventFormSupport
             return $date === false ? null : $date;
         }
 
-        return Carbon::parse($raw, $tz);
+        return Carbon::parse($raw, $tz)->timezone($tz);
+    }
+
+    /**
+     * Horário de publicação vindo do formulário, sempre no fuso da igreja.
+     * String com `Z` (UTC) vira o relógio de São Paulo; datetime-local sem offset
+     * é o relógio digitado, não UTC.
+     */
+    public static function resolvePublishedAt(mixed $value, mixed $fallback = null): CarbonInterface
+    {
+        $tz = (string) config('app.timezone', 'America/Sao_Paulo');
+        $parsed = self::parseFormDateTime($value);
+        if (! $parsed instanceof CarbonInterface) {
+            if ($fallback instanceof CarbonInterface) {
+                return Carbon::instance($fallback)->timezone($tz);
+            }
+
+            return now($tz);
+        }
+
+        return $parsed->copy()->timezone($tz);
+    }
+
+    public static function churchIso(?\DateTimeInterface $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return Carbon::instance($value)
+            ->timezone((string) config('app.timezone', 'America/Sao_Paulo'))
+            ->format('Y-m-d\TH:i:sP');
     }
 
     /** @param  array<string, mixed>  $data */

@@ -160,4 +160,103 @@ TXT;
         );
         $this->assertNotContains('13:39:30', $starts);
     }
+
+    #[Test]
+    public function it_anchors_service_dividers_when_the_sidebar_lands_mid_second_service(): void
+    {
+        $text = <<<'TXT'
+CULTO DE SÁBADO
+10 October 2026
+09:26:303:00COUNT DOWN DE 3 MINUTOS
+10:0940:00MENSAGEM
+10:56 2:00ORIENTAÇÕES DE SAÍDA
+11:0445:00INTRODUÇÃO | ORAÇÃO | EXPLANAÇÃO DA LIÇÃO
+11:4910:00ABERTURA DAS PORTAS | TROCA DE AUDITÓRIO
+11:59 1:00FECHAMENTO DAS PORTAS
+12:00 3:00COUNT DOWN DE 3 MINUTOS
+12:03 0:30ENTRADA DO VOCAL | INÍCIO DO LOUVOR
+12:03:306:00LOUVOR 1:Escape
+12:35:305:00LOUVOR 3: Porque Ele Vive
+CONVIVA
+INTERVALO | ORGANIZAÇÃO DO 2º CULTO
+PRÉ-ABERTURA - 2º CULTO
+12:40:306:00LOUVOR 4:Algo Novo
+TXT;
+
+        $items = (new SaturdayProgramPdfParser)->parseText($text)['items'];
+        $titles = array_map(static fn (array $row): string => (string) ($row['title'] ?? ''), $items);
+
+        $conviva = array_search('CONVIVA', $titles, true);
+        $lesson = array_search('INTRODUÇÃO | ORAÇÃO | EXPLANAÇÃO DA LIÇÃO', $titles, true);
+        $interval = array_search('INTERVALO | ORGANIZAÇÃO DO 2º CULTO', $titles, true);
+        $second = array_search('2º CULTO', $titles, true);
+        $noonCountdown = null;
+        $afternoonPraise = null;
+        foreach ($items as $index => $row) {
+            if (($row['kind'] ?? '') !== 'item') {
+                continue;
+            }
+            if (($row['start'] ?? '') === '12:00' && $noonCountdown === null) {
+                $noonCountdown = $index;
+            }
+            if (str_contains((string) ($row['title'] ?? ''), 'LOUVOR 1')) {
+                $afternoonPraise = $index;
+            }
+        }
+
+        $this->assertIsInt($conviva);
+        $this->assertIsInt($lesson);
+        $this->assertIsInt($interval);
+        $this->assertIsInt($second);
+        $this->assertIsInt($noonCountdown);
+        $this->assertLessThan($lesson, $conviva);
+        $this->assertLessThan($interval, $lesson);
+        $this->assertLessThan($second, $interval);
+        $this->assertLessThan($noonCountdown, $second);
+        $this->assertLessThan($afternoonPraise, $second);
+
+        foreach ($items as $index => $row) {
+            if (($row['kind'] ?? '') !== 'item') {
+                continue;
+            }
+            $start = (string) ($row['start'] ?? '');
+            if (preg_match('/^(\d{1,2}):(\d{2})/', $start, $m) && ((int) $m[1]) * 60 + (int) $m[2] >= 12 * 60) {
+                $this->assertGreaterThan($second, $index, $start.' '.$row['title']);
+            }
+        }
+    }
+
+    #[Test]
+    public function it_places_the_sample_pdf_second_service_before_noon(): void
+    {
+        $items = (new SaturdayProgramPdfParser)->parseFile(
+            base_path('tests/fixtures/saturday-program-sample.pdf'),
+        )['items'];
+
+        $second = null;
+        $lesson = null;
+        foreach ($items as $index => $row) {
+            $title = (string) ($row['title'] ?? '');
+            if ($second === null && ($row['kind'] ?? '') === 'section' && $title === '2º CULTO') {
+                $second = $index;
+            }
+            if ($lesson === null && ($row['kind'] ?? '') === 'item' && str_contains(mb_strtoupper($title), 'LIÇÃO')) {
+                $lesson = $index;
+            }
+        }
+
+        $this->assertIsInt($second);
+        $this->assertIsInt($lesson);
+        $this->assertLessThan($second, $lesson);
+
+        foreach ($items as $index => $row) {
+            if (($row['kind'] ?? '') !== 'item') {
+                continue;
+            }
+            $start = (string) ($row['start'] ?? '');
+            if (preg_match('/^(\d{1,2}):(\d{2})/', $start, $m) && ((int) $m[1]) * 60 + (int) $m[2] >= 12 * 60) {
+                $this->assertGreaterThan($second, $index);
+            }
+        }
+    }
 }

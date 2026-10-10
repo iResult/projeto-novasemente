@@ -7,6 +7,7 @@ use App\Models\Church;
 use App\Models\Musica;
 use App\Models\News;
 use App\Services\PublicationBroadcastNotifier;
+use App\Support\EventFormSupport;
 use App\Support\InstagramUrl;
 use App\Support\SearchTerm;
 use App\Support\StorageUrl;
@@ -255,6 +256,7 @@ class NewsController extends Controller
             $arr['cover_url'] = $n->resolvedCoverUrl($host);
             $arr['pdf_url'] = $n->resolvedPdfUrl($host);
             $arr['video_url'] = $n->resolvedVideoUrl($host);
+            $arr['published_at'] = EventFormSupport::churchIso($n->published_at);
 
             if ($n->author !== null) {
                 $photoUrl = $n->author->photo_url;
@@ -314,7 +316,7 @@ class NewsController extends Controller
             $videoPath = $request->file('video_file')->store('news/videos', 'public');
         }
 
-        $publishedAt = isset($data['published_at']) && $data['published_at'] !== '' ? $data['published_at'] : now();
+        $publishedAt = EventFormSupport::resolvePublishedAt($data['published_at'] ?? null);
 
         $news = News::create([
             'church_id' => $churchId,
@@ -387,7 +389,7 @@ class NewsController extends Controller
             $videoPath = null;
         }
 
-        $publishedAt = isset($data['published_at']) && $data['published_at'] !== '' ? $data['published_at'] : ($news->published_at ?? now());
+        $publishedAt = EventFormSupport::resolvePublishedAt($data['published_at'] ?? null, $news->published_at);
 
         $news->fill([
             'section' => News::SECTION_NEWS,

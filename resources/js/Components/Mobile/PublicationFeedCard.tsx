@@ -124,7 +124,8 @@ function imageSrc(url: string | null, appUrl: string): string {
 
 function formatRelative(iso: string | null): string {
     if (!iso) return '';
-    const d = new Date(iso);
+    const normalized = iso.trim().replace(/(\.\d{3})\d+/, '$1');
+    const d = new Date(normalized);
     if (Number.isNaN(d.getTime())) return '';
     const now = Date.now();
     const diffSec = Math.max(0, Math.floor((now - d.getTime()) / 1000));
@@ -135,14 +136,19 @@ function formatRelative(iso: string | null): string {
     if (hours < 24) return `há ${hours} h`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `há ${days} d`;
-    return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: 'numeric',
+        month: 'short',
+    });
 }
 
 function formatPhotoDateTitle(iso: string | null): string {
     if (!iso) return '';
-    const d = new Date(iso);
+    const d = new Date(iso.trim().replace(/(\.\d{3})\d+/, '$1'));
     if (Number.isNaN(d.getTime())) return '';
     return d.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
         day: 'numeric',
         month: 'long',
         year: 'numeric',

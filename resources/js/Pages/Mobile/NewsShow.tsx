@@ -44,10 +44,15 @@ interface Props {
 
 function formatDate(iso: string | null): string {
     if (!iso) return '';
-    return new Date(iso).toLocaleDateString('pt-BR', {
+    const date = new Date(iso.trim().replace(/(\.\d{3})\d+/, '$1'));
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
         day: '2-digit',
         month: 'long',
         year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
     });
 }
 

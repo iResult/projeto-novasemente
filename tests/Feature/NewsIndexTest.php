@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Church;
 use App\Models\News;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -49,5 +50,61 @@ class NewsIndexTest extends TestCase
 
         $this->assertNotNull($row);
         $this->assertSame(News::TYPE_INSTAGRAM_FEED, $row['content_type']);
+    }
+
+    public function test_published_at_is_stored_on_the_church_clock(): void
+    {
+        config(['app.timezone' => 'America/Sao_Paulo']);
+        $this->seed();
+
+        $church = Church::query()->firstOrFail();
+        Permission::firstOrCreate(['name' => 'news.manage']);
+        $admin = User::factory()->create(['church_id' => $church->id]);
+        $admin->assignRole(Role::firstOrCreate(['name' => 'admin']));
+        $admin->givePermissionTo('news.manage');
+
+        $this->actingAs($admin)
+            ->withSession(['working_church_id' => $church->id])
+            ->post(route('news.store'), [
+                'content_type' => News::TYPE_INSTAGRAM_FEED,
+                'title' => 'Notícia no horário da igreja',
+                'body' => 'Legenda',
+                'image_url' => 'https://example.com/capa.jpg',
+                'published_at' => '2026-10-09T21:30',
+            ])
+            ->assertSessionDoesntHaveErrors();
+
+        $news = News::query()->where('title', 'Notícia no horário da igreja')->firstOrFail();
+        $tz = (string) config('app.timezone');
+        $this->assertSame('2026-10-09 21:30:00', $news->published_at?->timezone($tz)->format('Y-m-d H:i:s'));
+
+        $this->actingAs($admin)
+            ->withSession(['working_church_id' => $church->id])
+            ->put(route('news.update', $news), [
+                'content_type' => News::TYPE_INSTAGRAM_FEED,
+                'title' => 'Notícia no horário da igreja',
+                'body' => 'Legenda',
+                'image_url' => 'https://example.com/capa.jpg',
+                'published_at' => '2026-10-10T00:30:00Z',
+            ])
+            ->assertSessionDoesntHaveErrors();
+
+        $news->refresh();
+        $this->assertSame('2026-10-09 21:30:00', $news->published_at?->timezone($tz)->format('Y-m-d H:i:s'));
+
+        Carbon::setTestNow(Carbon::parse('2026-10-09 23:10:00', $tz));
+        $this->actingAs($admin)
+            ->withSession(['working_church_id' => $church->id])
+            ->post(route('news.store'), [
+                'content_type' => News::TYPE_INSTAGRAM_FEED,
+                'title' => 'Notícia publicada agora',
+                'body' => 'Legenda',
+                'image_url' => 'https://example.com/capa.jpg',
+            ])
+            ->assertSessionDoesntHaveErrors();
+        Carbon::setTestNow();
+
+        $nowPost = News::query()->where('title', 'Notícia publicada agora')->firstOrFail();
+        $this->assertSame('2026-10-09 23:10:00', $nowPost->published_at?->timezone($tz)->format('Y-m-d H:i:s'));
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Church;
 use App\Models\Musica;
 use App\Models\News;
 use App\Services\PublicationBroadcastNotifier;
+use App\Support\EventFormSupport;
 use App\Support\InstagramUrl;
 use App\Support\SearchTerm;
 use App\Support\StorageUrl;
@@ -257,6 +258,7 @@ class HealthController extends Controller
             $arr['cover_url'] = $n->resolvedCoverUrl($host);
             $arr['pdf_url'] = $n->resolvedPdfUrl($host);
             $arr['video_url'] = $n->resolvedVideoUrl($host);
+            $arr['published_at'] = EventFormSupport::churchIso($n->published_at);
 
             if ($n->author !== null) {
                 $photoUrl = $n->author->photo_url;
@@ -319,7 +321,7 @@ class HealthController extends Controller
             $videoPath = $request->file('video_file')->store('health/videos', 'public');
         }
 
-        $publishedAt = isset($data['published_at']) && $data['published_at'] !== '' ? $data['published_at'] : now();
+        $publishedAt = EventFormSupport::resolvePublishedAt($data['published_at'] ?? null);
 
         $health = News::create([
             'church_id' => $churchId,
@@ -395,7 +397,7 @@ class HealthController extends Controller
             $videoPath = null;
         }
 
-        $publishedAt = isset($data['published_at']) && $data['published_at'] !== '' ? $data['published_at'] : ($health->published_at ?? now());
+        $publishedAt = EventFormSupport::resolvePublishedAt($data['published_at'] ?? null, $health->published_at);
 
         $health->fill([
             'section' => News::SECTION_HEALTH,

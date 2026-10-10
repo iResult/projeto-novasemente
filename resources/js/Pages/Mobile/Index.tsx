@@ -150,7 +150,17 @@ export default function MobileIndex({ church, latestNews, upcomingEvents }: Prop
                                             </span>
                                             <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                                 {n.published_at
-                                                    ? new Date(n.published_at).toLocaleDateString('pt-BR')
+                                                    ? new Date(n.published_at.trim().replace(/(\.\d{3})\d+/, '$1')).toLocaleString(
+                                                          'pt-BR',
+                                                          {
+                                                              timeZone: 'America/Sao_Paulo',
+                                                              day: '2-digit',
+                                                              month: '2-digit',
+                                                              year: 'numeric',
+                                                              hour: '2-digit',
+                                                              minute: '2-digit',
+                                                          },
+                                                      )
                                                     : ''}
                                             </span>
                                             {n.excerpt && (
