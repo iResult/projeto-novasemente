@@ -1,1 +1,1 @@
-• Programação do sábado mais limpa: só horário e título — sem nomes, sem subtítulos e sem o card Equipe.
+• Na Home, o texto fica sobre a foto dos cards e a meditação diária mostra o título no destaque.

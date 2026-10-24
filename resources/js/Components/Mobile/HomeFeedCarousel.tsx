@@ -3,6 +3,8 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PlayIcon } from '@heroicons/react/24/solid';
 import { useEffect, useId, useRef, useState } from 'react';
 
+export type HomeFeedPresentation = 'photo' | 'art' | 'video' | 'text' | 'safe';
+
 export type HomeFeedHighlight = {
     id: string;
     type: string;
@@ -12,8 +14,9 @@ export type HomeFeedHighlight = {
     excerpt: string;
     image_url: string | null;
     cover_play_overlay: boolean;
-    /** Preenchido quando a própria arte já traz a mensagem, como a meditação do dia. */
+    /** Preenchido quando a própria arte já traz a mensagem. A meditação do dia usa o título por cima. */
     cover_overlay_text?: string | null;
+    presentation?: HomeFeedPresentation;
     href: string;
 };
 
@@ -31,10 +34,10 @@ type Props = {
     fallback: HomeFeedFallback;
 };
 
-type SlideKind = 'photo' | 'art' | 'text';
-
 const slideFrameClass =
-    'relative block h-[14.5rem] cursor-pointer overflow-hidden rounded-[1.25rem] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/50 sm:h-64 md:h-80 lg:h-[22rem]';
+    'relative block cursor-pointer overflow-hidden rounded-[1.25rem] bg-[#f6f3ec] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/50 dark:bg-zinc-900';
+
+const mediaFrameClass = 'relative h-[14.5rem] overflow-hidden sm:h-64 md:h-80 lg:h-[22rem]';
 
 function plain(value: string): string {
     return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -48,11 +51,26 @@ function imageSrc(url: string, appUrl: string): string {
     return `${base}${url}`;
 }
 
-function kindFor(imageUrl: string | null, overlay: string | null | undefined): SlideKind {
-    if (!imageUrl) {
+function presentationOf(item: Pick<HomeFeedHighlight, 'image_url' | 'cover_play_overlay' | 'cover_overlay_text' | 'presentation'>): HomeFeedPresentation {
+    if (
+        item.presentation === 'photo' ||
+        item.presentation === 'art' ||
+        item.presentation === 'video' ||
+        item.presentation === 'text' ||
+        item.presentation === 'safe'
+    ) {
+        return item.presentation;
+    }
+    if (!item.image_url) {
         return 'text';
     }
-    return plain(overlay ?? '') !== '' ? 'art' : 'photo';
+    if (item.cover_play_overlay) {
+        return 'video';
+    }
+    if (plain(item.cover_overlay_text ?? '') !== '') {
+        return 'art';
+    }
+    return 'safe';
 }
 
 function PlayMark() {
@@ -63,24 +81,20 @@ function PlayMark() {
     );
 }
 
-function ActionPill({ label, tone }: { label: string; tone: 'on-photo' | 'on-paper' }) {
+function ActionPill({ label }: { label: string }) {
     if (label === '') {
         return null;
     }
 
     return (
-        <span
-            className={`mt-3 inline-flex w-fit max-w-full items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold ${
-                tone === 'on-photo'
-                    ? 'bg-brand-700 text-white'
-                    : 'bg-brand-700 text-white dark:bg-brand-300 dark:text-brand-950'
-            }`}
-        >
+        <span className="mt-3 inline-flex w-fit max-w-full items-center gap-1 rounded-full bg-brand-700 px-3 py-1.5 text-[12px] font-semibold text-white">
             <span className="truncate">{label}</span>
             <ChevronRightIcon className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2.25} />
         </span>
     );
 }
+
+const onPhotoShadow = '[text-shadow:0_1px_2px_rgb(0_0_0/0.35)]';
 
 function TextSlide({
     kicker,
@@ -94,21 +108,52 @@ function TextSlide({
     action: string;
 }) {
     return (
-        <div className="flex h-full flex-col justify-end bg-[#f6f3ec] px-4 pb-4 pt-4 dark:bg-zinc-900">
+        <div className={`${mediaFrameClass} flex flex-col justify-end bg-[#f6f3ec] px-4 pb-4 pt-4 dark:bg-zinc-900`}>
             {kicker !== '' ? (
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-800 dark:text-brand-200">
-                    {kicker}
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-800 dark:text-brand-200">{kicker}</p>
             ) : null}
             <p className="mt-1 line-clamp-3 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight text-zinc-900 dark:text-zinc-50">
                 {title}
             </p>
             {excerpt !== '' && excerpt !== title ? (
-                <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-zinc-600 dark:text-zinc-300">
-                    {excerpt}
-                </p>
+                <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-zinc-600 dark:text-zinc-300">{excerpt}</p>
             ) : null}
-            <ActionPill label={action} tone="on-paper" />
+            <ActionPill label={action} />
+        </div>
+    );
+}
+
+function ArtMedia({
+    src,
+    priority,
+    onMissing,
+}: {
+    src: string;
+    priority: boolean;
+    onMissing: () => void;
+}) {
+    return (
+        <div className={`${mediaFrameClass} bg-[#f6f3ec] dark:bg-zinc-900`}>
+            <img
+                src={src}
+                alt=""
+                draggable={false}
+                loading={priority ? 'eager' : 'lazy'}
+                decoding="async"
+                onError={onMissing}
+                className="absolute inset-0 h-full w-full object-contain object-center"
+            />
+        </div>
+    );
+}
+
+function OverlayCopy({ kicker, title }: { kicker: string; title: string }) {
+    return (
+        <div className={`absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pt-16 text-white ${onPhotoShadow}`}>
+            {kicker !== '' ? (
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white">{kicker}</p>
+            ) : null}
+            <p className={`line-clamp-2 text-[1.15rem] font-semibold leading-snug ${kicker !== '' ? 'mt-1' : ''}`}>{title}</p>
         </div>
     );
 }
@@ -119,7 +164,6 @@ function PhotoSlide({
     title,
     excerpt,
     action,
-    showPlay,
     priority,
     onMissing,
 }: {
@@ -128,12 +172,11 @@ function PhotoSlide({
     title: string;
     excerpt: string;
     action: string;
-    showPlay: boolean;
     priority: boolean;
     onMissing: () => void;
 }) {
     return (
-        <div className="relative h-full bg-zinc-900">
+        <div className={`${mediaFrameClass} bg-zinc-900`}>
             <img
                 src={src}
                 alt=""
@@ -143,65 +186,16 @@ function PhotoSlide({
                 onError={onMissing}
                 className="absolute inset-0 h-full w-full object-cover object-[center_38%]"
             />
-            <div
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/28 to-black/5"
-                aria-hidden
-            />
-            {showPlay ? (
-                <span className="absolute right-3 top-3 z-10">
-                    <PlayMark />
-                </span>
-            ) : null}
-            <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pr-16 pt-16 text-white">
+            <div className={`absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pt-16 text-white ${onPhotoShadow}`}>
                 {kicker !== '' ? (
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80">{kicker}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white">{kicker}</p>
                 ) : null}
-                <p className="mt-1 line-clamp-3 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight">
-                    {title}
-                </p>
+                <p className="mt-1 line-clamp-3 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight">{title}</p>
                 {excerpt !== '' && excerpt !== title ? (
-                    <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-white/85">{excerpt}</p>
+                    <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-white">{excerpt}</p>
                 ) : null}
-                <ActionPill label={action} tone="on-photo" />
+                <ActionPill label={action} />
             </div>
-        </div>
-    );
-}
-
-function ArtSlide({
-    src,
-    label,
-    showPlay,
-    priority,
-    onMissing,
-}: {
-    src: string;
-    label: string;
-    showPlay: boolean;
-    priority: boolean;
-    onMissing: () => void;
-}) {
-    return (
-        <div className="relative h-full bg-[#f3f0e8] dark:bg-zinc-900">
-            <img
-                src={src}
-                alt=""
-                draggable={false}
-                loading={priority ? 'eager' : 'lazy'}
-                decoding="async"
-                onError={onMissing}
-                className="absolute inset-0 h-full w-full object-cover object-center"
-            />
-            {showPlay ? (
-                <span className="absolute right-3 top-3 z-10">
-                    <PlayMark />
-                </span>
-            ) : (
-                <span className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-sm">
-                    <ChevronRightIcon className="h-4 w-4" aria-hidden strokeWidth={2.25} />
-                </span>
-            )}
-            <span className="sr-only">{label}</span>
         </div>
     );
 }
@@ -213,49 +207,68 @@ function SlideFace({
     excerpt,
     action,
     imageUrl,
-    showPlay,
     priority,
     appUrl,
 }: {
-    kind: SlideKind;
+    kind: HomeFeedPresentation;
     kicker: string;
     title: string;
     excerpt: string;
     action: string;
     imageUrl: string | null;
-    showPlay: boolean;
     priority: boolean;
     appUrl: string;
 }) {
     const [missing, setMissing] = useState(false);
+    const showMedia = !missing && imageUrl && kind !== 'text';
 
-    if (kind === 'text' || missing || !imageUrl) {
+    if (!showMedia) {
         return <TextSlide kicker={kicker} title={title} excerpt={excerpt} action={action} />;
     }
 
-    if (kind === 'art') {
+    const src = imageSrc(imageUrl, appUrl);
+
+    if (kind === 'photo') {
         return (
-            <ArtSlide
-                src={imageSrc(imageUrl, appUrl)}
-                label={title}
-                showPlay={showPlay}
+            <PhotoSlide
+                src={src}
+                kicker={kicker}
+                title={title}
+                excerpt={excerpt}
+                action={action}
                 priority={priority}
                 onMissing={() => setMissing(true)}
             />
         );
     }
 
+    if (kind === 'art') {
+        return (
+            <>
+                <ArtMedia src={src} priority={priority} onMissing={() => setMissing(true)} />
+                <span className="sr-only">{title}</span>
+            </>
+        );
+    }
+
     return (
-        <PhotoSlide
-            src={imageSrc(imageUrl, appUrl)}
-            kicker={kicker}
-            title={title}
-            excerpt={excerpt}
-            action={action}
-            showPlay={showPlay}
-            priority={priority}
-            onMissing={() => setMissing(true)}
-        />
+        <div className={`${mediaFrameClass} bg-zinc-900`}>
+            <img
+                src={src}
+                alt=""
+                draggable={false}
+                loading={priority ? 'eager' : 'lazy'}
+                decoding="async"
+                onError={() => setMissing(true)}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            {kind === 'video' ? (
+                <span className="absolute right-3 top-3 z-10">
+                    <PlayMark />
+                </span>
+            ) : null}
+            <OverlayCopy kicker={kicker} title={title} />
+        </div>
     );
 }
 
@@ -322,13 +335,12 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
         const action = fallback.href ? plain(fallback.actionLabel) : '';
         const face = (
             <SlideFace
-                kind={fallback.imageUrl ? 'photo' : 'text'}
+                kind={fallback.imageUrl ? 'safe' : 'text'}
                 kicker=""
                 title={title}
                 excerpt={excerpt}
                 action={action}
                 imageUrl={fallback.imageUrl || null}
-                showPlay={false}
                 priority
                 appUrl={appUrl}
             />
@@ -371,71 +383,68 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
             <h2 id={labelId} className="sr-only">
                 Novidades da comunidade
             </h2>
-            <div className="relative">
-                <div
-                    ref={scrollerRef}
-                    className={`flex min-w-0 touch-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 ${
-                        many
-                            ? 'snap-x snap-mandatory overflow-x-auto scroll-smooth motion-reduce:scroll-auto'
-                            : 'overflow-hidden'
-                    }`}
-                    tabIndex={many ? 0 : undefined}
-                >
-                    {slides.map((item, index) => {
-                        const title = plain(item.title);
-                        const excerpt = plain(item.excerpt);
-                        const action = plain(item.action_label);
-                        const kicker = plain(item.type_label);
-                        const kind = kindFor(item.image_url, item.cover_overlay_text);
-                        const videoNote = item.cover_play_overlay ? ', vídeo' : '';
-                        const label = `${kicker !== '' ? `${kicker}: ` : ''}${title}${videoNote}`;
+            <div
+                ref={scrollerRef}
+                className={`flex min-w-0 touch-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 ${
+                    many ? 'snap-x snap-mandatory overflow-x-auto scroll-smooth motion-reduce:scroll-auto' : 'overflow-hidden'
+                }`}
+                tabIndex={many ? 0 : undefined}
+            >
+                {slides.map((item, index) => {
+                    const title = plain(item.title);
+                    const excerpt = plain(item.excerpt);
+                    const action = plain(item.action_label);
+                    const kicker = plain(item.type_label);
+                    const kind = presentationOf(item);
+                    const videoNote = kind === 'video' ? ', vídeo' : '';
+                    const label = `${kicker !== '' ? `${kicker}: ` : ''}${title}${videoNote}`;
 
-                        return (
-                            <div
-                                key={item.id}
-                                data-feed-slide
-                                className="w-full shrink-0 snap-start snap-always"
-                                aria-hidden={many && index !== activeIndex ? true : undefined}
+                    return (
+                        <div
+                            key={item.id}
+                            data-feed-slide
+                            className="w-full shrink-0 snap-start snap-always"
+                            aria-hidden={many && index !== activeIndex ? true : undefined}
+                        >
+                            <Link
+                                href={item.href}
+                                aria-label={label}
+                                tabIndex={many && index !== activeIndex ? -1 : undefined}
+                                className={slideFrameClass}
                             >
-                                <Link
-                                    href={item.href}
-                                    aria-label={label}
-                                    tabIndex={many && index !== activeIndex ? -1 : undefined}
-                                    className={slideFrameClass}
-                                >
-                                    <SlideFace
-                                        kind={kind}
-                                        kicker={kicker}
-                                        title={title}
-                                        excerpt={excerpt}
-                                        action={kind === 'art' ? '' : action}
-                                        imageUrl={item.image_url}
-                                        showPlay={item.cover_play_overlay}
-                                        priority={index === 0}
-                                        appUrl={appUrl}
-                                    />
-                                </Link>
-                            </div>
-                        );
-                    })}
-                </div>
-                {many ? (
-                    <div className="pointer-events-auto absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1.5">
-                        {slides.map((dot, dotIndex) => (
-                            <button
-                                key={dot.id}
-                                type="button"
-                                aria-label={`Publicação ${dotIndex + 1} de ${slides.length}: ${plain(dot.title)}`}
-                                aria-current={dotIndex === activeIndex ? 'true' : undefined}
-                                onClick={() => scrollTo(dotIndex)}
-                                className={`cursor-pointer rounded-full transition-all duration-300 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-                                    dotIndex === activeIndex ? 'h-1.5 w-4 bg-white' : 'h-1.5 w-1.5 bg-white/55 hover:bg-white/80'
-                                }`}
-                            />
-                        ))}
-                    </div>
-                ) : null}
+                                <SlideFace
+                                    kind={kind}
+                                    kicker={kicker}
+                                    title={title}
+                                    excerpt={excerpt}
+                                    action={kind === 'photo' || kind === 'text' ? action : ''}
+                                    imageUrl={item.image_url}
+                                    priority={index === 0}
+                                    appUrl={appUrl}
+                                />
+                            </Link>
+                        </div>
+                    );
+                })}
             </div>
+            {many ? (
+                <div className="mt-2.5 flex items-center justify-center gap-1.5">
+                    {slides.map((dot, dotIndex) => (
+                        <button
+                            key={dot.id}
+                            type="button"
+                            aria-label={`Publicação ${dotIndex + 1} de ${slides.length}: ${plain(dot.title)}`}
+                            aria-current={dotIndex === activeIndex ? 'true' : undefined}
+                            onClick={() => scrollTo(dotIndex)}
+                            className={`cursor-pointer rounded-full transition-all duration-300 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/50 ${
+                                dotIndex === activeIndex
+                                    ? 'h-1.5 w-4 bg-zinc-800 dark:bg-zinc-100'
+                                    : 'h-1.5 w-1.5 bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-600 dark:hover:bg-zinc-400'
+                            }`}
+                        />
+                    ))}
+                </div>
+            ) : null}
             {many ? (
                 <p className="sr-only" aria-live="polite">
                     {`Publicação ${activeIndex + 1} de ${slides.length}: ${activeTitle}`}

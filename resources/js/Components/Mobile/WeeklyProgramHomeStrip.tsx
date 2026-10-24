@@ -77,7 +77,7 @@ export default function WeeklyProgramHomeStrip({ cards, href = null }: Props) {
                     </Link>
                 ) : null}
             </div>
-            <div className="flex min-w-0 touch-auto snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain scroll-ps-0 scroll-pe-1 pe-1 [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pe-0 [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-0 touch-auto snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain scroll-ps-0 scroll-pe-4 pe-4 [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pe-0 md:scroll-pe-0 [&::-webkit-scrollbar]:hidden">
                 {cards.map((card) => {
                     const status = statusOf(card);
                     const time = formatTime(card.time_display);

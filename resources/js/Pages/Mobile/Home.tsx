@@ -435,7 +435,7 @@ export default function MobileHome({
     return (
         <MobileLayout allowHorizontalPan>
             <Head title="Home" />
-            <div className="mx-auto flex w-full max-w-lg flex-col gap-5 pb-4 sm:max-w-xl md:max-w-3xl lg:max-w-5xl">
+            <div className="mx-auto flex w-full max-w-lg flex-col gap-4 pb-6 sm:max-w-xl md:max-w-3xl lg:max-w-5xl">
                 {showPostRegistrationBanner ? (
                     <div
                         className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50"
@@ -448,6 +448,7 @@ export default function MobileHome({
                     </div>
                 ) : null}
 
+                <div className={`flex flex-col gap-3 ${showPostRegistrationBanner ? '' : '-mt-3'}`}>
                 <header className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
                         <p className="truncate text-xl font-semibold leading-snug tracking-tight text-zinc-900 dark:text-white">
@@ -469,6 +470,7 @@ export default function MobileHome({
                         actionLabel: 'Conhecer',
                     }}
                 />
+                </div>
 
                 {weeklyProgramCards.length > 0 ? (
                     <WeeklyProgramHomeStrip cards={weeklyProgramCards} href={programHref} />

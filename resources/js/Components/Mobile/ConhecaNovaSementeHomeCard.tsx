@@ -19,31 +19,31 @@ export default function ConhecaNovaSementeHomeCard() {
         <section aria-label="Conheça a Nova Semente">
             <Link
                 href={route('mobile.conheca')}
-                className="group relative flex h-[7.25rem] cursor-pointer items-center overflow-hidden rounded-2xl border border-zinc-200 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:border-zinc-800 dark:bg-zinc-900 md:h-52 lg:h-64"
+                className="group relative flex h-[7.25rem] cursor-pointer items-center overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:border-zinc-800 dark:bg-zinc-900 md:h-40"
             >
                 {media?.src ? (
                     <img
                         src={media.src}
                         alt=""
                         draggable={false}
-                        className="pointer-events-none absolute inset-y-0 right-0 h-full w-[46%] object-cover md:w-72 lg:w-[22rem]"
-                        style={{ objectPosition: media.focus ?? 'center 42%' }}
+                        className="pointer-events-none absolute inset-y-0 right-0 h-full w-[40%] object-cover md:w-72"
+                        style={{ objectPosition: media.focus ?? 'center center' }}
                     />
                 ) : null}
                 <div
-                    className="pointer-events-none absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-white from-[78%] to-transparent dark:from-zinc-900 md:w-[calc(100%-15rem)] lg:w-[calc(100%-18rem)]"
+                    className="pointer-events-none absolute inset-y-0 left-0 w-[72%] bg-gradient-to-r from-white from-[78%] to-transparent dark:from-zinc-900 md:w-[calc(100%-11rem)]"
                     aria-hidden
                 />
-                <span className="relative z-10 flex w-[56%] min-w-0 items-center md:w-[calc(100%-19rem)] lg:w-[calc(100%-23rem)]">
-                    <span className="ml-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-800 dark:bg-brand-950 dark:text-brand-200">
+                <span className="relative z-10 flex w-[56%] min-w-0 items-center gap-2.5 py-3 pl-3 pr-1 md:w-[calc(100%-14rem)]">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-800 dark:bg-brand-950 dark:text-brand-200">
                         <MapPinIcon className="h-4 w-4" aria-hidden strokeWidth={1.7} />
                     </span>
-                    <span className="min-w-0 flex-1 px-3">
+                    <span className="min-w-0 flex-1">
                         <span className="block text-[15px] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50">
                             Conheça a Nova Semente
                         </span>
-                        <span className="mt-1 block line-clamp-2 text-[13px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
-                            Quem somos, pastores, localização e horários
+                        <span className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug text-zinc-600 dark:text-zinc-300">
+                            Quem somos, pastores e horários
                         </span>
                     </span>
                     <ChevronRightIcon

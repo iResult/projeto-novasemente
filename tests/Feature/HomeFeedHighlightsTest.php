@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Church;
+use App\Models\Culto;
 use App\Models\Event;
 use App\Models\News;
 use App\Models\User;
@@ -107,7 +108,11 @@ class HomeFeedHighlightsTest extends TestCase
         $church->update(['logo_url' => 'https://cdn.example/logo.png']);
         $user = User::factory()->create(['church_id' => $church->id]);
 
-        $this->news($church, 'Sem foto', now()->subMinute(), ['slug' => 'sem-foto']);
+        $this->news($church, 'Sem foto', now()->subMinutes(2), ['slug' => 'sem-foto']);
+        $this->news($church, 'Com arte', now()->subMinute(), [
+            'slug' => 'com-arte',
+            'image_url' => 'https://cdn.example/arte-noticia.jpg',
+        ]);
         $this->news($church, 'Com vídeo', now(), [
             'slug' => 'com-video',
             'has_video' => true,
@@ -124,14 +129,61 @@ class HomeFeedHighlightsTest extends TestCase
                 ->where('feedHighlights', function ($items) {
                     $rows = collect($items)->keyBy('title');
                     $plain = $rows->get('Sem foto');
+                    $art = $rows->get('Com arte');
                     $video = $rows->get('Com vídeo');
 
                     return is_array($plain)
                         && $plain['image_url'] === null
+                        && $plain['presentation'] === 'text'
+                        && is_array($art)
+                        && $art['image_url'] === 'https://cdn.example/arte-noticia.jpg'
+                        && $art['presentation'] === 'safe'
                         && is_array($video)
                         && $video['image_url'] === 'https://cdn.example/capa-horizontal.jpg'
                         && $video['cover_play_overlay'] === true
+                        && $video['presentation'] === 'video'
                         && str_contains((string) $video['href'], 'com-video');
+                }));
+    }
+
+    public function test_home_highlights_label_recorded_culto_without_calling_it_live(): void
+    {
+        $church = Church::query()->firstOrFail();
+        $church->update(['youtube_live_url' => 'https://www.youtube.com/watch?v=livevideo11']);
+        $user = User::factory()->create(['church_id' => $church->id]);
+
+        Culto::query()->create([
+            'church_id' => $church->id,
+            'title' => 'Série gravada',
+            'youtube_url' => 'https://www.youtube.com/watch?v=recorded011',
+            'published_at' => now()->subMinute(),
+            'created_by' => $user->id,
+        ]);
+
+        Culto::query()->create([
+            'church_id' => $church->id,
+            'title' => 'Transmissão atual',
+            'youtube_url' => 'https://www.youtube.com/watch?v=livevideo11',
+            'published_at' => now(),
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights', function ($items) {
+                    $rows = collect($items)->keyBy('title');
+                    $recorded = $rows->get('Série gravada');
+                    $live = $rows->get('Transmissão atual');
+
+                    return is_array($recorded)
+                        && $recorded['presentation'] === 'video'
+                        && $recorded['type_label'] === 'Culto'
+                        && is_array($live)
+                        && $live['presentation'] === 'video'
+                        && $live['type_label'] === 'Ao vivo';
                 }));
     }
 

@@ -140,6 +140,7 @@ class PublicationFeed
      *     image_url: string|null,
      *     cover_play_overlay: bool,
      *     cover_overlay_text: string|null,
+     *     presentation: string,
      *     href: string
      * }>
      */
@@ -178,20 +179,28 @@ class PublicationFeed
                 }
 
                 $excerpt = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item['excerpt'] ?? ''))) ?? '');
+                $type = (string) ($item['type'] ?? '');
                 $typeLabel = trim(strip_tags((string) ($item['type_label'] ?? '')));
                 $actionLabel = trim(strip_tags((string) ($item['action_label'] ?? '')));
                 $overlay = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item['cover_overlay_text'] ?? ''))) ?? '');
+                $hasImage = $image !== '';
+                $play = (bool) ($item['cover_play_overlay'] ?? false);
+
+                if ($type === 'culto') {
+                    $typeLabel = ! empty($item['is_live']) ? 'Ao vivo' : 'Culto';
+                }
 
                 return [
                     'id' => (string) ($item['id'] ?? ''),
-                    'type' => (string) ($item['type'] ?? ''),
+                    'type' => $type,
                     'type_label' => $typeLabel,
                     'action_label' => $actionLabel,
                     'title' => $title,
                     'excerpt' => $excerpt,
-                    'image_url' => $image !== '' ? $image : null,
-                    'cover_play_overlay' => (bool) ($item['cover_play_overlay'] ?? false),
+                    'image_url' => $hasImage ? $image : null,
+                    'cover_play_overlay' => $play,
                     'cover_overlay_text' => $overlay !== '' ? $overlay : null,
+                    'presentation' => self::homePresentation($type, $hasImage, $play, $overlay),
                     'href' => $href,
                 ];
             })
@@ -199,6 +208,43 @@ class PublicationFeed
             ->take(self::HOME_LIMIT)
             ->values()
             ->all();
+    }
+
+    /**
+     * Só metadados já existentes. Sem chute por tamanho de arquivo ou OCR.
+     */
+    private static function homePresentation(string $type, bool $hasImage, bool $play, string $overlay): string
+    {
+        if (! $hasImage) {
+            return 'text';
+        }
+
+        if ($play) {
+            return 'video';
+        }
+
+        if ($type === 'photos') {
+            return 'photo';
+        }
+
+        if ($type === 'polls' || ($overlay !== '' && $type !== 'meditation')) {
+            return 'art';
+        }
+
+        return 'safe';
+    }
+
+    private static function cultoMatchesChurchLive(Culto $culto, ?Church $church): bool
+    {
+        $live = trim((string) ($church?->youtube_live_url ?? ''));
+        if ($live === '') {
+            return false;
+        }
+
+        $liveId = Culto::youtubeVideoId($live);
+        $cultoId = Culto::youtubeVideoId((string) $culto->youtube_url);
+
+        return $liveId !== null && $liveId === $cultoId;
     }
 
     /**
@@ -458,20 +504,25 @@ class PublicationFeed
             ->orderByDesc('published_at')
             ->limit(self::sourceCap(100))
             ->get()
-            ->map(fn (Culto $culto) => self::entry(
-                type: 'culto',
-                typeLabel: self::TYPE_DEFINITIONS['culto']['label'],
-                pk: $culto->id,
-                title: $culto->title,
-                excerpt: 'Assista à gravação ou transmissão deste culto quando quiser.',
-                imageUrl: PublicationFeedCoverResolver::forCulto($culto, $church, $baseUrl),
-                publishedAt: $culto->published_at,
-                href: route('mobile.culto.show', ['culto' => $culto->id], absolute: false),
-                meta: ['Vídeo no YouTube', 'Culto online'],
-                coverPlayOverlay: PublicationFeedCoverResolver::cultoShowsPlayOverlay($culto),
-                body: 'Assista à gravação ou transmissão deste culto quando quiser.',
-                requiresOpen: true,
-            ));
+            ->map(function (Culto $culto) use ($church, $baseUrl) {
+                $row = self::entry(
+                    type: 'culto',
+                    typeLabel: self::TYPE_DEFINITIONS['culto']['label'],
+                    pk: $culto->id,
+                    title: $culto->title,
+                    excerpt: 'Assista à gravação ou transmissão deste culto quando quiser.',
+                    imageUrl: PublicationFeedCoverResolver::forCulto($culto, $church, $baseUrl),
+                    publishedAt: $culto->published_at,
+                    href: route('mobile.culto.show', ['culto' => $culto->id], absolute: false),
+                    meta: ['Vídeo no YouTube', 'Culto online'],
+                    coverPlayOverlay: PublicationFeedCoverResolver::cultoShowsPlayOverlay($culto),
+                    body: 'Assista à gravação ou transmissão deste culto quando quiser.',
+                    requiresOpen: true,
+                );
+                $row['is_live'] = self::cultoMatchesChurchLive($culto, $church);
+
+                return $row;
+            });
     }
 
     /**
