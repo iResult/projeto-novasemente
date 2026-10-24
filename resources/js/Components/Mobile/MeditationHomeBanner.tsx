@@ -17,6 +17,7 @@ type Props = {
     banner: MeditationHomeBannerData;
     appUrl?: string;
     audience?: DevotionalAudience;
+    layout?: 'banner' | 'strip';
 };
 
 const sunsetMask =
@@ -52,10 +53,36 @@ function scriptMessageLines(message: string): [string, string] {
     return [trimmed.slice(0, breakAt), trimmed.slice(breakAt + 1)];
 }
 
-export default function MeditationHomeBanner({ banner, appUrl = '', audience }: Props) {
+export default function MeditationHomeBanner({ banner, appUrl = '', audience, layout = 'banner' }: Props) {
     const sunriseImage = imageSrc(banner.image_url, appUrl);
     const href = route('mobile.meditacao-diaria', audience ? { audience } : {});
     const [messageLine1, messageLine2] = scriptMessageLines(banner.message);
+
+    if (layout === 'strip') {
+        const detail = (banner.citation ?? '').trim() !== '' ? banner.citation : banner.verse;
+
+        return (
+            <section aria-label="Meditação de hoje">
+                <Link
+                    href={href}
+                    className="flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-3.5 py-3 text-left shadow-sm ring-1 ring-zinc-200/90 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/80"
+                >
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6ee] text-emerald-800 dark:bg-emerald-950/55 dark:text-emerald-100">
+                        <BookOpenIcon className="h-5 w-5" aria-hidden strokeWidth={1.7} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[14px] font-semibold leading-tight text-zinc-900 dark:text-zinc-50">
+                            {banner.title}
+                        </span>
+                        <span className="mt-0.5 block line-clamp-1 text-[12px] font-medium leading-snug text-zinc-500 dark:text-zinc-400">
+                            {detail}
+                        </span>
+                    </span>
+                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
+                </Link>
+            </section>
+        );
+    }
 
     return (
         <section aria-label="Meditação de hoje">

@@ -8,9 +8,12 @@ const PATH =
 /** Escala 640×512 → 24×24 e centra verticalmente. */
 const G_TRANSFORM = 'translate(0 2.4) scale(0.0375)';
 
-export default function PrayingHandsIcon({ className = 'h-6 w-6' }: { className?: string }) {
+export default function PrayingHandsIcon({
+    className = 'h-6 w-6',
+    ...props
+}: React.SVGProps<SVGSVGElement>) {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden {...props}>
             <g transform={G_TRANSFORM}>
                 <path d={PATH} />
             </g>

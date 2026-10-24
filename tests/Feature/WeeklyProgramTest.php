@@ -336,4 +336,104 @@ class WeeklyProgramTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function test_sunset_entry_and_exit_join_the_home_feed_only_within_one_hour(): void
+    {
+        config([
+            'sabbath.latitude' => -23.574389,
+            'sabbath.longitude' => -46.644722,
+            'sabbath.timezone' => 'America/Sao_Paulo',
+            'publications_feed.preview_only' => true,
+            'publications_feed.preview_emails' => ['admin@example.com'],
+        ]);
+
+        Http::fake(function ($request) {
+            $date = (string) ($request->data()['date'] ?? '2026-07-10');
+
+            return Http::response([
+                'status' => 'OK',
+                'results' => [
+                    'sunset' => $date.'T17:36:00-03:00',
+                ],
+            ]);
+        });
+
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+
+        WeeklyProgram::query()->create([
+            'church_id' => $church->id,
+            'day_of_week' => 5,
+            'when_label' => 'SEX',
+            'title' => 'INÍCIO DO SÁBADO',
+            'time_mode' => 'sunset',
+            'home_message' => 'Prepare seu coração.',
+            'image_url' => '/images/sabbath-sunset-bg.jpg',
+            'show_on_home' => true,
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+        WeeklyProgram::query()->create([
+            'church_id' => $church->id,
+            'day_of_week' => 6,
+            'when_label' => 'SÁB',
+            'title' => 'DESPEDIDA DO SÁBADO',
+            'time_mode' => 'sunset',
+            'home_message' => 'Agradeça por este dia.',
+            'show_on_home' => true,
+            'is_active' => true,
+            'sort_order' => 2,
+        ]);
+
+        $titles = function ($items) {
+            return collect($items)->pluck('title')->all();
+        };
+
+        Carbon::setTestNow(Carbon::parse('2026-07-10 16:35:00', 'America/Sao_Paulo'));
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights', fn ($items) => $titles($items) === [])
+            );
+
+        Carbon::setTestNow(Carbon::parse('2026-07-10 16:36:00', 'America/Sao_Paulo'));
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights.0.title', 'INÍCIO DO SÁBADO')
+                ->where('feedHighlights.0.type', 'sunset')
+                ->where('feedHighlights.0.excerpt', 'Prepare seu coração.')
+                ->where('feedHighlights.0.image_url', '/images/sabbath-sunset-bg.jpg')
+                ->where('feedHighlights', fn ($items) => ! in_array('DESPEDIDA DO SÁBADO', $titles($items), true))
+            );
+
+        Carbon::setTestNow(Carbon::parse('2026-07-10 18:36:00', 'America/Sao_Paulo'));
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights.0.title', 'INÍCIO DO SÁBADO')
+            );
+
+        Carbon::setTestNow(Carbon::parse('2026-07-10 18:37:00', 'America/Sao_Paulo'));
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights', fn ($items) => $titles($items) === [])
+            );
+
+        Carbon::setTestNow(Carbon::parse('2026-07-11 17:36:00', 'America/Sao_Paulo'));
+        $this->withSession(['working_church_id' => $church->id])
+            ->get(route('mobile.home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('feedHighlights.0.title', 'DESPEDIDA DO SÁBADO')
+                ->where('feedHighlights', fn ($items) => ! in_array('INÍCIO DO SÁBADO', $titles($items), true))
+            );
+
+        Carbon::setTestNow();
+    }
 }

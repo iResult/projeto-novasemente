@@ -15,6 +15,7 @@ export type SabbathHomeBannerData = {
 type Props = {
     banner: SabbathHomeBannerData;
     appUrl?: string;
+    layout?: 'banner' | 'strip';
 };
 
 const sunsetMask =
@@ -50,11 +51,51 @@ function scriptMessageLines(message: string): [string, string] {
     return [trimmed.slice(0, breakAt), trimmed.slice(breakAt + 1)];
 }
 
-export default function SabbathHomeBanner({ banner, appUrl = '' }: Props) {
+export default function SabbathHomeBanner({ banner, appUrl = '', layout = 'banner' }: Props) {
     const sunsetImage = imageSrc(banner.image_url, appUrl);
     const isFriday = banner.variant === 'friday';
     const meditationHref = route('mobile.biblioteca', { tab: 'sunset_meditation' });
     const [messageLine1, messageLine2] = scriptMessageLines(banner.message);
+
+    if (layout === 'strip') {
+        const body = (
+            <>
+                <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px] font-semibold leading-tight text-zinc-900 dark:text-zinc-50">
+                        {banner.title}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
+                        {banner.subtitle}
+                    </span>
+                </span>
+                <span className="shrink-0 text-right">
+                    <span className="block text-[1.15rem] font-semibold tabular-nums leading-none tracking-tight text-emerald-950 dark:text-emerald-50">
+                        {banner.sunset_time}
+                    </span>
+                    <span className="mt-1 block text-[10px] font-medium text-emerald-800/80 dark:text-emerald-200/80">
+                        {banner.day_label}
+                    </span>
+                </span>
+            </>
+        );
+        const shell =
+            'flex items-center gap-3 rounded-2xl bg-white px-3.5 py-3 text-left shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800';
+
+        return (
+            <section aria-label={isFriday ? 'Início do sábado' : 'Despedida do sábado'}>
+                {isFriday ? (
+                    <Link
+                        href={meditationHref}
+                        className={`${shell} cursor-pointer transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:hover:bg-zinc-800/80`}
+                    >
+                        {body}
+                    </Link>
+                ) : (
+                    <div className={shell}>{body}</div>
+                )}
+            </section>
+        );
+    }
 
     return (
         <section

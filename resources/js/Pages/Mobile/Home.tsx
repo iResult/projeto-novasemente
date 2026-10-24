@@ -1,32 +1,40 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     AcademicCapIcon,
     BanknotesIcon,
+    BookmarkSquareIcon,
     BookOpenIcon,
     CalendarDaysIcon,
+    CameraIcon,
+    ChatBubbleOvalLeftEllipsisIcon,
     FilmIcon,
+    GiftIcon,
     GlobeAltIcon,
     HeartIcon,
     MusicalNoteIcon,
     NewspaperIcon,
-    PhotoIcon,
     PlayCircleIcon,
+    RectangleStackIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
     ClipboardDocumentListIcon,
     SparklesIcon,
+    SunIcon,
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
+import DropletIcon from '@/Components/Mobile/DropletIcon';
+import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
 import SobreOAppNavItem from '@/Components/Mobile/SobreOAppNavItem';
-import WeeklyProgramHomeCarousel from '@/Components/Mobile/WeeklyProgramHomeCarousel';
+import WeeklyProgramHomeStrip from '@/Components/Mobile/WeeklyProgramHomeStrip';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
 import HomeGivingShortcuts from '@/Components/Mobile/HomeGivingShortcuts';
+import HomeFeedCarousel, { type HomeFeedHighlight } from '@/Components/Mobile/HomeFeedCarousel';
 import HomeVolunteerArea from '@/Components/Mobile/HomeVolunteerArea';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
@@ -49,6 +57,7 @@ interface Props {
     sabbathBanner?: SabbathHomeBannerData | null;
     meditationBanner?: MeditationHomeBannerData | null;
     weeklyProgramCards?: WeeklyProgramHomeCardData[];
+    feedHighlights?: HomeFeedHighlight[];
     moduleSpotlight?: HomeModuleSpotlightPayload | null;
     bookmarkedHomeCards?: string[];
     nsWhatsPendingReply?: number;
@@ -82,16 +91,6 @@ type QuickAction = {
     icon: MenuIcon;
 };
 
-function QuickActionGlyph({ icon: Icon }: { icon: MenuIcon }) {
-    return <Icon className="h-5 w-5" aria-hidden strokeWidth={2.05} />;
-}
-
-const homeCardClass =
-    'group relative flex cursor-pointer flex-col rounded-2xl bg-white p-3.5 pr-9 text-left shadow-sm ring-1 ring-zinc-200 transition duration-200 hover:bg-zinc-50 hover:shadow-md dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/60';
-
-const homeCardSpotlightClass =
-    'group relative flex cursor-pointer flex-col rounded-2xl bg-gradient-to-br from-teal-50 via-[#f7f3eb] to-amber-50 p-3.5 pr-9 text-left shadow-md ring-1 ring-teal-600/25 transition duration-200 hover:from-teal-100/90 hover:via-[#efe9df] hover:to-amber-100/80 hover:shadow-lg dark:from-teal-950 dark:via-emerald-950 dark:to-zinc-900 dark:ring-teal-500/40 dark:hover:from-teal-900 dark:hover:via-emerald-900 dark:hover:to-zinc-800';
-
 /** Atalhos da Home: itens exclusivos + todos do antigo menu Mais (sem duplicar por rota). */
 const homeQuickActions: QuickAction[] = [
     {
@@ -108,7 +107,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Escolha um plano de leitura e acompanhe o seu progresso.',
         route: 'mobile.ano-biblico',
         featureKey: 'ano_biblico',
-        icon: AcademicCapIcon,
+        icon: BookmarkSquareIcon,
     },
     {
         id: 'batismo',
@@ -116,7 +115,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Ainda não é batizado? Faça parte da família NS',
         route: 'mobile.baptism',
         featureKey: 'baptism',
-        icon: SparklesIcon,
+        icon: DropletIcon,
     },
     {
         id: 'biblioteca',
@@ -124,7 +123,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Livros e PDFs para leitura e download',
         route: 'mobile.biblioteca',
         featureKey: 'library',
-        icon: BookOpenIcon,
+        icon: RectangleStackIcon,
     },
     {
         id: 'biblia',
@@ -147,7 +146,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Ofereça e encontre serviços na comunidade.',
         route: 'mobile.talents.index',
         featureKey: 'talents',
-        icon: SparklesIcon,
+        icon: UserGroupIcon,
     },
     {
         id: 'classe-comecos',
@@ -163,7 +162,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Grupos de interesse da igreja no WhatsApp',
         route: 'mobile.communities',
         featureKey: 'communities',
-        icon: UserGroupIcon,
+        icon: ChatBubbleOvalLeftEllipsisIcon,
     },
     {
         id: 'culto',
@@ -179,7 +178,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Adulto, Mulher e Jovem',
         route: 'mobile.meditacao-diaria',
         featureKey: 'devotional',
-        icon: BookOpenIcon,
+        icon: SunIcon,
     },
     {
         id: 'licao',
@@ -204,7 +203,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Compartilhe talentos, aprendizado e apoio gratuito na comunidade',
         route: 'mobile.shared-talents.index',
         featureKey: 'shared_talents',
-        icon: UserGroupIcon,
+        icon: GiftIcon,
     },
     {
         id: 'eventos',
@@ -220,7 +219,7 @@ const homeQuickActions: QuickAction[] = [
         subtitle: 'Veja o que nossos fotógrafos prepararam para você',
         route: 'mobile.fotos',
         featureKey: 'photos',
-        icon: PhotoIcon,
+        icon: CameraIcon,
     },
     {
         id: 'missao',
@@ -285,6 +284,7 @@ export default function MobileHome({
     sabbathBanner = null,
     meditationBanner = null,
     weeklyProgramCards = [],
+    feedHighlights = [],
     moduleSpotlight = null,
     bookmarkedHomeCards = [],
     nsWhatsPendingReply = 0,
@@ -326,6 +326,12 @@ export default function MobileHome({
 
     const { isEnabled } = useAppFeatures();
     const showMeditationBanner = Boolean(meditationBanner) && isEnabled('devotional');
+    const programHref = isEnabled('services') ? route('mobile.services') : null;
+    const conhecaFallbackHref = (
+        ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'] as const
+    ).some((key) => isEnabled(key))
+        ? route('mobile.conheca')
+        : null;
 
     const canBookmark = Boolean(user);
 
@@ -429,7 +435,7 @@ export default function MobileHome({
     return (
         <MobileLayout allowHorizontalPan>
             <Head title="Home" />
-            <div className="mx-auto flex w-full max-w-lg -mt-5 flex-col gap-7 pb-4 sm:max-w-xl md:max-w-2xl lg:-mt-3 lg:max-w-none">
+            <div className="mx-auto flex w-full max-w-lg -mt-5 flex-col gap-6 pb-4 sm:max-w-xl md:max-w-2xl lg:-mt-3 lg:max-w-none">
                 {showPostRegistrationBanner ? (
                     <div
                         className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50"
@@ -444,31 +450,46 @@ export default function MobileHome({
 
                 <header className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold leading-snug text-zinc-900 dark:text-white lg:text-base">
+                        <p className="truncate text-xl font-semibold leading-snug tracking-tight text-zinc-900 dark:text-white">
                             {user ? <>Bem-vindo, {displayName}!</> : <>Bem-vindo!</>}
                         </p>
                     </div>
                 </header>
+
+                <HomeGivingShortcuts />
+
+                <HomeFeedCarousel
+                    items={feedHighlights}
+                    appUrl={appUrl}
+                    fallback={{
+                        href: conhecaFallbackHref,
+                        title: 'Conheça a Nova Semente',
+                        excerpt: 'Quem somos, pastores, localização e horários.',
+                        imageUrl: '/images/home-cards/conheca.webp',
+                        actionLabel: 'Conhecer',
+                    }}
+                />
+
+                {weeklyProgramCards.length > 0 ? (
+                    <WeeklyProgramHomeStrip cards={weeklyProgramCards} href={programHref} />
+                ) : null}
 
                 {showMeditationBanner && meditationBanner ? (
                     <MeditationHomeBanner
                         banner={meditationBanner}
                         appUrl={appUrl}
                         audience={meditationAudience}
+                        layout="strip"
                     />
                 ) : null}
 
-                {weeklyProgramCards.length > 0 ? (
-                    <WeeklyProgramHomeCarousel cards={weeklyProgramCards} appUrl={appUrl} />
-                ) : sabbathBanner && !showMeditationBanner ? (
-                    <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} />
+                {sabbathBanner && !showMeditationBanner && weeklyProgramCards.length === 0 ? (
+                    <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} layout="strip" />
                 ) : null}
-
-                <HomeGivingShortcuts />
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
-                    <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
+                    <div className="grid grid-cols-2 items-stretch gap-3.5 sm:gap-4 lg:grid-cols-3">
                         {gridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const pendingBadge =
@@ -478,86 +499,41 @@ export default function MobileHome({
                                     moduleSpotlight.home_card_ids.includes(id)) ||
                                     moduleSpotlight?.items?.some((s) => s.home_card_id === id),
                             );
-                            const cardClass = isSpotlightCard ? homeCardSpotlightClass : homeCardClass;
-                            const isMeditationCard = id === 'meditacao-diaria';
-                            const content = (
-                                <>
-                                    {isSpotlightCard ? (
-                                        <span className="absolute right-2.5 top-2.5 z-[1] inline-flex items-center rounded-full bg-teal-700 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm dark:bg-teal-400 dark:text-teal-950">
-                                            New
-                                        </span>
-                                    ) : null}
-                                    {canBookmark ? (
-                                        <HomeCardBookmarkButton
-                                            cardKey={id}
-                                            bookmarked={bookmarks.includes(id)}
-                                            disabled={bookmarkBusy}
-                                            onToggle={(key) => void toggleBookmark(key)}
-                                            className={isSpotlightCard ? '!right-12' : ''}
-                                        />
-                                    ) : null}
-                                    <div
-                                        className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-inset ${
-                                            isSpotlightCard
-                                                ? 'bg-teal-700/12 text-teal-800 ring-teal-700/25 dark:bg-teal-400/15 dark:text-teal-200 dark:ring-teal-400/30'
-                                                : 'bg-emerald-50 text-emerald-700 ring-emerald-200/70 dark:bg-emerald-950/45 dark:text-emerald-200 dark:ring-emerald-800/60'
-                                        }`}
-                                    >
-                                        <QuickActionGlyph icon={icon} />
-                                        {pendingBadge !== null ? (
-                                            <span
-                                                className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold tabular-nums text-white shadow-sm ring-2 ring-white dark:bg-rose-500 dark:ring-zinc-900"
-                                                title={`${pendingBadge} ${pendingBadge === 1 ? 'mensagem pendente' : 'mensagens pendentes'}`}
-                                                aria-label={`${pendingBadge} ${pendingBadge === 1 ? 'mensagem pendente de responder' : 'mensagens pendentes de responder'}`}
-                                            >
-                                                {pendingBadge > 99 ? '99+' : pendingBadge}
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                    <div className="mt-3 min-w-0">
-                                        <p
-                                            className={`text-[15px] font-semibold leading-tight ${
-                                                isSpotlightCard
-                                                    ? 'text-teal-950 dark:text-teal-50'
-                                                    : 'text-zinc-900 dark:text-white'
-                                            }`}
-                                        >
-                                            {label}
-                                        </p>
-                                        <p
-                                            className={`mt-1 text-[11px] font-medium leading-snug ${
-                                                isSpotlightCard
-                                                    ? 'text-teal-900/75 dark:text-teal-100/80'
-                                                    : 'text-zinc-600 dark:text-zinc-300'
-                                            }`}
-                                        >
-                                            {subtitle}
-                                        </p>
-                                    </div>
-                                </>
-                            );
-
-                            if (onClick) {
-                                return (
-                                    <button key={id} type="button" onClick={onClick} className={cardClass}>
-                                        {content}
-                                    </button>
-                                );
+                            if (!onClick && !routeName) {
+                                return null;
                             }
 
-                            if (!routeName) return null;
-
-                            const href =
-                                isMeditationCard
-                                    ? route(routeName, { audience: meditationAudience })
-                                    : routeParams
-                                      ? route(routeName, routeParams)
-                                      : route(routeName);
+                            const href = onClick
+                                ? undefined
+                                : id === 'meditacao-diaria'
+                                  ? route(routeName!, { audience: meditationAudience })
+                                  : routeParams
+                                    ? route(routeName!, routeParams)
+                                    : route(routeName!);
 
                             return (
-                                <Link key={id} href={href} className={cardClass}>
-                                    {content}
-                                </Link>
+                                <HomeFeatureCard
+                                    key={id}
+                                    mediaId={id}
+                                    title={label}
+                                    subtitle={subtitle}
+                                    icon={icon}
+                                    href={href}
+                                    onClick={onClick}
+                                    spotlight={isSpotlightCard}
+                                    pendingCount={pendingBadge}
+                                    bookmark={
+                                        canBookmark ? (
+                                            <HomeCardBookmarkButton
+                                                cardKey={id}
+                                                bookmarked={bookmarks.includes(id)}
+                                                disabled={bookmarkBusy}
+                                                onToggle={(key) => void toggleBookmark(key)}
+                                                className={isSpotlightCard ? '!right-12' : ''}
+                                            />
+                                        ) : null
+                                    }
+                                />
                             );
                         })}
                     </div>

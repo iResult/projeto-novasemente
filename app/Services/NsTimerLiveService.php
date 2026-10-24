@@ -385,7 +385,8 @@ final class NsTimerLiveService
     }
 
     /**
-     * Notas de bastidores nunca saem. O responsável some em Mensagem e Oração Final.
+     * Notas de bastidores nunca saem. O responsável some em Mensagem, Oração
+     * (inclusive a final) e Orientação de Saída, no primeiro e no segundo culto.
      */
     private function publicResponsible(string $name, mixed $responsible): ?string
     {
@@ -400,10 +401,13 @@ final class NsTimerLiveService
     {
         $folded = $this->fold($name);
 
-        return $folded === 'mensagem'
-            || str_starts_with($folded, 'mensagem ')
-            || $folded === 'oracao final'
-            || str_starts_with($folded, 'oracao final ');
+        foreach (['mensagem', 'oracao', 'orientacao de saida', 'orientacoes de saida'] as $prefix) {
+            if ($folded === $prefix || str_starts_with($folded, $prefix.' ')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function fold(string $value): string

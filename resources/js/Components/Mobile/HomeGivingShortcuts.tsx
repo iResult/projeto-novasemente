@@ -40,7 +40,7 @@ const ITEMS: ShortcutItem[] = [
 ];
 
 const shortcutClass =
-    'group flex min-w-0 cursor-pointer flex-col items-center gap-2 px-1 py-2 text-center';
+    'group flex min-h-11 min-w-0 cursor-pointer flex-col items-center gap-2 px-1 py-1.5 text-center';
 
 export default function HomeGivingShortcuts() {
     const { isEnabled } = useAppFeatures();
@@ -57,7 +57,7 @@ export default function HomeGivingShortcuts() {
                     const Icon = item.icon;
                     const content = (
                         <>
-                            <span className="relative inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950/45 dark:text-emerald-200">
+                            <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-[1.15rem] bg-[#e8f6ee] text-emerald-800 dark:bg-emerald-950/55 dark:text-emerald-100">
                                 <Icon className="h-6 w-6" aria-hidden strokeWidth={1.7} />
                                 {item.badge ? (
                                     <span className="absolute -right-2 -top-1.5 inline-flex items-center rounded-full bg-emerald-800 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-white dark:bg-emerald-400 dark:text-emerald-950">

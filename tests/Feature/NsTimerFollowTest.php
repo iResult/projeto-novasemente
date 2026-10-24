@@ -132,9 +132,13 @@ class NsTimerFollowTest extends TestCase
                     ],
                     'upcomingStages' => [
                         $this->stage(1, 'LOUVOR 3: Agradeço', 300, 0, 'Produção: posicionar a mesinha no palco', 'Banda | Louvor', 'LOUVOR'),
-                        $this->stage(2, 'ORAÇÃO', 120, 1, 'Produção: retirar o pedestal', 'Pr. Igor Oração', 'MENSAGEM PASTORAL'),
-                        $this->stage(3, 'MENSAGEM', 2400, 2, 'Produção: no final da mensagem, retirar a mesinha.', 'Pr. Igor Mensagem', 'MENSAGEM PASTORAL'),
-                        $this->stage(4, 'ORAÇÃO FINAL', 120, 3, 'Produção: bastidores da oração final', 'Pr. Igor Final', 'MENSAGEM PASTORAL'),
+                        $this->stage(2, 'ORAÇÃO', 120, 1, 'Produção: retirar o pedestal', 'Pr. Igor Oração', '1º CULTO'),
+                        $this->stage(3, 'MENSAGEM', 2400, 2, 'Produção: no final da mensagem, retirar a mesinha.', 'Pr. Igor Mensagem', '1º CULTO'),
+                        $this->stage(4, 'ORAÇÃO FINAL', 120, 3, 'Produção: bastidores da oração final', 'Pr. Igor Final', '1º CULTO'),
+                        $this->stage(5, 'ORIENTAÇÕES DE SAÍDA', 120, 4, 'Produção: abrir as portas', 'Diácono Saída', '1º CULTO'),
+                        $this->stage(6, 'ORAÇÃO', 120, 5, 'Produção: oração do segundo culto', 'Pr. Igor Segundo', '2º CULTO'),
+                        $this->stage(7, 'ORIENTAÇÕES DE SAÍDA', 120, 6, 'Produção: saída do segundo culto', 'Diácono Segundo', '2º CULTO'),
+                        $this->stage(8, 'INSTRUMENTAL DE ENCERRAMENTO', 180, 7, 'Produção: instrumental', 'Banda', 'ORIENTAÇÕES DE SAÍDA'),
                     ],
                 ],
             ], 200),
@@ -149,34 +153,50 @@ class NsTimerFollowTest extends TestCase
                 ->where('follow.sections.0.stages.0.name', 'LOUVOR 3: Agradeço')
                 ->where('follow.sections.0.stages.0.responsible', 'Banda | Louvor')
                 ->missing('follow.sections.0.stages.0.notes')
+                ->where('follow.sections.1.title', '1º CULTO')
                 ->where('follow.sections.1.stages.0.name', 'ORAÇÃO')
-                ->where('follow.sections.1.stages.0.responsible', 'Pr. Igor Oração')
+                ->where('follow.sections.1.stages.0.responsible', null)
                 ->missing('follow.sections.1.stages.0.notes')
                 ->where('follow.sections.1.stages.1.name', 'MENSAGEM')
                 ->where('follow.sections.1.stages.1.responsible', null)
-                ->missing('follow.sections.1.stages.1.notes')
                 ->where('follow.sections.1.stages.2.name', 'ORAÇÃO FINAL')
                 ->where('follow.sections.1.stages.2.responsible', null)
-                ->missing('follow.sections.1.stages.2.notes')
+                ->where('follow.sections.1.stages.3.name', 'ORIENTAÇÕES DE SAÍDA')
+                ->where('follow.sections.1.stages.3.responsible', null)
+                ->where('follow.sections.2.title', '2º CULTO')
+                ->where('follow.sections.2.stages.0.name', 'ORAÇÃO')
+                ->where('follow.sections.2.stages.0.responsible', null)
+                ->where('follow.sections.2.stages.1.name', 'ORIENTAÇÕES DE SAÍDA')
+                ->where('follow.sections.2.stages.1.responsible', null)
+                ->where('follow.sections.3.stages.0.name', 'INSTRUMENTAL DE ENCERRAMENTO')
+                ->where('follow.sections.3.stages.0.responsible', 'Banda')
                 ->missing('follow.sections.0.stages.0.proPresenterActionConfig'))
             ->assertDontSee('posicionar a mesinha', false)
+            ->assertDontSee('Pr. Igor Oração', false)
             ->assertDontSee('Pr. Igor Mensagem', false)
             ->assertDontSee('Pr. Igor Final', false)
+            ->assertDontSee('Pr. Igor Segundo', false)
+            ->assertDontSee('Diácono Saída', false)
+            ->assertDontSee('Diácono Segundo', false)
             ->assertDontSee('nao-vazar', false);
 
         $this->actingAs($user)
             ->getJson(route('mobile.acompanhar-culto.live'))
             ->assertOk()
             ->assertJsonPath('sections.0.stages.0.responsible', 'Banda | Louvor')
-            ->assertJsonPath('sections.1.stages.0.responsible', 'Pr. Igor Oração')
+            ->assertJsonPath('sections.1.stages.0.responsible', null)
             ->assertJsonPath('sections.1.stages.1.responsible', null)
             ->assertJsonPath('sections.1.stages.2.responsible', null)
+            ->assertJsonPath('sections.1.stages.3.responsible', null)
+            ->assertJsonPath('sections.2.stages.0.responsible', null)
+            ->assertJsonPath('sections.2.stages.1.responsible', null)
+            ->assertJsonPath('sections.3.stages.0.responsible', 'Banda')
             ->assertJsonMissingPath('sections.0.stages.0.notes')
-            ->assertJsonMissingPath('sections.1.stages.1.notes')
-            ->assertJsonMissingPath('sections.1.stages.2.notes')
+            ->assertJsonMissingPath('sections.1.stages.0.notes')
             ->assertDontSee('posicionar a mesinha', false)
-            ->assertDontSee('Pr. Igor Mensagem', false)
-            ->assertDontSee('Pr. Igor Final', false);
+            ->assertDontSee('Pr. Igor Oração', false)
+            ->assertDontSee('Diácono Saída', false)
+            ->assertDontSee('Diácono Segundo', false);
     }
 
     public function test_network_failure_stays_empty_and_keeps_the_home(): void

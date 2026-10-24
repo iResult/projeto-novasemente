@@ -260,7 +260,8 @@ class MobileController extends Controller
         $user = $request->user();
 
         $sabbathBanner = app(SabbathSunsetService::class)->homeBannerPayload();
-        $weeklyProgramCards = app(WeeklyProgramService::class)->homeCards($church);
+        $weeklyProgram = app(WeeklyProgramService::class);
+        $weeklyProgramCards = $weeklyProgram->homeCards($church);
         $showSaturdayProgram = Carbon::now((string) config('sabbath.timezone', 'America/Sao_Paulo'))->isSaturday()
             && $weeklyProgramCards !== [];
         $meditationBanner = $showSaturdayProgram
@@ -290,6 +291,10 @@ class MobileController extends Controller
             'sabbathBanner' => $weeklyProgramCards === [] ? $sabbathBanner : null,
             'meditationBanner' => $meditationBanner,
             'weeklyProgramCards' => $weeklyProgramCards,
+            'feedHighlights' => array_values(array_merge(
+                $weeklyProgram->homeSunsetFeedSlides($church),
+                PublicationFeed::homeHighlights($request, $churchId),
+            )),
             'moduleSpotlight' => $moduleSpotlight,
             'bookmarkedHomeCards' => $bookmarkedHomeCards,
             'nsWhatsPendingReply' => $nsWhatsPendingReply,

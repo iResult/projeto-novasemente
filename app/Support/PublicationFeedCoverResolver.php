@@ -232,6 +232,51 @@ final class PublicationFeedCoverResolver
         );
     }
 
+    /**
+     * Logo da igreja e capa global configurada não são fotografia da publicação.
+     * Capas padrão de um tipo (ex.: arte de enquete) continuam válidas.
+     */
+    public static function isGenericFallback(?string $url, ?Church $church, string $baseUrl): bool
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return false;
+        }
+
+        $candidates = [];
+        if ($church !== null) {
+            $logo = self::absoluteUrl($church->logo_url, $baseUrl);
+            if ($logo !== null) {
+                $candidates[] = $logo;
+            }
+        }
+
+        $global = config('publications_feed.fallback_cover');
+        if (is_string($global) && trim($global) !== '') {
+            $absolute = self::absoluteUrl($global, $baseUrl);
+            if ($absolute !== null) {
+                $candidates[] = $absolute;
+            }
+        }
+
+        $needle = self::mediaKey($url);
+        foreach ($candidates as $candidate) {
+            if (self::mediaKey($candidate) === $needle) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function mediaKey(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $path = is_string($path) && $path !== '' ? $path : $url;
+
+        return strtolower(rtrim($path, '/'));
+    }
+
     private static function finalize(?string $cover, string $type, ?Church $church, string $baseUrl): ?string
     {
         if (filled($cover)) {

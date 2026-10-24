@@ -22,6 +22,19 @@ class PublicationFeed
 {
     public const PER_PAGE = 10;
 
+    public const HOME_LIMIT = 5;
+
+    /** Limite por tipo só enquanto `homeHighlights()` monta o carrossel. */
+    private static ?int $perSourceCap = null;
+
+    /** Exclui eventos já encerrados apenas na seleção da Home. */
+    private static bool $homeHighlightsMode = false;
+
+    private static function sourceCap(int $default): int
+    {
+        return self::$perSourceCap ?? $default;
+    }
+
     /** @var array<string, array{label: string, feature: string, description: string, action: string}> */
     public const TYPE_DEFINITIONS = [
         'news' => [
@@ -110,6 +123,79 @@ class PublicationFeed
         }
 
         return $options;
+    }
+
+    /**
+     * Até cinco publicações recentes, já visíveis no feed, para o carrossel da Home.
+     * Não há destaque manual: a ordem é a recência do feed. Eventos com data
+     * estruturada já encerrada ficam de fora. Quem não acessa o feed recebe lista vazia.
+     *
+     * @return list<array{
+     *     id: string,
+     *     type: string,
+     *     type_label: string,
+     *     action_label: string,
+     *     title: string,
+     *     excerpt: string,
+     *     image_url: string|null,
+     *     cover_play_overlay: bool,
+     *     href: string
+     * }>
+     */
+    public static function homeHighlights(Request $request, ?int $churchId): array
+    {
+        if (! PublicationsFeedAccess::canAccess($request->user())) {
+            return [];
+        }
+
+        $church = $churchId !== null ? Church::query()->find($churchId) : null;
+        $baseUrl = rtrim($request->getSchemeAndHttpHost(), '/');
+        $driveCover = app(DriveFolderCoverService::class);
+
+        self::$perSourceCap = max(self::HOME_LIMIT, 8);
+        self::$homeHighlightsMode = true;
+        try {
+            $items = self::collectItems($church, $churchId, '', $baseUrl, $driveCover);
+        } finally {
+            self::$perSourceCap = null;
+            self::$homeHighlightsMode = false;
+        }
+
+        return self::sortItems($items, 'recent')
+            ->map(function (array $item) use ($church, $baseUrl) {
+                $title = trim(strip_tags((string) ($item['title'] ?? '')));
+                $href = trim((string) ($item['href'] ?? ''));
+                if ($title === '' || $href === '') {
+                    return null;
+                }
+
+                $image = isset($item['image_url']) && is_string($item['image_url'])
+                    ? trim($item['image_url'])
+                    : '';
+                if ($image === '' || PublicationFeedCoverResolver::isGenericFallback($image, $church, $baseUrl)) {
+                    $image = '';
+                }
+
+                $excerpt = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item['excerpt'] ?? ''))) ?? '');
+                $typeLabel = trim(strip_tags((string) ($item['type_label'] ?? '')));
+                $actionLabel = trim(strip_tags((string) ($item['action_label'] ?? '')));
+
+                return [
+                    'id' => (string) ($item['id'] ?? ''),
+                    'type' => (string) ($item['type'] ?? ''),
+                    'type_label' => $typeLabel,
+                    'action_label' => $actionLabel,
+                    'title' => $title,
+                    'excerpt' => $excerpt,
+                    'image_url' => $image !== '' ? $image : null,
+                    'cover_play_overlay' => (bool) ($item['cover_play_overlay'] ?? false),
+                    'href' => $href,
+                ];
+            })
+            ->filter(fn ($item) => is_array($item))
+            ->take(self::HOME_LIMIT)
+            ->values()
+            ->all();
     }
 
     /**
@@ -269,7 +355,7 @@ class PublicationFeed
             ->where('slug', 'not like', MeditationDailyFeed::SLUG_PREFIX.'%')
             ->visibleToPublic()
             ->orderByDesc('published_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (News $post) use ($showRoute, $param, $baseUrl, $routePrefix, $church) {
                 $typeKey = $routePrefix === 'health' ? 'health' : 'news';
@@ -324,7 +410,7 @@ class PublicationFeed
             ->where('slug', 'like', MeditationDailyFeed::SLUG_PREFIX.'%')
             ->visibleToPublic()
             ->orderByDesc('published_at')
-            ->limit(60)
+            ->limit(self::sourceCap(60))
             ->get()
             ->map(function (News $post) use ($baseUrl, $church) {
                 $parsed = MeditationDailyFeed::parseStoredBody($post->body, $post->excerpt);
@@ -367,7 +453,7 @@ class PublicationFeed
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->orderByDesc('published_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(fn (Culto $culto) => self::entry(
                 type: 'culto',
@@ -406,7 +492,7 @@ class PublicationFeed
                 })->orWhere('status', CharityCampaign::STATUS_CLOSED);
             })
             ->orderByDesc('created_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (CharityCampaign $campaign) use ($church, $baseUrl) {
                 $meta = [
@@ -441,7 +527,7 @@ class PublicationFeed
             ->visibleInApp()
             ->orderByDesc('published_at')
             ->orderByDesc('created_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (LibraryBook $book) use ($baseUrl, $church) {
                 $meta = [self::libraryCategoryLabel((string) $book->category)];
@@ -483,7 +569,7 @@ class PublicationFeed
             ->visibleInApp()
             ->orderByDesc('published_at')
             ->orderByDesc('created_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (PhotoAlbum $album) use ($driveCover, $church, $baseUrl) {
                 $meta = ['Álbum de fotos'];
@@ -525,11 +611,24 @@ class PublicationFeed
             return collect();
         }
 
-        return Event::query()
+        $events = Event::query()
             ->where('church_id', $churchId)
-            ->visibleToPublic()
+            ->visibleToPublic();
+
+        if (self::$homeHighlightsMode) {
+            $now = now();
+            $events->where(function ($query) use ($now) {
+                $query->where(function ($inner) use ($now) {
+                    $inner->whereNotNull('ends_at')->where('ends_at', '>=', $now);
+                })->orWhere(function ($inner) use ($now) {
+                    $inner->whereNull('ends_at')->where('starts_at', '>=', $now->copy()->startOfDay());
+                });
+            });
+        }
+
+        return $events
             ->orderByDesc('published_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (Event $event) use ($baseUrl, $church) {
                 $meta = [];
@@ -571,7 +670,7 @@ class PublicationFeed
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->orderByDesc('published_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (RevistaAdventistaArticle $article) use ($church, $baseUrl) {
                 $meta = [$article->sectionLabel()];
@@ -609,7 +708,7 @@ class PublicationFeed
             ->visibleInApp()
             ->orderByDesc('published_at')
             ->orderByDesc('created_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(fn (Musica $musica) => self::entry(
                 type: 'musica',
@@ -643,7 +742,7 @@ class PublicationFeed
             ->withCount('options')
             ->orderByDesc('updated_at')
             ->orderByDesc('created_at')
-            ->limit(100)
+            ->limit(self::sourceCap(100))
             ->get()
             ->map(function (Poll $poll) use ($church, $baseUrl) {
                 $meta = ['Enquete aberta'];

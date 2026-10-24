@@ -112,6 +112,81 @@ class WeeklyProgramService
     }
 
     /**
+     * Entrada (sexta) e saída (sábado) do pôr do sol no carrossel da Home.
+     * Só enquanto falta no máximo 1 hora ou se passou no máximo 1 hora.
+     *
+     * @return list<array{
+     *     id: string,
+     *     type: string,
+     *     type_label: string,
+     *     action_label: string,
+     *     title: string,
+     *     excerpt: string,
+     *     image_url: string|null,
+     *     cover_play_overlay: bool,
+     *     href: string
+     * }>
+     */
+    public function homeSunsetFeedSlides(?Church $church): array
+    {
+        if ($church === null) {
+            return [];
+        }
+
+        $timezone = (string) config('sabbath.timezone', 'America/Sao_Paulo');
+        $now = Carbon::now($timezone);
+        $sunset = $this->sunsetService->sunsetForDate($now->toDateString(), $timezone);
+        if (! $sunset instanceof Carbon) {
+            return [];
+        }
+
+        $opens = $sunset->copy()->subHour();
+        $closes = $sunset->copy()->addHour();
+        if ($now->lt($opens) || $now->gt($closes)) {
+            return [];
+        }
+
+        $time = $sunset->timezone($timezone)->format('H:i');
+        $href = route('mobile.services', absolute: false);
+
+        return $this->activeForChurch($church)
+            ->filter(fn (WeeklyProgram $item) => $item->show_on_home && $item->isSunset())
+            ->filter(fn (WeeklyProgram $item) => (int) $item->day_of_week === (int) $now->dayOfWeek)
+            ->sortBy(fn (WeeklyProgram $item) => sprintf('%08d-%08d', (int) $item->sort_order, (int) $item->id))
+            ->map(function (WeeklyProgram $item) use ($href, $time) {
+                $title = trim(strip_tags((string) $item->title));
+                if ($title === '') {
+                    return null;
+                }
+
+                $excerpt = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item->home_message ?: $item->body ?: ''))) ?? '');
+                if ($excerpt === '') {
+                    $excerpt = 'Pôr do sol às '.$time;
+                }
+
+                $image = trim((string) ($item->image_url ?? ''));
+                if ($image === '') {
+                    $image = trim((string) config('sabbath.banner_image', ''));
+                }
+
+                return [
+                    'id' => 'sunset-'.$item->id,
+                    'type' => 'sunset',
+                    'type_label' => 'Pôr do sol',
+                    'action_label' => 'Ver horários',
+                    'title' => $title,
+                    'excerpt' => $excerpt,
+                    'image_url' => $image !== '' ? $image : null,
+                    'cover_play_overlay' => false,
+                    'href' => $href,
+                ];
+            })
+            ->filter(fn ($item) => is_array($item))
+            ->values()
+            ->all();
+    }
+
+    /**
      * Temporário: em julho/2026 o Culto de Oração não aparece no card da home.
      */
     private function isHiddenFromHomeCard(WeeklyProgram $item, Carbon $now): bool
