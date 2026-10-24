@@ -190,7 +190,7 @@ return [
             'routes' => ['mobile.programacao-sabado'],
         ],
         'acompanhar_culto' => [
-            'label' => 'Acompanhar culto',
+            'label' => 'Acompanhar Programação',
             'group' => 'menu_mais',
             'routes' => ['mobile.acompanhar-culto', 'mobile.acompanhar-culto.live'],
         ],

@@ -205,8 +205,7 @@ final class NsTimerLiveService
                 'name' => $name,
                 'duration' => max(0, (int) ($stage['durationSeconds'] ?? 0)),
                 'order' => (int) ($stage['orderIndex'] ?? count($rows)),
-                'responsible' => $this->nullableClip($stage['responsible'] ?? null, 200),
-                'notes' => $this->nullableClip($stage['notes'] ?? null, 500),
+                'responsible' => $this->publicResponsible($name, $stage['responsible'] ?? null),
                 'section' => $this->nullableClip($stage['section'] ?? null, 120),
             ];
             if (count($rows) >= 400) {
@@ -247,7 +246,6 @@ final class NsTimerLiveService
                 'start_time' => $cursor === null ? null : $this->clock($cursor),
                 'duration_label' => $this->durationLabel($row['duration']),
                 'responsible' => $row['responsible'],
-                'notes' => $row['notes'],
                 'state' => $state,
             ];
 
@@ -384,6 +382,28 @@ final class NsTimerLiveService
         ));
 
         return implode(' | ', $parts);
+    }
+
+    /**
+     * Notas de bastidores nunca saem. O responsável some em Mensagem e Oração Final.
+     */
+    private function publicResponsible(string $name, mixed $responsible): ?string
+    {
+        if ($this->hidesPublicResponsible($name)) {
+            return null;
+        }
+
+        return $this->nullableClip($responsible, 200);
+    }
+
+    private function hidesPublicResponsible(string $name): bool
+    {
+        $folded = $this->fold($name);
+
+        return $folded === 'mensagem'
+            || str_starts_with($folded, 'mensagem ')
+            || $folded === 'oracao final'
+            || str_starts_with($folded, 'oracao final ');
     }
 
     private function fold(string $value): string

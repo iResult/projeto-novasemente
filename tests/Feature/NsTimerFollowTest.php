@@ -65,6 +65,7 @@ class NsTimerFollowTest extends TestCase
                 ->where('follow.sections.0.stages.0.state', 'upcoming')
                 ->where('follow.sections.0.stages.1.start_time', '09:00')
                 ->where('follow.sections.0.stages.1.duration_label', '1 min')
+                ->missing('follow.sections.0.stages.0.notes')
                 ->missing('follow.sections.0.stages.0.proPresenterActionConfig'))
             ->assertDontSee('nao-vazar', false)
             ->assertDontSee('uuid-secreto', false)
@@ -83,6 +84,7 @@ class NsTimerFollowTest extends TestCase
             ->assertHeader('Cache-Control', 'no-store, private')
             ->assertJsonPath('available', true)
             ->assertJsonPath('sections.0.stages.0.start_time', '08:00')
+            ->assertJsonMissingPath('sections.0.stages.0.notes')
             ->assertJsonMissingPath('sections.0.stages.0.proPresenterActionConfig');
 
         $this->assertCount(1, Http::recorded(
@@ -108,6 +110,73 @@ class NsTimerFollowTest extends TestCase
                 ->where('follow.sections.0.stages.1.start_time', '09:00'))
             ->assertDontSee('nao-vazar', false)
             ->assertDontSee('controllerUserId', false);
+    }
+
+    public function test_public_payload_hides_backstage_notes_and_selected_speakers(): void
+    {
+        Http::fake([
+            'https://nstimer.novasemente.com.br/_api/schedule/live' => Http::response([
+                'json' => [
+                    'schedule' => null,
+                    'stages' => [],
+                    'currentStage' => null,
+                    'nextStage' => null,
+                    'upcomingSchedule' => [
+                        'id' => 18,
+                        'title' => 'CULTO DE SÁBADO',
+                        'scheduleDate' => '2026-10-24T03:00:00.000Z',
+                        'status' => 'ready',
+                        'startTime' => '10:00:00',
+                        'introduction' => null,
+                        'notes' => null,
+                    ],
+                    'upcomingStages' => [
+                        $this->stage(1, 'LOUVOR 3: Agradeço', 300, 0, 'Produção: posicionar a mesinha no palco', 'Banda | Louvor', 'LOUVOR'),
+                        $this->stage(2, 'ORAÇÃO', 120, 1, 'Produção: retirar o pedestal', 'Pr. Igor Oração', 'MENSAGEM PASTORAL'),
+                        $this->stage(3, 'MENSAGEM', 2400, 2, 'Produção: no final da mensagem, retirar a mesinha.', 'Pr. Igor Mensagem', 'MENSAGEM PASTORAL'),
+                        $this->stage(4, 'ORAÇÃO FINAL', 120, 3, 'Produção: bastidores da oração final', 'Pr. Igor Final', 'MENSAGEM PASTORAL'),
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $user = $this->member();
+
+        $this->actingAs($user)
+            ->get(route('mobile.acompanhar-culto'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('follow.sections.0.stages.0.name', 'LOUVOR 3: Agradeço')
+                ->where('follow.sections.0.stages.0.responsible', 'Banda | Louvor')
+                ->missing('follow.sections.0.stages.0.notes')
+                ->where('follow.sections.1.stages.0.name', 'ORAÇÃO')
+                ->where('follow.sections.1.stages.0.responsible', 'Pr. Igor Oração')
+                ->missing('follow.sections.1.stages.0.notes')
+                ->where('follow.sections.1.stages.1.name', 'MENSAGEM')
+                ->where('follow.sections.1.stages.1.responsible', null)
+                ->missing('follow.sections.1.stages.1.notes')
+                ->where('follow.sections.1.stages.2.name', 'ORAÇÃO FINAL')
+                ->where('follow.sections.1.stages.2.responsible', null)
+                ->missing('follow.sections.1.stages.2.notes')
+                ->missing('follow.sections.0.stages.0.proPresenterActionConfig'))
+            ->assertDontSee('posicionar a mesinha', false)
+            ->assertDontSee('Pr. Igor Mensagem', false)
+            ->assertDontSee('Pr. Igor Final', false)
+            ->assertDontSee('nao-vazar', false);
+
+        $this->actingAs($user)
+            ->getJson(route('mobile.acompanhar-culto.live'))
+            ->assertOk()
+            ->assertJsonPath('sections.0.stages.0.responsible', 'Banda | Louvor')
+            ->assertJsonPath('sections.1.stages.0.responsible', 'Pr. Igor Oração')
+            ->assertJsonPath('sections.1.stages.1.responsible', null)
+            ->assertJsonPath('sections.1.stages.2.responsible', null)
+            ->assertJsonMissingPath('sections.0.stages.0.notes')
+            ->assertJsonMissingPath('sections.1.stages.1.notes')
+            ->assertJsonMissingPath('sections.1.stages.2.notes')
+            ->assertDontSee('posicionar a mesinha', false)
+            ->assertDontSee('Pr. Igor Mensagem', false)
+            ->assertDontSee('Pr. Igor Final', false);
     }
 
     public function test_network_failure_stays_empty_and_keeps_the_home(): void
@@ -246,16 +315,23 @@ class NsTimerFollowTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    private function stage(int $id, string $name, int $duration, int $order, string $notes): array
-    {
+    private function stage(
+        int $id,
+        string $name,
+        int $duration,
+        int $order,
+        string $notes,
+        string $responsible = 'Diaconato',
+        string $section = 'PRÉ ABERTURA',
+    ): array {
         return [
             'id' => $id,
             'name' => $name,
             'durationSeconds' => $duration,
             'orderIndex' => $order,
-            'responsible' => 'Diaconato',
+            'responsible' => $responsible,
             'notes' => $notes,
-            'section' => 'PRÉ ABERTURA',
+            'section' => $section,
             'proPresenterActionType' => 'none',
             'proPresenterActionConfig' => ['secret' => 'nao-vazar'],
             'proPresenterTargetUuid' => 'uuid-secreto',

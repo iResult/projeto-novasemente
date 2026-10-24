@@ -6,7 +6,6 @@ export type NsTimerStage = {
     start_time: string | null;
     duration_label: string | null;
     responsible: string | null;
-    notes: string | null;
     state: NsTimerStageState;
 };
 

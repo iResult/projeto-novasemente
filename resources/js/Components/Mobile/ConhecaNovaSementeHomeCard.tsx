@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 
-const HUB_FEATURE_KEYS = ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'programacao_sabado', 'acompanhar_culto'] as const;
+const HUB_FEATURE_KEYS = ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'] as const;
 
 export default function ConhecaNovaSementeHomeCard() {
     const { isEnabled } = useAppFeatures();

@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/react';
 import {
     ChevronRightIcon,
     ClockIcon,
-    DocumentTextIcon,
     EyeIcon,
     HeartIcon,
     MapPinIcon,
@@ -53,18 +52,11 @@ const ITEMS: HubItem[] = [
         icon: ClockIcon,
     },
     {
-        label: 'Acompanhar culto',
-        subtitle: 'Etapas do culto, no horário, como no NS Timer.',
+        label: 'Acompanhar Programação',
+        subtitle: 'Etapas da programação, no horário.',
         route: 'mobile.acompanhar-culto',
         featureKey: 'acompanhar_culto',
         icon: EyeIcon,
-    },
-    {
-        label: 'Programação do Sábado',
-        subtitle: 'PDF da programação do culto de sábado.',
-        route: 'mobile.programacao-sabado',
-        featureKey: 'programacao_sabado',
-        icon: DocumentTextIcon,
     },
     {
         label: 'Em que cremos',
