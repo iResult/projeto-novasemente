@@ -115,6 +115,8 @@ final class PageViewRouteLabels
         'mobile.conheca' => 'Conheça a Nova Semente',
         'mobile.quem-somos' => 'Quem somos',
         'mobile.programacao-sabado' => 'Programação do Sábado',
+        'mobile.acompanhar-culto' => 'Acompanhar culto',
+        'mobile.acompanhar-culto.live' => 'Acompanhar culto — atualização',
         'mobile.beliefs' => 'Em que cremos',
         'mobile.acervo' => 'Séries',
         'mobile.acervo.show' => 'Séries — playlist',

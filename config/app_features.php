@@ -189,6 +189,11 @@ return [
             'group' => 'menu_mais',
             'routes' => ['mobile.programacao-sabado'],
         ],
+        'acompanhar_culto' => [
+            'label' => 'Acompanhar culto',
+            'group' => 'menu_mais',
+            'routes' => ['mobile.acompanhar-culto', 'mobile.acompanhar-culto.live'],
+        ],
         'volunteer_signup' => [
             'label' => 'Voluntário',
             'group' => 'menu_mais',

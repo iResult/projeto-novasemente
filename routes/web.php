@@ -60,6 +60,7 @@ use App\Http\Controllers\MusicaController;
 use App\Http\Controllers\MyMinistryVolunteersController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationFeedController;
+use App\Http\Controllers\NsTimerFollowController;
 use App\Http\Controllers\NsTimerSsoController;
 use App\Http\Controllers\OfferingLandingController;
 use App\Http\Controllers\OperationsDashboardController;
@@ -292,6 +293,12 @@ Route::post('/mobile/ano-biblico/desafios/recalcular-atual', [MobileAnoBiblicoCo
 Route::get('/mobile/sobre-o-app', [MobileController::class, 'sobreOApp'])->name('mobile.sobre-o-app');
 Route::get('/mobile/conheca-a-nova-semente', [MobileController::class, 'conhecaNovaSemente'])->name('mobile.conheca');
 Route::get('/mobile/programacao-sabado', [MobileController::class, 'programacaoSabado'])->name('mobile.programacao-sabado');
+Route::middleware(['auth', 'throttle:90,1'])->group(function () {
+    Route::get('/mobile/acompanhar-culto', [NsTimerFollowController::class, 'show'])
+        ->name('mobile.acompanhar-culto');
+    Route::get('/mobile/acompanhar-culto/live', [NsTimerFollowController::class, 'live'])
+        ->name('mobile.acompanhar-culto.live');
+});
 Route::get('/mobile/programacao-sabado/live', [MobileController::class, 'programacaoSabadoLive'])
     ->name('mobile.programacao-sabado.live');
 Route::get('/mobile/programacao-sabado/pdf', [MobileController::class, 'programacaoSabadoPdfDownload'])

@@ -4,6 +4,7 @@ import {
     ChevronRightIcon,
     ClockIcon,
     DocumentTextIcon,
+    EyeIcon,
     HeartIcon,
     MapPinIcon,
     UserCircleIcon,
@@ -57,6 +58,13 @@ const ITEMS: HubItem[] = [
         route: 'mobile.programacao-sabado',
         featureKey: 'programacao_sabado',
         icon: DocumentTextIcon,
+    },
+    {
+        label: 'Acompanhar culto',
+        subtitle: 'Etapas do culto, no horário, como no NS Timer.',
+        route: 'mobile.acompanhar-culto',
+        featureKey: 'acompanhar_culto',
+        icon: EyeIcon,
     },
     {
         label: 'Em que cremos',

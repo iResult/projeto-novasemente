@@ -31,6 +31,7 @@ use App\Services\DriveFolderImagesService;
 use App\Services\LibraryEgwPdfService;
 use App\Services\LibraryExternalPageExtractService;
 use App\Services\MeditationHomeBannerService;
+use App\Services\NsTimerLiveService;
 use App\Services\RevistaAdventistaEditionPdfService;
 use App\Services\SabbathSunsetService;
 use App\Services\SaturdayProgramService;
@@ -283,6 +284,11 @@ class MobileController extends Controller
             $nsWhatsPendingReply = NsWhatsAccess::pendingReplyCount($user, (int) $church->id);
         }
 
+        $nsTimerFollow = null;
+        if (ChurchAppFeatures::isEnabled($church, 'acompanhar_culto')) {
+            $nsTimerFollow = app(NsTimerLiveService::class)->homeCard();
+        }
+
         return Inertia::render('Mobile/Home', [
             'latestNews' => $latestNews,
             'upcomingEvents' => $upcomingEvents,
@@ -293,6 +299,7 @@ class MobileController extends Controller
             'moduleSpotlight' => $moduleSpotlight,
             'bookmarkedHomeCards' => $bookmarkedHomeCards,
             'nsWhatsPendingReply' => $nsWhatsPendingReply,
+            'nsTimerFollow' => $nsTimerFollow,
             'pendingAppNovelty' => PendingAppNovelty::forUser($user, $church),
         ]);
     }
