@@ -34,6 +34,6 @@ export const homeFeatureCardMedia: Record<string, HomeCardMedia> = {
     'revista-adventista': { src: '/images/home-cards/revista-adventista.webp', crop: 'bottom', wave: 2, focus: 'center 62%' },
     saude: { src: '/images/home-cards/saude.webp', crop: 'bottom', wave: 0, focus: 'center 64%' },
     series: { src: '/images/home-cards/series.webp', crop: 'bottom', wave: 1, focus: 'center 60%' },
-    conheca: { src: '/images/home-cards/conheca.webp', crop: 'side', wave: 0, focus: '68% center' },
+    conheca: { src: '/images/home-cards/conheca.webp', crop: 'side', wave: 0, focus: 'center 46%' },
     voluntario: { src: '/images/home-cards/voluntario.webp', crop: 'bottom', wave: 1, focus: 'center 62%' },
 };
