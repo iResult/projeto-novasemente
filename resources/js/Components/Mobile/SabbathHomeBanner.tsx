@@ -82,7 +82,7 @@ export default function SabbathHomeBanner({ banner, appUrl = '', layout = 'banne
             'flex items-center gap-3 rounded-2xl bg-white px-3.5 py-3 text-left shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800';
 
         return (
-            <section aria-label={isFriday ? 'Início do sábado' : 'Despedida do sábado'}>
+            <section aria-label={isFriday ? 'Início do sábado' : 'Pôr do sol'}>
                 {isFriday ? (
                     <Link
                         href={meditationHref}
@@ -99,7 +99,7 @@ export default function SabbathHomeBanner({ banner, appUrl = '', layout = 'banne
 
     return (
         <section
-            aria-label={isFriday ? 'Início do sábado' : 'Despedida do sábado'}
+            aria-label={isFriday ? 'Início do sábado' : 'Pôr do sol'}
             className="relative w-full overflow-hidden rounded-2xl bg-[#f5f1e9] shadow-sm ring-1 ring-amber-900/10 dark:bg-emerald-950 dark:ring-emerald-800/60"
         >
             <div

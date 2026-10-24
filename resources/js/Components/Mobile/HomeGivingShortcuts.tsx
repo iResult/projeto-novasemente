@@ -52,7 +52,7 @@ export default function HomeGivingShortcuts() {
 
     return (
         <section aria-label="Atalhos rápidos" className="py-1">
-            <div className="grid w-full grid-cols-3 items-start px-3">
+            <div className="grid w-full max-w-md grid-cols-3 items-start px-1 sm:max-w-lg">
                 {items.map((item) => {
                     const Icon = item.icon;
                     const content = (

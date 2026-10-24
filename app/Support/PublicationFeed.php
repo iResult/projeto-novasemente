@@ -139,6 +139,7 @@ class PublicationFeed
      *     excerpt: string,
      *     image_url: string|null,
      *     cover_play_overlay: bool,
+     *     cover_overlay_text: string|null,
      *     href: string
      * }>
      */
@@ -179,6 +180,7 @@ class PublicationFeed
                 $excerpt = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item['excerpt'] ?? ''))) ?? '');
                 $typeLabel = trim(strip_tags((string) ($item['type_label'] ?? '')));
                 $actionLabel = trim(strip_tags((string) ($item['action_label'] ?? '')));
+                $overlay = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($item['cover_overlay_text'] ?? ''))) ?? '');
 
                 return [
                     'id' => (string) ($item['id'] ?? ''),
@@ -189,6 +191,7 @@ class PublicationFeed
                     'excerpt' => $excerpt,
                     'image_url' => $image !== '' ? $image : null,
                     'cover_play_overlay' => (bool) ($item['cover_play_overlay'] ?? false),
+                    'cover_overlay_text' => $overlay !== '' ? $overlay : null,
                     'href' => $href,
                 ];
             })

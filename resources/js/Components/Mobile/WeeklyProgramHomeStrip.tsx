@@ -1,11 +1,14 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon, CalendarDaysIcon, ChevronRightIcon, PlayIcon, SunIcon } from '@heroicons/react/24/outline';
+import type { ComponentType, SVGProps } from 'react';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
 
 type Props = {
     cards: WeeklyProgramHomeCardData[];
     href?: string | null;
 };
+
+type MenuIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
 function formatTime(raw: string): string {
     const clock = raw.trim().match(/^(\d{1,2}):(\d{2})$/);
@@ -23,7 +26,21 @@ function statusOf(card: WeeklyProgramHomeCardData): string | null {
     if (card.is_next) {
         return 'Próximo';
     }
-    return null;
+    return 'Mais tarde';
+}
+
+function iconFor(title: string): MenuIcon {
+    const name = title.toLocaleLowerCase('pt-BR');
+    if (name.includes('pôr') || name.includes('por do sol')) {
+        return SunIcon;
+    }
+    if (name.includes('culto') || name.includes('despedida') || name.includes('início') || name.includes('inicio')) {
+        return PlayIcon;
+    }
+    if (name.includes('estudo') || name.includes('classe') || name.includes('lição') || name.includes('licao')) {
+        return BookOpenIcon;
+    }
+    return CalendarDaysIcon;
 }
 
 function sectionTitle(cards: WeeklyProgramHomeCardData[]): string {
@@ -60,33 +77,49 @@ export default function WeeklyProgramHomeStrip({ cards, href = null }: Props) {
                     </Link>
                 ) : null}
             </div>
-            <div className="flex min-w-0 touch-auto snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-0 touch-auto snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain scroll-ps-0 scroll-pe-1 pe-1 [scrollbar-width:none] md:flex-wrap md:overflow-visible md:pe-0 [&::-webkit-scrollbar]:hidden">
                 {cards.map((card) => {
                     const status = statusOf(card);
                     const time = formatTime(card.time_display);
-                    const label = `${status ? `${status}: ` : ''}${card.title}, ${time}`;
-                    const chipClass = `flex w-[8.6rem] shrink-0 snap-start flex-col justify-between rounded-2xl px-3 py-2.5 ring-1 ${
+                    const Icon = iconFor(card.title);
+                    const label = `${status}: ${card.title}, ${time}`;
+                    const chipClass = `flex w-[9.1rem] shrink-0 snap-start items-center justify-between gap-2 rounded-2xl px-3 py-2.5 md:w-auto md:min-w-[10.5rem] md:flex-1 ${
                         card.is_ongoing
-                            ? 'bg-[#dff3e6] ring-emerald-700/20 dark:bg-emerald-950/70 dark:ring-emerald-400/30'
-                            : 'bg-[#e8f6ee] ring-emerald-900/10 dark:bg-emerald-950/45 dark:ring-emerald-800/50'
+                            ? 'bg-[#e5f6eb] ring-1 ring-emerald-700/15 dark:bg-emerald-950/80 dark:ring-emerald-400/25'
+                            : 'bg-white ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800'
                     }`;
                     const body = (
                         <>
-                            <p className="line-clamp-2 text-[12px] font-medium leading-tight text-emerald-950/80 dark:text-emerald-50/90">
-                                {card.title}
-                            </p>
-                            <p
-                                className={`mt-1 font-semibold leading-none tracking-tight text-emerald-950 dark:text-emerald-50 ${
-                                    time.length > 8 ? 'text-[15px]' : 'text-[1.2rem]'
-                                }`}
-                            >
-                                {time}
-                            </p>
-                            {status ? (
-                                <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800 dark:text-emerald-200">
+                            <div className="min-w-0">
+                                <p className="line-clamp-2 text-[11px] font-semibold uppercase leading-tight tracking-wide text-zinc-500 dark:text-zinc-400">
+                                    {card.title}
+                                </p>
+                                <p className="mt-1 text-[1.35rem] font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-50">
+                                    {time}
+                                </p>
+                                <p
+                                    className={`mt-1.5 flex items-center gap-1 text-[11px] font-medium leading-none ${
+                                        card.is_ongoing
+                                            ? 'text-brand-800 dark:text-brand-200'
+                                            : 'text-zinc-500 dark:text-zinc-400'
+                                    }`}
+                                >
+                                    <span
+                                        className={`h-1.5 w-1.5 rounded-full ${
+                                            card.is_ongoing ? 'bg-brand-700 dark:bg-brand-300' : 'bg-zinc-300 dark:bg-zinc-600'
+                                        }`}
+                                        aria-hidden
+                                    />
                                     {status}
                                 </p>
-                            ) : null}
+                            </div>
+                            <Icon
+                                className={`h-4 w-4 shrink-0 ${
+                                    card.is_ongoing ? 'text-brand-800 dark:text-brand-200' : 'text-zinc-400 dark:text-zinc-500'
+                                }`}
+                                aria-hidden
+                                strokeWidth={1.75}
+                            />
                         </>
                     );
 
@@ -103,7 +136,7 @@ export default function WeeklyProgramHomeStrip({ cards, href = null }: Props) {
                             key={card.id}
                             href={href}
                             aria-label={label}
-                            className={`${chipClass} cursor-pointer transition hover:bg-[#dff3e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:hover:bg-emerald-950/70`}
+                            className={`${chipClass} cursor-pointer transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:hover:bg-zinc-800`}
                         >
                             {body}
                         </Link>

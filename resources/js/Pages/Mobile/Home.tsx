@@ -435,7 +435,7 @@ export default function MobileHome({
     return (
         <MobileLayout allowHorizontalPan>
             <Head title="Home" />
-            <div className="mx-auto flex w-full max-w-lg -mt-5 flex-col gap-6 pb-4 sm:max-w-xl md:max-w-2xl lg:-mt-3 lg:max-w-none">
+            <div className="mx-auto flex w-full max-w-lg flex-col gap-5 pb-4 sm:max-w-xl md:max-w-3xl lg:max-w-5xl">
                 {showPostRegistrationBanner ? (
                     <div
                         className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50"
@@ -465,7 +465,7 @@ export default function MobileHome({
                         href: conhecaFallbackHref,
                         title: 'Conheça a Nova Semente',
                         excerpt: 'Quem somos, pastores, localização e horários.',
-                        imageUrl: '/images/home-cards/conheca.webp',
+                        imageUrl: '/images/home-cards/conheca.webp?v=2',
                         actionLabel: 'Conhecer',
                     }}
                 />
@@ -489,7 +489,7 @@ export default function MobileHome({
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
-                    <div className="grid grid-cols-2 items-stretch gap-3.5 sm:gap-4 lg:grid-cols-3">
+                    <div className="grid grid-cols-2 items-stretch gap-4 lg:grid-cols-3">
                         {gridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const pendingBadge =

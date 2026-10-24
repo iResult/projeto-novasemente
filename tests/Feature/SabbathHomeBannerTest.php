@@ -164,7 +164,7 @@ class SabbathHomeBannerTest extends TestCase
                 ->component('Mobile/Home')
                 ->has('sabbathBanner', fn (Assert $banner) => $banner
                     ->where('variant', 'saturday')
-                    ->where('title', 'Despedida do sábado')
+                    ->where('title', 'Pôr do sol')
                     ->where('sunset_time', '17:28')
                     ->where('day_label', 'Hoje, sábado')
                     ->where('message', 'Agradeça a Deus por este dia sagrado.')

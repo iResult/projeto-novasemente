@@ -12,6 +12,8 @@ export type HomeFeedHighlight = {
     excerpt: string;
     image_url: string | null;
     cover_play_overlay: boolean;
+    /** Preenchido quando a própria arte já traz a mensagem, como a meditação do dia. */
+    cover_overlay_text?: string | null;
     href: string;
 };
 
@@ -29,7 +31,10 @@ type Props = {
     fallback: HomeFeedFallback;
 };
 
-type Frame = 'pending' | 'landscape' | 'portrait' | 'missing';
+type SlideKind = 'photo' | 'art' | 'text';
+
+const slideFrameClass =
+    'relative block h-[14.5rem] cursor-pointer overflow-hidden rounded-[1.25rem] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/50 sm:h-64 md:h-80 lg:h-[22rem]';
 
 function plain(value: string): string {
     return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -43,95 +48,67 @@ function imageSrc(url: string, appUrl: string): string {
     return `${base}${url}`;
 }
 
-function usePrefersReducedMotion(): boolean {
-    const [reduced, setReduced] = useState(false);
-
-    useEffect(() => {
-        const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-        const apply = () => setReduced(media.matches);
-        apply();
-        media.addEventListener('change', apply);
-        return () => media.removeEventListener('change', apply);
-    }, []);
-
-    return reduced;
+function kindFor(imageUrl: string | null, overlay: string | null | undefined): SlideKind {
+    if (!imageUrl) {
+        return 'text';
+    }
+    return plain(overlay ?? '') !== '' ? 'art' : 'photo';
 }
 
 function PlayMark() {
     return (
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white shadow-sm ring-1 ring-white/40">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white ring-1 ring-white/30">
             <PlayIcon className="ml-0.5 h-3.5 w-3.5" aria-hidden />
         </span>
     );
 }
 
-function SlideCopy({
-    kicker,
-    title,
-    excerpt,
-    action,
-}: {
-    kicker: string;
-    title: string;
-    excerpt: string;
-    action: string;
-}) {
+function ActionPill({ label, tone }: { label: string; tone: 'on-photo' | 'on-paper' }) {
+    if (label === '') {
+        return null;
+    }
+
     return (
-        <div className="flex min-w-0 flex-col text-white">
-            {kicker !== '' ? (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80">{kicker}</p>
-            ) : null}
-            <p
-                className={`line-clamp-2 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight ${
-                    kicker !== '' ? 'mt-1.5' : ''
-                }`}
-            >
-                {title}
-            </p>
-            {excerpt !== '' ? (
-                <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-white/85">{excerpt}</p>
-            ) : null}
-            {action !== '' ? (
-                <span className="mt-3 inline-flex w-fit max-w-full items-center gap-1 rounded-full bg-[#0d6a36] px-3 py-1.5 text-[12px] font-semibold text-white shadow-sm ring-1 ring-white/15">
-                    <span className="truncate">{action}</span>
-                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                </span>
-            ) : null}
-        </div>
+        <span
+            className={`mt-3 inline-flex w-fit max-w-full items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold ${
+                tone === 'on-photo'
+                    ? 'bg-brand-700 text-white'
+                    : 'bg-brand-700 text-white dark:bg-brand-300 dark:text-brand-950'
+            }`}
+        >
+            <span className="truncate">{label}</span>
+            <ChevronRightIcon className="h-3.5 w-3.5 shrink-0" aria-hidden strokeWidth={2.25} />
+        </span>
     );
 }
 
-function TextPanel({
+function TextSlide({
     kicker,
     title,
     excerpt,
     action,
-    showPlay,
 }: {
     kicker: string;
     title: string;
     excerpt: string;
     action: string;
-    showPlay: boolean;
 }) {
     return (
-        <div className="relative flex h-full flex-col justify-end overflow-hidden bg-[#0c3d24] px-4 pb-4 pt-4 pr-[4.75rem]">
-            <div
-                className="pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full bg-white/10"
-                aria-hidden
-            />
-            <div
-                className="pointer-events-none absolute -bottom-16 left-8 h-28 w-28 rounded-full bg-emerald-300/10"
-                aria-hidden
-            />
-            {showPlay ? (
-                <span className="absolute right-3 top-3">
-                    <PlayMark />
-                </span>
+        <div className="flex h-full flex-col justify-end bg-[#f6f3ec] px-4 pb-4 pt-4 dark:bg-zinc-900">
+            {kicker !== '' ? (
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-800 dark:text-brand-200">
+                    {kicker}
+                </p>
             ) : null}
-            <div className="relative">
-                <SlideCopy kicker={kicker} title={title} excerpt={excerpt} action={action} />
-            </div>
+            <p className="mt-1 line-clamp-3 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight text-zinc-900 dark:text-zinc-50">
+                {title}
+            </p>
+            {excerpt !== '' && excerpt !== title ? (
+                <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-zinc-600 dark:text-zinc-300">
+                    {excerpt}
+                </p>
+            ) : null}
+            <ActionPill label={action} tone="on-paper" />
         </div>
     );
 }
@@ -144,6 +121,7 @@ function PhotoSlide({
     action,
     showPlay,
     priority,
+    onMissing,
 }: {
     src: string;
     kicker: string;
@@ -152,88 +130,84 @@ function PhotoSlide({
     action: string;
     showPlay: boolean;
     priority: boolean;
+    onMissing: () => void;
 }) {
-    const [frame, setFrame] = useState<Frame>('pending');
-
-    if (frame === 'missing') {
-        return (
-            <TextPanel kicker={kicker} title={title} excerpt={excerpt} action={action} showPlay={showPlay} />
-        );
-    }
-
-    const portrait = frame === 'portrait';
-
     return (
-        <div className="relative h-full bg-[#0c3d24]">
-            {portrait ? (
-                <div className="flex h-full">
-                    <div className="relative z-10 flex min-w-0 flex-1 flex-col justify-end px-4 pb-4 pt-4 pr-3">
-                        <SlideCopy kicker={kicker} title={title} excerpt={excerpt} action={action} />
-                    </div>
-                    <div className="relative h-full w-[42%] shrink-0">
-                        <img
-                            src={src}
-                            alt=""
-                            draggable={false}
-                            loading={priority ? 'eager' : 'lazy'}
-                            decoding="async"
-                            onLoad={(event) => {
-                                const img = event.currentTarget;
-                                const ratio =
-                                    img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1;
-                                setFrame(ratio < 0.92 ? 'portrait' : 'landscape');
-                            }}
-                            onError={() => setFrame('missing')}
-                            className="absolute inset-0 h-full w-full object-cover"
-                        />
-                        <div
-                            className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#0c3d24] to-transparent"
-                            aria-hidden
-                        />
-                        {showPlay ? (
-                            <span className="absolute right-2.5 top-2.5">
-                                <PlayMark />
-                            </span>
-                        ) : null}
-                    </div>
-                </div>
+        <div className="relative h-full bg-zinc-900">
+            <img
+                src={src}
+                alt=""
+                draggable={false}
+                loading={priority ? 'eager' : 'lazy'}
+                decoding="async"
+                onError={onMissing}
+                className="absolute inset-0 h-full w-full object-cover object-[center_38%]"
+            />
+            <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/28 to-black/5"
+                aria-hidden
+            />
+            {showPlay ? (
+                <span className="absolute right-3 top-3 z-10">
+                    <PlayMark />
+                </span>
+            ) : null}
+            <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pr-16 pt-16 text-white">
+                {kicker !== '' ? (
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80">{kicker}</p>
+                ) : null}
+                <p className="mt-1 line-clamp-3 text-balance text-[1.35rem] font-semibold leading-[1.15] tracking-tight">
+                    {title}
+                </p>
+                {excerpt !== '' && excerpt !== title ? (
+                    <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-white/85">{excerpt}</p>
+                ) : null}
+                <ActionPill label={action} tone="on-photo" />
+            </div>
+        </div>
+    );
+}
+
+function ArtSlide({
+    src,
+    label,
+    showPlay,
+    priority,
+    onMissing,
+}: {
+    src: string;
+    label: string;
+    showPlay: boolean;
+    priority: boolean;
+    onMissing: () => void;
+}) {
+    return (
+        <div className="relative h-full bg-[#f3f0e8] dark:bg-zinc-900">
+            <img
+                src={src}
+                alt=""
+                draggable={false}
+                loading={priority ? 'eager' : 'lazy'}
+                decoding="async"
+                onError={onMissing}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            {showPlay ? (
+                <span className="absolute right-3 top-3 z-10">
+                    <PlayMark />
+                </span>
             ) : (
-                <>
-                    <img
-                        src={src}
-                        alt=""
-                        draggable={false}
-                        loading={priority ? 'eager' : 'lazy'}
-                        decoding="async"
-                        onLoad={(event) => {
-                            const img = event.currentTarget;
-                            const ratio = img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1;
-                            setFrame(ratio < 0.92 ? 'portrait' : 'landscape');
-                        }}
-                        onError={() => setFrame('missing')}
-                        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 motion-reduce:transition-none ${
-                            frame === 'pending' ? 'opacity-0' : 'opacity-100'
-                        }`}
-                    />
-                    <div
-                        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10"
-                        aria-hidden
-                    />
-                    {showPlay ? (
-                        <span className="absolute right-3 top-3 z-10">
-                            <PlayMark />
-                        </span>
-                    ) : null}
-                    <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pr-[4.75rem] pt-10">
-                        <SlideCopy kicker={kicker} title={title} excerpt={excerpt} action={action} />
-                    </div>
-                </>
+                <span className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-zinc-700 shadow-sm">
+                    <ChevronRightIcon className="h-4 w-4" aria-hidden strokeWidth={2.25} />
+                </span>
             )}
+            <span className="sr-only">{label}</span>
         </div>
     );
 }
 
 function SlideFace({
+    kind,
     kicker,
     title,
     excerpt,
@@ -243,6 +217,7 @@ function SlideFace({
     priority,
     appUrl,
 }: {
+    kind: SlideKind;
     kicker: string;
     title: string;
     excerpt: string;
@@ -252,8 +227,22 @@ function SlideFace({
     priority: boolean;
     appUrl: string;
 }) {
-    if (!imageUrl) {
-        return <TextPanel kicker={kicker} title={title} excerpt={excerpt} action={action} showPlay={showPlay} />;
+    const [missing, setMissing] = useState(false);
+
+    if (kind === 'text' || missing || !imageUrl) {
+        return <TextSlide kicker={kicker} title={title} excerpt={excerpt} action={action} />;
+    }
+
+    if (kind === 'art') {
+        return (
+            <ArtSlide
+                src={imageSrc(imageUrl, appUrl)}
+                label={title}
+                showPlay={showPlay}
+                priority={priority}
+                onMissing={() => setMissing(true)}
+            />
+        );
     }
 
     return (
@@ -265,6 +254,7 @@ function SlideFace({
             action={action}
             showPlay={showPlay}
             priority={priority}
+            onMissing={() => setMissing(true)}
         />
     );
 }
@@ -272,9 +262,8 @@ function SlideFace({
 export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props) {
     const scrollerRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
-    const reducedMotion = usePrefersReducedMotion();
     const labelId = useId();
-    const slides = items.filter((item) => plain(item.title) !== '' && item.href.trim() !== '');
+    const slides = items.filter((item) => plain(item.title) !== '' && item.href.trim() !== '').slice(0, 5);
     const many = slides.length > 1;
 
     useEffect(() => {
@@ -320,9 +309,10 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
         if (!el || !node) {
             return;
         }
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         el.scrollTo({
             left: node.offsetLeft,
-            behavior: reducedMotion ? 'auto' : 'smooth',
+            behavior: reduce ? 'auto' : 'smooth',
         });
     };
 
@@ -332,11 +322,12 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
         const action = fallback.href ? plain(fallback.actionLabel) : '';
         const face = (
             <SlideFace
+                kind={fallback.imageUrl ? 'photo' : 'text'}
                 kicker=""
                 title={title}
                 excerpt={excerpt}
                 action={action}
-                imageUrl={fallback.imageUrl}
+                imageUrl={fallback.imageUrl || null}
                 showPlay={false}
                 priority
                 appUrl={appUrl}
@@ -346,16 +337,11 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
         return (
             <section aria-label="Novidades da comunidade" className="min-w-0">
                 {fallback.href ? (
-                    <Link
-                        href={fallback.href}
-                        className="block h-[12.75rem] cursor-pointer overflow-hidden rounded-[1.35rem] shadow-[0_12px_28px_-18px_rgba(12,61,36,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/50 sm:h-[13.25rem]"
-                    >
+                    <Link href={fallback.href} className={slideFrameClass}>
                         {face}
                     </Link>
                 ) : (
-                    <div className="h-[12.75rem] overflow-hidden rounded-[1.35rem] shadow-[0_12px_28px_-18px_rgba(12,61,36,0.55)] sm:h-[13.25rem]">
-                        {face}
-                    </div>
+                    <div className={slideFrameClass}>{face}</div>
                 )}
             </section>
         );
@@ -400,6 +386,7 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
                         const excerpt = plain(item.excerpt);
                         const action = plain(item.action_label);
                         const kicker = plain(item.type_label);
+                        const kind = kindFor(item.image_url, item.cover_overlay_text);
                         const videoNote = item.cover_play_overlay ? ', vídeo' : '';
                         const label = `${kicker !== '' ? `${kicker}: ` : ''}${title}${videoNote}`;
 
@@ -414,13 +401,14 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
                                     href={item.href}
                                     aria-label={label}
                                     tabIndex={many && index !== activeIndex ? -1 : undefined}
-                                    className="relative block h-[12.75rem] cursor-pointer overflow-hidden rounded-[1.35rem] shadow-[0_12px_28px_-18px_rgba(12,61,36,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 sm:h-[13.25rem]"
+                                    className={slideFrameClass}
                                 >
                                     <SlideFace
+                                        kind={kind}
                                         kicker={kicker}
                                         title={title}
                                         excerpt={excerpt}
-                                        action={action}
+                                        action={kind === 'art' ? '' : action}
                                         imageUrl={item.image_url}
                                         showPlay={item.cover_play_overlay}
                                         priority={index === 0}
@@ -432,7 +420,7 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
                     })}
                 </div>
                 {many ? (
-                    <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1.5">
+                    <div className="pointer-events-auto absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1.5">
                         {slides.map((dot, dotIndex) => (
                             <button
                                 key={dot.id}
@@ -441,9 +429,7 @@ export default function HomeFeedCarousel({ items, appUrl = '', fallback }: Props
                                 aria-current={dotIndex === activeIndex ? 'true' : undefined}
                                 onClick={() => scrollTo(dotIndex)}
                                 className={`cursor-pointer rounded-full transition-all duration-300 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-                                    dotIndex === activeIndex
-                                        ? 'h-1.5 w-4 bg-white'
-                                        : 'h-1.5 w-1.5 bg-white/55 hover:bg-white/80'
+                                    dotIndex === activeIndex ? 'h-1.5 w-4 bg-white' : 'h-1.5 w-1.5 bg-white/55 hover:bg-white/80'
                                 }`}
                             />
                         ))}

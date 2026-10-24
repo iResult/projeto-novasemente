@@ -55,7 +55,7 @@ class SabbathSunsetService
 
         return [
             'variant' => 'saturday',
-            'title' => 'Despedida do sábado',
+            'title' => 'Pôr do sol',
             'subtitle' => 'Pôr do sol de hoje',
             'sunset_at' => $saturdaySunset->toIso8601String(),
             'sunset_time' => $saturdaySunset->format('H:i'),
