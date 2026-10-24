@@ -29,8 +29,6 @@ import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Component
 import HomeGivingShortcuts from '@/Components/Mobile/HomeGivingShortcuts';
 import HomeVolunteerArea from '@/Components/Mobile/HomeVolunteerArea';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
-import NsTimerFollowHomeCard from '@/Components/Mobile/NsTimerFollowHomeCard';
-import type { NsTimerFollowHomeCard as NsTimerFollowCard } from '@/utils/nsTimerFollow';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
 import AppNoveltyOverlay, {
     type PendingAppNoveltyPayload,
@@ -55,7 +53,6 @@ interface Props {
     bookmarkedHomeCards?: string[];
     nsWhatsPendingReply?: number;
     pendingAppNovelty?: PendingAppNoveltyPayload | null;
-    nsTimerFollow?: NsTimerFollowCard | null;
 }
 
 type PageProps = {
@@ -292,7 +289,6 @@ export default function MobileHome({
     bookmarkedHomeCards = [],
     nsWhatsPendingReply = 0,
     pendingAppNovelty = null,
-    nsTimerFollow = null,
 }: Props) {
     const page = usePage();
     const { appUrl = '', auth, csrf_token: csrfProp } = page.props as unknown as PageProps;
@@ -466,10 +462,6 @@ export default function MobileHome({
                     <WeeklyProgramHomeCarousel cards={weeklyProgramCards} appUrl={appUrl} />
                 ) : sabbathBanner && !showMeditationBanner ? (
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} />
-                ) : null}
-
-                {nsTimerFollow && isEnabled('acompanhar_culto') ? (
-                    <NsTimerFollowHomeCard follow={nsTimerFollow} />
                 ) : null}
 
                 <HomeGivingShortcuts />

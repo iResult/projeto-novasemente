@@ -36,17 +36,6 @@ export type NsTimerFollowAvailable = {
 
 export type NsTimerFollow = { available: false } | NsTimerFollowAvailable;
 
-export type NsTimerFollowHomeCard = {
-    title: string;
-    status: string;
-    status_label: string;
-    live: boolean;
-    date_label: string;
-    start_time: string;
-    stage_count: number;
-    current_stage_name: string | null;
-};
-
 export function isNsTimerFollowAvailable(follow: NsTimerFollow): follow is NsTimerFollowAvailable {
     return follow.available === true;
 }

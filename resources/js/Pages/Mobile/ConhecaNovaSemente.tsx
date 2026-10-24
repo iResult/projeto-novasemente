@@ -53,18 +53,18 @@ const ITEMS: HubItem[] = [
         icon: ClockIcon,
     },
     {
-        label: 'Programação do Sábado',
-        subtitle: 'PDF da programação do culto de sábado.',
-        route: 'mobile.programacao-sabado',
-        featureKey: 'programacao_sabado',
-        icon: DocumentTextIcon,
-    },
-    {
         label: 'Acompanhar culto',
         subtitle: 'Etapas do culto, no horário, como no NS Timer.',
         route: 'mobile.acompanhar-culto',
         featureKey: 'acompanhar_culto',
         icon: EyeIcon,
+    },
+    {
+        label: 'Programação do Sábado',
+        subtitle: 'PDF da programação do culto de sábado.',
+        route: 'mobile.programacao-sabado',
+        featureKey: 'programacao_sabado',
+        icon: DocumentTextIcon,
     },
     {
         label: 'Em que cremos',

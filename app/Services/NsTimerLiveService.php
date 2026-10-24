@@ -65,35 +65,6 @@ final class NsTimerLiveService
     }
 
     /**
-     * Cartão da home: só culto pendente ou ao vivo.
-     *
-     * @return array<string, mixed>|null
-     */
-    public function homeCard(): ?array
-    {
-        $payload = $this->payload();
-        if (($payload['available'] ?? false) !== true) {
-            return null;
-        }
-
-        $status = (string) ($payload['status'] ?? '');
-        if (! in_array($status, ['live', 'ready'], true)) {
-            return null;
-        }
-
-        return [
-            'title' => $payload['title'],
-            'status' => $status,
-            'status_label' => $payload['status_label'],
-            'live' => (bool) $payload['live'],
-            'date_label' => $payload['date_label'],
-            'start_time' => $payload['start_time'],
-            'stage_count' => $payload['stage_count'],
-            'current_stage_name' => $payload['current_stage_name'],
-        ];
-    }
-
-    /**
      * @return array{available: false}|array<string, mixed>
      */
     private function fetch(string $origin): array

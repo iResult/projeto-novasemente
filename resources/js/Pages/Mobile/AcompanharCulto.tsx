@@ -101,10 +101,10 @@ export default function AcompanharCulto({ follow: initial }: Props) {
             <div className="mx-auto w-full max-w-lg space-y-4 pb-6 sm:max-w-xl md:max-w-3xl">
                 <div>
                     <Link
-                        href={route('mobile.home')}
+                        href={route('mobile.conheca')}
                         className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
                     >
-                        ← Início
+                        ← Conheça a Nova Semente
                     </Link>
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Acompanhar culto

@@ -75,11 +75,7 @@ class NsTimerFollowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Mobile/Home')
-                ->where('nsTimerFollow.title', 'CULTO DE SÁBADO')
-                ->where('nsTimerFollow.live', false)
-                ->where('nsTimerFollow.status_label', 'Pendente')
-                ->where('nsTimerFollow.start_time', '08:00')
-                ->missing('nsTimerFollow.sections'));
+                ->missing('nsTimerFollow'));
 
         $this->actingAs($user)
             ->getJson(route('mobile.acompanhar-culto.live'))
@@ -112,12 +108,6 @@ class NsTimerFollowTest extends TestCase
                 ->where('follow.sections.0.stages.1.start_time', '09:00'))
             ->assertDontSee('nao-vazar', false)
             ->assertDontSee('controllerUserId', false);
-
-        $this->get(route('mobile.home'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('nsTimerFollow.live', true)
-                ->where('nsTimerFollow.current_stage_name', 'ABERTURA DAS PORTAS'));
     }
 
     public function test_network_failure_stays_empty_and_keeps_the_home(): void
@@ -139,7 +129,7 @@ class NsTimerFollowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Mobile/Home')
-                ->where('nsTimerFollow', null));
+                ->missing('nsTimerFollow'));
     }
 
     public function test_disabled_feature_hides_the_screen_and_does_not_call_ns_timer(): void
@@ -154,7 +144,7 @@ class NsTimerFollowTest extends TestCase
 
         $this->get(route('mobile.home'))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->where('nsTimerFollow', null));
+            ->assertInertia(fn (Assert $page) => $page->missing('nsTimerFollow'));
 
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'nstimer.novasemente.com.br'));
     }
