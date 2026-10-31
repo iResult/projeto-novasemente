@@ -36,10 +36,10 @@ export default function MobileSobreOApp({ backRoute, backLabel }: Props) {
                     >
                         ← {backLabel}
                     </Link>
-                    <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
+                    <h1 className="mt-3 text-center text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Sobre o APP
                     </h1>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    <p className="mt-2 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                         Versão, lojas, links e suporte.
                     </p>
                 </div>

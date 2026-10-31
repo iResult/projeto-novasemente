@@ -70,6 +70,9 @@ class Poll extends Model
     /** Mínimo de caracteres em «Outros» (bloqueia «E», «A»; permite «Jó»). */
     public const WRITE_IN_TEXT_MIN = 2;
 
+    /** Item livre da enquete da semana: sem opções e sem resultado público. */
+    public const WEEKLY_SUGGESTION_QUESTION = 'Deixe sua sugestão para a Nova Semente.';
+
     public static function isWriteInLabel(?string $label): bool
     {
         if ($label === null || $label === '') {

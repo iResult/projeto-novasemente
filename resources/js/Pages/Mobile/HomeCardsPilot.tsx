@@ -29,6 +29,7 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
+    MapPinIcon,
     SparklesIcon,
     SunIcon,
     UserGroupIcon,
@@ -45,6 +46,7 @@ type QuickAction = {
     route?: string;
     routeParams?: Record<string, string | number>;
     featureKey?: string;
+    featureAny?: readonly string[];
     onClick?: () => void;
     icon: MenuIcon;
 };
@@ -74,6 +76,14 @@ const catalog: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
+    },
+    {
+        id: 'conheca',
+        label: 'Conheça a Nova Semente',
+        subtitle: 'Quem somos, pastores e horários',
+        route: 'mobile.conheca',
+        featureAny: ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'],
+        icon: MapPinIcon,
     },
     {
         id: 'biblioteca',
@@ -254,7 +264,13 @@ export default function HomeCardsPilot() {
             .map((action) =>
                 action.id === 'caixa-promessas' ? { ...action, onClick: () => setPromiseOpen(true) } : action,
             )
-            .filter((action) => !action.featureKey || isEnabled(action.featureKey));
+            .filter((action) => {
+                if (action.featureAny && action.featureAny.length > 0) {
+                    return action.featureAny.some((key) => isEnabled(key));
+                }
+
+                return !action.featureKey || isEnabled(action.featureKey);
+            });
 
         return arrangeHomeCardMosaic(enabled);
     }, [isEnabled]);

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Poll;
+use App\Models\PollOption;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -125,7 +126,7 @@ final class PollPresenter
     /**
      * @return array<string, mixed>
      */
-    public static function forMobileShow(Poll $poll, ?User $viewer, bool $includeResults, ?bool $hasVoted = null): array
+    public static function forMobileShow(Poll $poll, ?User $viewer, bool $includeResults, ?bool $hasVoted = null, ?string $ip = null): array
     {
         $poll->loadMissing([
             'options' => fn ($q) => $q->orderBy('sort_order')->orderBy('id'),
@@ -137,24 +138,18 @@ final class PollPresenter
             $poll->loadMissing(['options.votes']);
         }
 
-        $viewerId = $viewer?->id;
         $selectedOptionIds = [];
         $myAnswerText = null;
         $voted = $hasVoted ?? false;
 
-        if ($viewerId !== null || $voted) {
-            $voteQuery = $poll->votes();
-            if ($viewerId) {
-                $voteQuery->where(function ($q) use ($viewerId) {
-                    $q->where('user_id', $viewerId)->orWhere('voter_key', 'u:'.$viewerId);
-                });
-            }
-            $myVote = $voteQuery->latest('id')->first();
+        // Só a resposta de quem está vendo. Texto livre não lista as demais sugestões.
+        if ($viewer !== null || ($ip !== null && $ip !== '')) {
+            $myVote = PollVoting::findVote($poll, $viewer, $ip ?? '');
             if ($myVote) {
                 $voted = true;
                 if ($poll->isTextResponse()) {
                     $myAnswerText = $myVote->answer_text;
-                } else {
+                } elseif ($myVote->poll_option_id !== null) {
                     $selectedOptionIds = [(int) $myVote->poll_option_id];
                 }
             }
@@ -192,7 +187,7 @@ final class PollPresenter
      */
     public static function forPublicVote(Poll $poll, ?User $viewer, bool $hasVoted, string $ip): array
     {
-        return self::forMobileShow($poll, $viewer, $hasVoted && $poll->showsResults(), $hasVoted);
+        return self::forMobileShow($poll, $viewer, $hasVoted && $poll->showsResults(), $hasVoted, $ip);
     }
 
     /**
@@ -228,7 +223,7 @@ final class PollPresenter
             'options.votes',
         ]);
 
-        /** @var Collection<int, \App\Models\PollOption> $options */
+        /** @var Collection<int, PollOption> $options */
         $options = $poll->options->filter(fn ($option) => ! $option->isWriteIn())->values();
         $totalVotes = $options->sum(fn ($option) => $option->votes->count());
 

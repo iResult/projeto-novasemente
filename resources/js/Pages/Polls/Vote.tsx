@@ -2,6 +2,7 @@ import MobileLayout from '@/Layouts/MobileLayout';
 import FlashMessages from '@/Components/FlashMessages';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import Textarea from '@/Components/Textarea';
 import TextInput from '@/Components/TextInput';
 import PollResultsCard from '@/Components/Polls/PollResultsCard';
 import type { PollResults } from '@/Components/Polls/pollTypes';
@@ -19,6 +20,8 @@ type PollShow = {
     id: number;
     question: string;
     allow_multiple: boolean;
+    response_type?: 'choice' | 'text';
+    text_answer_max?: number;
     write_in_text_max?: number;
     write_in_text_min?: number;
     status: string;
@@ -28,6 +31,7 @@ type PollShow = {
     can_change_vote?: boolean;
     options: PollOption[];
     selected_option_ids: number[];
+    my_answer_text?: string | null;
     results: PollResults | null;
 };
 
@@ -38,7 +42,9 @@ type Props = {
 };
 
 export default function PollVote({ poll, vote_url, display_url }: Props) {
+    const isText = poll.response_type === 'text';
     const [selected, setSelected] = useState<number | null>(poll.selected_option_ids[0] ?? null);
+    const [answerText, setAnswerText] = useState(poll.my_answer_text ?? '');
     const [otherText, setOtherText] = useState('');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -54,6 +60,34 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
 
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
+        if (isText) {
+            const trimmed = answerText.trim();
+            if (!trimmed) {
+                setError('Escreva sua sugestão.');
+                return;
+            }
+            const lines = trimmed.split(/\n/).filter((line, i, arr) => !(line === '' && i === arr.length - 1));
+            if (lines.length > 2) {
+                setError('Use no máximo duas linhas.');
+                return;
+            }
+            setProcessing(true);
+            setError(null);
+            router.post(
+                vote_url,
+                { answer_text: trimmed },
+                {
+                    preserveScroll: true,
+                    onFinish: () => setProcessing(false),
+                    onError: (errs) => {
+                        const msg = (errs as { answer_text?: string }).answer_text;
+                        setError(msg ?? 'Não foi possível enviar sua sugestão.');
+                    },
+                },
+            );
+            return;
+        }
+
         if (selected == null) {
             setError('Selecione uma opção.');
             return;
@@ -88,7 +122,8 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
         );
     };
 
-    const showResults = poll.has_voted && poll.results != null && !editing;
+    const showResults = !isText && poll.has_voted && poll.results != null && !editing;
+    const showTextThanks = isText && poll.has_voted && !editing;
 
     return (
         <MobileLayout>
@@ -100,7 +135,9 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
                     </p>
                     <h1 className="mt-1 text-xl font-semibold text-zinc-900 dark:text-white">Vote agora</h1>
                     <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        Um voto por pessoa. Não precisa entrar na conta.
+                        {isText
+                            ? 'Escreva sua sugestão. Não precisa entrar na conta.'
+                            : 'Um voto por pessoa. Não precisa entrar na conta.'}
                     </p>
                 </div>
 
@@ -139,14 +176,54 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
                             </a>
                         )}
                     </div>
+                ) : showTextThanks ? (
+                    <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
+                        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{poll.question}</h2>
+                        <p className="text-sm text-emerald-900 dark:text-emerald-100">
+                            Obrigado! Sua sugestão foi registrada. Esta enquete não exibe as respostas.
+                        </p>
+                        {poll.my_answer_text ? (
+                            <div className="rounded-xl border border-emerald-200/80 bg-white/80 px-3 py-2 dark:border-emerald-800 dark:bg-zinc-900/60">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                                    Sua resposta
+                                </p>
+                                <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-100">
+                                    {poll.my_answer_text}
+                                </p>
+                            </div>
+                        ) : null}
+                    </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
                             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{poll.question}</h2>
                             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                {editing ? 'Escolha outra opção' : 'Selecione uma opção'}
+                                {isText
+                                    ? 'Texto livre · no máximo duas linhas · sem resultado público'
+                                    : editing
+                                      ? 'Escolha outra opção'
+                                      : 'Selecione uma opção'}
                             </p>
 
+                            {isText ? (
+                                <div className="mt-4 space-y-2">
+                                    <Textarea
+                                        rows={2}
+                                        maxLength={poll.text_answer_max || 160}
+                                        value={answerText}
+                                        onChange={(e) => {
+                                            setError(null);
+                                            setAnswerText(e.target.value);
+                                        }}
+                                        disabled={!poll.is_open}
+                                        placeholder="Escreva sua sugestão…"
+                                        className="w-full resize-none"
+                                    />
+                                    <p className="text-right text-[11px] text-zinc-400">
+                                        {answerText.length}/{poll.text_answer_max || 160}
+                                    </p>
+                                </div>
+                            ) : (
                             <ul className="mt-4 space-y-2">
                                 {poll.options.map((option) => {
                                     const isSelected = selected === option.id;
@@ -207,6 +284,7 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
                                     );
                                 })}
                             </ul>
+                            )}
                         </div>
 
                         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
@@ -218,15 +296,19 @@ export default function PollVote({ poll, vote_url, display_url }: Props) {
                                 disabled={
                                     processing ||
                                     !poll.is_open ||
-                                    selected == null ||
-                                    (writingIn && otherText.trim().length < writeInMin)
+                                    (isText
+                                        ? answerText.trim().length === 0
+                                        : selected == null ||
+                                          (writingIn && otherText.trim().length < writeInMin))
                                 }
                             >
                                 {processing
                                     ? 'Enviando…'
-                                    : editing
-                                      ? 'Salvar nova resposta'
-                                      : 'Enviar voto'}
+                                    : isText
+                                      ? 'Enviar sugestão'
+                                      : editing
+                                        ? 'Salvar nova resposta'
+                                        : 'Enviar voto'}
                             </PrimaryButton>
                             {editing ? (
                                 <SecondaryButton

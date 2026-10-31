@@ -5,7 +5,7 @@ import { caixaFixoMonthlyProgress, caixaFixoMonthlyProgressLabels } from '@/data
 import type { ConstrucaoIgrejaStoryData } from '@/data/construcaoIgrejaStory';
 import { construcaoProgressRaised } from '@/data/construcaoIgrejaStory';
 import { Head, Link } from '@inertiajs/react';
-import { BanknotesIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 
 interface Campaign {
     id: number;
@@ -66,13 +66,22 @@ export default function MobileDonationCampaignsIndex({ campaigns }: Props) {
         <MobileLayout>
             <Head title="Oferta Nova Semente" />
             <div className="mx-auto max-w-3xl space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
-                        Oferta Nova Semente
-                    </h1>
-                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                        Cada contribuição é um abraço à missão. Participe com o coração e veja o impacto da sua generosidade.
-                    </p>
+                <div className="flex items-start gap-3">
+                    <Link
+                        href={route('mobile.oferta')}
+                        className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+                        aria-label="Voltar"
+                    >
+                        <ArrowLeftIcon className="h-5 w-5" />
+                    </Link>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
+                            Oferta Nova Semente
+                        </h1>
+                        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                            Cada contribuição é um abraço à missão. Participe com o coração e veja o impacto da sua generosidade.
+                        </p>
+                    </div>
                 </div>
 
                 {campaigns.length === 0 ? (

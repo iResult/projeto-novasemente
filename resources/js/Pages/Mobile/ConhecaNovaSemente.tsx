@@ -1,7 +1,7 @@
+import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link } from '@inertiajs/react';
 import {
-    ChevronRightIcon,
     ClockIcon,
     EyeIcon,
     HeartIcon,
@@ -92,30 +92,20 @@ export default function ConhecaNovaSemente() {
                         Nenhum conteúdo disponível no momento.
                     </p>
                 ) : (
-                    <section aria-label="Sobre a igreja" className="space-y-3">
-                        {items.map(({ label, subtitle, route: routeName, icon: Icon }) => (
-                            <Link
-                                key={routeName}
-                                href={route(routeName)}
-                                className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-white p-3.5 pr-3 text-left shadow-sm ring-1 ring-zinc-200 transition hover:bg-zinc-50 hover:shadow-md dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/60"
-                            >
-                                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200/70 dark:bg-emerald-950/45 dark:text-emerald-200 dark:ring-emerald-800/60">
-                                    <Icon className="h-5 w-5" aria-hidden strokeWidth={2.05} />
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white">
-                                        {label}
-                                    </span>
-                                    <span className="mt-0.5 block text-[13px] font-medium leading-snug text-zinc-600 dark:text-zinc-400">
-                                        {subtitle}
-                                    </span>
-                                </span>
-                                <ChevronRightIcon
-                                    className="h-5 w-5 shrink-0 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:text-zinc-600 dark:text-zinc-500 dark:group-hover:text-zinc-300"
-                                    aria-hidden
+                    <section aria-label="Sobre a igreja">
+                        <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
+                            {items.map(({ label, subtitle, route: routeName, icon }) => (
+                                <HomeFeatureCard
+                                    key={routeName}
+                                    mediaId={routeName}
+                                    title={label}
+                                    subtitle={subtitle}
+                                    icon={icon}
+                                    href={route(routeName)}
+                                    layout="plain"
                                 />
-                            </Link>
-                        ))}
+                            ))}
+                        </div>
                     </section>
                 )}
             </div>

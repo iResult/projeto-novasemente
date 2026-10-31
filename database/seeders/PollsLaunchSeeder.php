@@ -19,13 +19,14 @@ use Illuminate\Support\Facades\DB;
 class PollsLaunchSeeder extends Seeder
 {
     /**
-     * @return list<array{question: string, options: list<string>, response_type?: string}>
+     * @return list<array{question: string, options: list<string>, response_type?: string, publish_to_feed?: bool}>
      */
     public static function pollsDefinition(): array
     {
         return [
             [
                 'question' => 'Qual milagre de Jesus você gostaria de ter presenciado?',
+                'publish_to_feed' => true,
                 'options' => [
                     'A ressurreição de Lázaro',
                     'Jesus acalmando a tempestade',
@@ -49,6 +50,12 @@ class PollsLaunchSeeder extends Seeder
             [
                 'question' => 'O que você gostaria de encontrar em nosso App?',
                 'response_type' => Poll::RESPONSE_TEXT,
+                'options' => [],
+            ],
+            [
+                'question' => Poll::WEEKLY_SUGGESTION_QUESTION,
+                'response_type' => Poll::RESPONSE_TEXT,
+                'publish_to_feed' => true,
                 'options' => [],
             ],
         ];
@@ -157,8 +164,7 @@ class PollsLaunchSeeder extends Seeder
                     'display_enabled' => ($item['response_type'] ?? Poll::RESPONSE_CHOICE) === Poll::RESPONSE_TEXT
                         ? false
                         : true,
-                    // No feed unificado, só a primeira enquete de lançamento (milagre).
-                    'publish_to_feed' => $item['question'] === 'Qual milagre de Jesus você gostaria de ter presenciado?',
+                    'publish_to_feed' => (bool) ($item['publish_to_feed'] ?? false),
                 ]);
                 $poll->save();
                 $poll->ensurePublicToken();

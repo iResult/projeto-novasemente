@@ -132,4 +132,91 @@ class PollTextResponseTest extends TestCase
             'display_enabled' => 0,
         ]);
     }
+
+    public function test_weekly_suggestion_hides_options_and_other_answers(): void
+    {
+        config(['publications_feed.preview_only' => false]);
+
+        $this->seed([RolePermissionSeeder::class, ChurchSeeder::class]);
+        Role::firstOrCreate(['name' => 'membro', 'guard_name' => 'web']);
+
+        $churchId = (int) Church::query()->orderBy('id')->value('id');
+        $member = User::factory()->create(['church_id' => $churchId]);
+        $member->assignRole('membro');
+        $other = User::factory()->create(['church_id' => $churchId]);
+        $other->assignRole('membro');
+
+        $choice = Poll::query()->create([
+            'church_id' => $churchId,
+            'created_by' => $member->id,
+            'question' => 'Qual milagre de Jesus você gostaria de ter presenciado?',
+            'allow_multiple' => false,
+            'response_type' => Poll::RESPONSE_CHOICE,
+            'status' => Poll::STATUS_OPEN,
+            'display_enabled' => true,
+            'publish_to_feed' => true,
+        ]);
+        $choice->options()->create([
+            'label' => 'A cura do cego',
+            'sort_order' => 0,
+        ]);
+
+        $suggestion = Poll::query()->create([
+            'church_id' => $churchId,
+            'created_by' => $member->id,
+            'question' => Poll::WEEKLY_SUGGESTION_QUESTION,
+            'allow_multiple' => false,
+            'response_type' => Poll::RESPONSE_TEXT,
+            'status' => Poll::STATUS_OPEN,
+            'display_enabled' => false,
+            'publish_to_feed' => true,
+        ]);
+
+        $secret = 'Quero mais encontros de oração';
+
+        $this->actingAs($member)
+            ->post(route('mobile.polls.vote', $suggestion), [
+                'answer_text' => $secret,
+            ])
+            ->assertRedirect(route('mobile.polls.show', $suggestion));
+
+        $this->actingAs($other)
+            ->get(route('mobile.polls.show', $suggestion))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Mobile/Polls/Show')
+                ->where('poll.response_type', 'text')
+                ->where('poll.options', [])
+                ->where('poll.results', null)
+                ->where('poll.shows_results', false)
+                ->where('poll.my_answer_text', null)
+                ->missing('poll.text_answers'))
+            ->assertDontSee($secret);
+
+        $this->actingAs($other)
+            ->get(route('mobile.polls.show', $choice))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Mobile/Polls/Show')
+                ->where('poll.response_type', 'choice')
+                ->where('poll.options.0.label', 'A cura do cego'));
+
+        $this->actingAs($other)
+            ->get(route('mobile.publications-feed', ['type' => 'polls']))
+            ->assertOk()
+            ->assertDontSee($secret);
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.20'])
+            ->get(route('polls.vote', ['token' => $suggestion->public_token]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Polls/Vote')
+                ->where('poll.options', [])
+                ->where('poll.results', null)
+                ->where('poll.my_answer_text', null))
+            ->assertDontSee($secret);
+
+        $this->get(route('polls.display', ['token' => $suggestion->public_token]))
+            ->assertNotFound();
+    }
 }

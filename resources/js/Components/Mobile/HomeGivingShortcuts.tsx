@@ -18,7 +18,7 @@ type ShortcutItem = {
 const ITEMS: ShortcutItem[] = [
     {
         id: 'oferta-nova-semente',
-        label: 'Oferta NS',
+        label: 'Oferta Nova Semente',
         route: 'mobile.campaigns.index',
         featureKey: 'donation_campaigns',
         icon: BanknotesIcon,

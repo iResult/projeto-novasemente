@@ -16,6 +16,7 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
+    MapPinIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
     ClipboardDocumentListIcon,
@@ -28,12 +29,11 @@ import type { ComponentType, SVGProps } from 'react';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
-import SobreOAppNavItem from '@/Components/Mobile/SobreOAppNavItem';
+import SobreOAppPanel from '@/Components/Mobile/SobreOAppPanel';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
 import { type HomeFeedHighlight } from '@/Components/Mobile/HomeFeedCarousel';
-import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
 import AppNoveltyOverlay, {
     type PendingAppNoveltyPayload,
@@ -83,6 +83,7 @@ type QuickAction = {
     route?: string;
     routeParams?: Record<string, string | number>;
     featureKey?: string;
+    featureAny?: readonly string[];
     leaderOnly?: boolean;
     onClick?: () => void;
     icon: MenuIcon;
@@ -113,6 +114,14 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
+    },
+    {
+        id: 'conheca',
+        label: 'Conheça a Nova Semente',
+        subtitle: 'Quem somos, pastores e horários',
+        route: 'mobile.conheca',
+        featureAny: ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'],
+        icon: MapPinIcon,
     },
     {
         id: 'biblioteca',
@@ -371,7 +380,13 @@ export default function MobileHome({
             .map((action) =>
                 action.id === 'caixa-promessas' ? { ...action, onClick: openPromise } : action,
             )
-            .filter((action) => !action.featureKey || isEnabled(action.featureKey))
+            .filter((action) => {
+                if (action.featureAny && action.featureAny.length > 0) {
+                    return action.featureAny.some((key) => isEnabled(key));
+                }
+
+                return !action.featureKey || isEnabled(action.featureKey);
+            })
             .filter((action) => !action.leaderOnly || isMinistryLeader)
             .map((action) => ({ kind: 'action' as const, id: action.id, label: action.label, action }));
 
@@ -443,8 +458,6 @@ export default function MobileHome({
                 {sabbathBanner && !showMeditationBanner ? (
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} layout="strip" />
                 ) : null}
-                <ConhecaNovaSementeHomeCard />
-
                 <section aria-label="Atalhos" className="relative z-[1]">
                     <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
                         {gridItems.map((item) => {
@@ -499,7 +512,20 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <SobreOAppNavItem variant="home-footer" />
+                <section
+                    aria-label="Sobre o app"
+                    className="mx-auto w-full max-w-lg border-t border-zinc-200/90 pt-6 dark:border-zinc-800"
+                >
+                    <h2 className="text-center text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
+                        Sobre o app
+                    </h2>
+                    <p className="mx-auto mt-1 max-w-xs text-center text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Versão, lojas, links e suporte.
+                    </p>
+                    <div className="mt-4">
+                        <SobreOAppPanel />
+                    </div>
+                </section>
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>

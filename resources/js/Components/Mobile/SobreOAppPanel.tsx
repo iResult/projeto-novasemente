@@ -7,6 +7,7 @@ import {
     ChevronRightIcon,
     GlobeAltIcon,
     LifebuoyIcon,
+    TagIcon,
 } from '@heroicons/react/24/outline';
 import { useState, type ReactNode } from 'react';
 
@@ -18,8 +19,11 @@ const OFFICIAL_LINKS: { title: string; subtitle: string; href: string }[] = [
     },
 ];
 
-const LINK_ICON_WRAP =
-    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-900 dark:ring-zinc-700';
+const ICON_WRAP =
+    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-teal-700 ring-1 ring-zinc-200/80 dark:bg-zinc-950 dark:text-teal-300 dark:ring-zinc-700';
+
+const ROW_CLASS =
+    'group flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left transition hover:bg-zinc-50 active:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-700/30 dark:hover:bg-zinc-800/70 dark:active:bg-zinc-800 dark:focus-visible:ring-teal-300/30';
 
 function AppleLogo({ className = 'h-5 w-5' }: { className?: string }) {
     return (
@@ -40,34 +44,26 @@ function PlayStoreLogo({ className = 'h-5 w-5' }: { className?: string }) {
     );
 }
 
-function StoreLinkCard({
-    href,
+function ItemRow({
     title,
     subtitle,
     icon,
+    trailing,
 }: {
-    href: string;
     title: string;
     subtitle: string;
     icon: ReactNode;
+    trailing: ReactNode;
 }) {
     return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-zinc-50/90 px-3.5 py-3 transition hover:bg-zinc-100 active:scale-[0.99] dark:bg-zinc-950/40 dark:hover:bg-zinc-800/70"
-        >
-            <span className={LINK_ICON_WRAP}>{icon}</span>
+        <>
+            <span className={ICON_WRAP}>{icon}</span>
             <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-zinc-900 dark:text-white">{title}</span>
-                <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-zinc-500 dark:text-zinc-400">{subtitle}</span>
             </span>
-            <ArrowTopRightOnSquareIcon
-                className="h-4 w-4 shrink-0 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
-                aria-hidden
-            />
-        </a>
+            {trailing}
+        </>
     );
 }
 
@@ -81,154 +77,129 @@ export default function SobreOAppPanel({ className = '' }: { className?: string 
     };
     const appleUrl = (iosAppStoreUrl ?? '').trim();
     const playUrl = (androidPlayStoreUrl ?? '').trim();
-    const hasStores = Boolean(appleUrl || playUrl);
     const [versionsOpen, setVersionsOpen] = useState(false);
 
     return (
-        <div className={`space-y-4 ${className}`.trim()}>
-            <button
-                type="button"
-                onClick={() => setVersionsOpen(true)}
-                aria-label="Abrir histórico de versões e ver o que mudou"
-                className="group relative flex w-full cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white via-white to-brand-50/70 p-4 text-left shadow-sm ring-1 ring-brand-900/8 transition duration-200 hover:shadow-md hover:ring-brand-600/20 active:scale-[0.99] dark:from-zinc-900 dark:via-zinc-900 dark:to-brand-950/40 dark:ring-white/8 dark:hover:ring-brand-400/25"
-            >
-                <span
-                    className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-400/10 blur-2xl transition duration-300 group-hover:bg-brand-400/20 dark:bg-brand-500/10"
-                    aria-hidden
-                />
-                <span className="relative min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-white">Versões</span>
-                        <span className="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-800 ring-1 ring-inset ring-brand-200/80 dark:bg-brand-950/50 dark:text-brand-200 dark:ring-brand-800/70">
-                            Ver alterações
-                        </span>
-                    </span>
-                    <span className="mt-3 block space-y-2">
-                        <span className="flex items-baseline justify-between gap-3">
-                            <span className="text-sm text-zinc-600 dark:text-zinc-400">Web</span>
-                            <span className="font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white">
-                                {webVersionLabel}
-                            </span>
-                        </span>
-                        <span className="flex items-baseline justify-between gap-3">
-                            <span className="text-sm text-zinc-600 dark:text-zinc-400">App instalada</span>
-                            <span className="font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white">
-                                {installedLabel}
-                            </span>
-                        </span>
-                    </span>
-                    <span className="mt-3 flex items-center gap-1.5 text-xs font-medium text-brand-700 dark:text-brand-300">
-                        Toque para ver o que mudou e o histórico completo
-                        <ChevronRightIcon
-                            className="h-3.5 w-3.5 transition group-hover:translate-x-0.5"
-                            aria-hidden
-                        />
-                    </span>
-                </span>
-                <ChevronRightIcon
-                    className="relative mt-1 h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600 dark:text-zinc-600 dark:group-hover:text-brand-400"
-                    aria-hidden
-                />
-            </button>
+        <div className={`mx-auto w-full max-w-md ${className}`.trim()}>
+            <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800">
+                <ul className="divide-y divide-zinc-200/90 dark:divide-zinc-800">
+                    <li>
+                        <button
+                            type="button"
+                            onClick={() => setVersionsOpen(true)}
+                            aria-label="Abrir histórico de versões e ver o que mudou"
+                            className={ROW_CLASS}
+                        >
+                            <ItemRow
+                                title="Versões"
+                                subtitle={`Web ${webVersionLabel} · App instalada ${installedLabel}`}
+                                icon={<TagIcon className="h-5 w-5" aria-hidden strokeWidth={1.75} />}
+                                trailing={
+                                    <ChevronRightIcon
+                                        className="h-4 w-4 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-teal-700 dark:text-zinc-600 dark:group-hover:text-teal-300"
+                                        aria-hidden
+                                    />
+                                }
+                            />
+                        </button>
+                    </li>
+
+                    {showSupport ? (
+                        <li>
+                            <Link href={route('mobile.support.index')} className={ROW_CLASS}>
+                                <ItemRow
+                                    title="Suporte"
+                                    subtitle="Problema, sugestão ou elogio sobre o app"
+                                    icon={<LifebuoyIcon className="h-5 w-5" aria-hidden strokeWidth={1.75} />}
+                                    trailing={
+                                        <ChevronRightIcon
+                                            className="h-4 w-4 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-teal-700 dark:text-zinc-600 dark:group-hover:text-teal-300"
+                                            aria-hidden
+                                        />
+                                    }
+                                />
+                            </Link>
+                        </li>
+                    ) : null}
+
+                    {appleUrl ? (
+                        <li>
+                            <a
+                                href={appleUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={ROW_CLASS}
+                            >
+                                <ItemRow
+                                    title="App Store"
+                                    subtitle="Baixar para iPhone"
+                                    icon={<AppleLogo className="h-5 w-5 text-zinc-900 dark:text-white" />}
+                                    trailing={
+                                        <ArrowTopRightOnSquareIcon
+                                            className="h-4 w-4 shrink-0 text-zinc-400 transition group-hover:text-teal-700 dark:group-hover:text-teal-300"
+                                            aria-hidden
+                                        />
+                                    }
+                                />
+                            </a>
+                        </li>
+                    ) : null}
+
+                    {playUrl ? (
+                        <li>
+                            <a href={playUrl} target="_blank" rel="noopener noreferrer" className={ROW_CLASS}>
+                                <ItemRow
+                                    title="Google Play"
+                                    subtitle="Baixar para Android"
+                                    icon={<PlayStoreLogo className="h-5 w-5" />}
+                                    trailing={
+                                        <ArrowTopRightOnSquareIcon
+                                            className="h-4 w-4 shrink-0 text-zinc-400 transition group-hover:text-teal-700 dark:group-hover:text-teal-300"
+                                            aria-hidden
+                                        />
+                                    }
+                                />
+                            </a>
+                        </li>
+                    ) : null}
+
+                    {OFFICIAL_LINKS.map((row) => (
+                        <li key={row.href}>
+                            <a href={row.href} target="_blank" rel="noopener noreferrer" className={ROW_CLASS}>
+                                <ItemRow
+                                    title={row.title}
+                                    subtitle={row.subtitle}
+                                    icon={<GlobeAltIcon className="h-5 w-5" aria-hidden strokeWidth={1.75} />}
+                                    trailing={
+                                        <ArrowTopRightOnSquareIcon
+                                            className="h-4 w-4 shrink-0 text-zinc-400 transition group-hover:text-teal-700 dark:group-hover:text-teal-300"
+                                            aria-hidden
+                                        />
+                                    }
+                                />
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <p className="pt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                Criado por{' '}
+                <a
+                    href="https://iresult.com.br"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cursor-pointer font-medium text-zinc-700 underline-offset-2 hover:underline dark:text-zinc-200"
+                >
+                    iResult.com.br
+                </a>
+            </p>
 
             <AppVersionHistoryModal
                 show={versionsOpen}
                 onClose={() => setVersionsOpen(false)}
                 highlightLabel={webVersionLabel}
             />
-
-            {showSupport ? (
-                <Link
-                    href={route('mobile.support.index')}
-                    className="group flex cursor-pointer items-center gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/90 transition hover:bg-zinc-50 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/60"
-                >
-                    <span className={`${LINK_ICON_WRAP} text-teal-700 dark:text-teal-300`}>
-                        <LifebuoyIcon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-zinc-900 dark:text-white">Suporte</span>
-                        <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
-                            Problema, sugestão ou elogio sobre o app
-                        </span>
-                    </span>
-                    <ChevronRightIcon
-                        className="h-5 w-5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-teal-600 dark:text-zinc-600 dark:group-hover:text-teal-300"
-                        aria-hidden
-                    />
-                </Link>
-            ) : null}
-
-            {hasStores ? (
-                <section className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800">
-                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Baixe o app</h2>
-                    <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-                        Instale na App Store ou na Google Play e acompanhe a comunidade no celular.
-                    </p>
-
-                    <div className="mt-4 grid gap-2.5">
-                        {appleUrl ? (
-                            <StoreLinkCard
-                                href={appleUrl}
-                                title="App Store"
-                                subtitle="Baixar para iPhone"
-                                icon={<AppleLogo className="h-5 w-5 text-zinc-900 dark:text-white" />}
-                            />
-                        ) : null}
-                        {playUrl ? (
-                            <StoreLinkCard
-                                href={playUrl}
-                                title="Google Play"
-                                subtitle="Baixar para Android"
-                                icon={<PlayStoreLogo className="h-5 w-5" />}
-                            />
-                        ) : null}
-                    </div>
-                </section>
-            ) : null}
-
-            <section className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Links oficiais</h2>
-                <ul className="mt-3 space-y-2">
-                    {OFFICIAL_LINKS.map((row) => (
-                        <li key={row.href}>
-                            <a
-                                href={row.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-zinc-50/90 px-3.5 py-3 transition hover:bg-zinc-100 dark:bg-zinc-950/40 dark:hover:bg-zinc-800/70"
-                            >
-                                <span className={`${LINK_ICON_WRAP} text-teal-700 dark:text-teal-300`}>
-                                    <GlobeAltIcon className="h-5 w-5" aria-hidden />
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block text-sm font-semibold text-zinc-900 dark:text-white">
-                                        {row.title}
-                                    </span>
-                                    <span className="mt-0.5 block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                                        {row.subtitle}
-                                    </span>
-                                </span>
-                                <ArrowTopRightOnSquareIcon
-                                    className="h-4 w-4 shrink-0 text-zinc-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-teal-600 dark:group-hover:text-teal-300"
-                                    aria-hidden
-                                />
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-            </section>
-
-            <p className="pt-1 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                Criado por{' '}
-                <a
-                    href="https://iresult.com.br"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer font-medium text-zinc-700 hover:underline dark:text-zinc-200"
-                >
-                    iResult.com.br
-                </a>
-            </p>
         </div>
     );
 }

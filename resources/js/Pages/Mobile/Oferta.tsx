@@ -7,7 +7,7 @@ import { BanknotesIcon, HandRaisedIcon } from '@heroicons/react/24/outline';
 const cards = [
     {
         id: 'oferta-nova-semente',
-        title: 'Oferta NS',
+        title: 'Oferta Nova Semente',
         subtitle: 'Campanhas de oferta da Nova Semente',
         route: 'mobile.campaigns.index',
         featureKey: 'donation_campaigns',
