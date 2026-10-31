@@ -68,6 +68,19 @@ function buildQuery(section: string | null, q: string | null): Record<string, st
     return params;
 }
 
+function railMaskClass(edges: { left: boolean; right: boolean }): string {
+    if (edges.left && edges.right) {
+        return '[mask-image:linear-gradient(to_right,transparent,black_1.25rem,black_calc(100%-2rem),transparent)]';
+    }
+    if (edges.right) {
+        return '[mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]';
+    }
+    if (edges.left) {
+        return '[mask-image:linear-gradient(to_right,transparent,black_1.25rem)]';
+    }
+    return '';
+}
+
 function ArticleCard({
     article,
     appUrl,
@@ -149,6 +162,9 @@ export default function MobileVidaSaude({ latest, groups, articles, sections, fi
     const filtered = Boolean(activeSection || activeSearch);
     const [searchQuery, setSearchQuery] = useState(activeSearch ?? '');
     const lastAppliedSearchRef = useRef(activeSearch ?? '');
+    const sectionRailRef = useRef<HTMLDivElement>(null);
+    const activeChipRef = useRef<HTMLButtonElement>(null);
+    const [railEdges, setRailEdges] = useState({ left: false, right: false });
     const searchBelowMinimum = isListSearchBelowMinimum(searchQuery);
     const isEmpty = filtered ? (articles?.data.length ?? 0) === 0 : latest.length === 0;
 
@@ -156,6 +172,33 @@ export default function MobileVidaSaude({ latest, groups, articles, sections, fi
         setSearchQuery(activeSearch ?? '');
         lastAppliedSearchRef.current = activeSearch ?? '';
     }, [activeSearch]);
+
+    useEffect(() => {
+        const rail = sectionRailRef.current;
+        if (!rail) return;
+
+        const updateRailFade = () => {
+            const remaining = rail.scrollWidth - rail.clientWidth - rail.scrollLeft;
+            setRailEdges({
+                left: rail.scrollLeft > 4,
+                right: remaining > 4,
+            });
+        };
+
+        updateRailFade();
+        rail.addEventListener('scroll', updateRailFade, { passive: true });
+        const observer = new ResizeObserver(updateRailFade);
+        observer.observe(rail);
+
+        return () => {
+            rail.removeEventListener('scroll', updateRailFade);
+            observer.disconnect();
+        };
+    }, [sections]);
+
+    useEffect(() => {
+        activeChipRef.current?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    }, [activeSection]);
 
     useEffect(() => {
         const resolved = serverSearchTerm(searchQuery);
@@ -195,7 +238,7 @@ export default function MobileVidaSaude({ latest, groups, articles, sections, fi
     };
 
     const chipClass = (active: boolean) =>
-        `cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition ${
+        `inline-flex min-h-10 shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full px-3 text-sm font-medium transition ${
             active
                 ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
                 : 'border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200'
@@ -204,51 +247,68 @@ export default function MobileVidaSaude({ latest, groups, articles, sections, fi
     return (
         <MobileLayout>
             <Head title="Vida e Saúde" />
-            <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 pb-8">
-                <header className="space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800 dark:text-teal-200">Revista</p>
-                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Vida e Saúde</h1>
-                    <p className="max-w-2xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                        As últimas publicações e os artigos separados pelas áreas da revista.
-                    </p>
-                </header>
+            <div className="mx-auto w-full min-w-0 max-w-6xl space-y-8 pb-8">
+                <div className="space-y-4">
+                    <header className="space-y-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800 dark:text-teal-200">Revista</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Vida e Saúde</h1>
+                        <p className="max-w-2xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                            As últimas publicações e os artigos separados pelas áreas da revista.
+                        </p>
+                    </header>
 
-                <div className="relative max-w-md">
-                    <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    <input
-                        type="search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Buscar artigo, autor ou tema"
-                        className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-9 pr-10 text-sm text-zinc-900 shadow-sm outline-none ring-teal-600/30 placeholder:text-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                    />
-                    {searchQuery !== '' && (
+                    <div className="relative max-w-md">
+                        <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                        <input
+                            type="search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Buscar artigo, autor ou tema"
+                            className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-9 pr-10 text-sm text-zinc-900 shadow-sm outline-none ring-teal-600/30 placeholder:text-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        />
+                        {searchQuery !== '' && (
+                            <button
+                                type="button"
+                                onClick={clearSearch}
+                                className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                aria-label="Limpar busca"
+                            >
+                                <XMarkIcon className="h-4 w-4" />
+                            </button>
+                        )}
+                        <ListSearchHint show={searchBelowMinimum} className="mt-1" />
+                    </div>
+
+                    <div className="flex min-w-0 items-center gap-2" role="group" aria-label="Áreas da revista">
                         <button
                             type="button"
-                            onClick={clearSearch}
-                            className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            aria-label="Limpar busca"
+                            onClick={() => applySection(null)}
+                            aria-pressed={activeSection === null}
+                            className={chipClass(activeSection === null)}
                         >
-                            <XMarkIcon className="h-4 w-4" />
+                            Todos
                         </button>
-                    )}
-                    <ListSearchHint show={searchBelowMinimum} className="mt-1" />
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => applySection(null)} className={chipClass(activeSection === null)}>
-                        Todos
-                    </button>
-                    {sections.map((section) => (
-                        <button
-                            key={section.value}
-                            type="button"
-                            onClick={() => applySection(section.value)}
-                            className={chipClass(activeSection === section.value)}
+                        <div
+                            ref={sectionRailRef}
+                            className={`flex min-w-0 flex-1 touch-auto flex-nowrap gap-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${railMaskClass(railEdges)}`}
                         >
-                            {section.label}
-                        </button>
-                    ))}
+                            {sections.map((section) => {
+                                const active = activeSection === section.value;
+                                return (
+                                    <button
+                                        key={section.value}
+                                        ref={active ? activeChipRef : undefined}
+                                        type="button"
+                                        onClick={() => applySection(section.value)}
+                                        aria-pressed={active}
+                                        className={chipClass(active)}
+                                    >
+                                        {section.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
                 {isEmpty ? (
