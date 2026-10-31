@@ -7,6 +7,7 @@ import TalentConnectionAdminListingsPanel, {
 } from '@/Components/Talents/TalentConnectionAdminListingsPanel';
 import { Head, Link } from '@inertiajs/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     listings: TalentConnectionAdminListing[];
@@ -31,9 +32,7 @@ export default function TalentConnectionAdminListings({
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar ao painel
-                    </Link>
+                    <BackLink href={route('talents.admin.dashboard')} ariaLabel="Voltar para o painel" />
                 }
                 title="Publicações"
                 subtitle="Cadastrar, aprovar e gerenciar talentos da comunidade"

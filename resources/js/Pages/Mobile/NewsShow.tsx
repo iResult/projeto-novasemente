@@ -2,8 +2,9 @@ import MobileLayout from '@/Layouts/MobileLayout';
 import InstagramFeedCard from '@/Components/News/InstagramFeedCard';
 import InstagramViewLink from '@/Components/News/InstagramViewLink';
 import PdfReflowReader from '@/Components/Mobile/PdfReflowReader';
+import BackLink from '@/Components/BackLink';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeftIcon, NewspaperIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { NewspaperIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import NewsPostCover from '@/Components/News/NewsPostCover';
 
 function imageSrc(url: string | null, appUrl: string): string {
@@ -98,13 +99,7 @@ export default function MobileNewsShow({ post, config }: Props) {
                 <Head title={post.title} />
                 <div className="-mx-4 min-w-0 overflow-x-hidden sm:mx-0">
                     <div className="mb-3 px-4 sm:px-0">
-                        <Link
-                            href={route(listRoute)}
-                            className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                        >
-                            <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden />
-                            {`Voltar às ${listLabel}`}
-                        </Link>
+                        <BackLink href={route(listRoute)} ariaLabel={`Voltar para ${listLabel}`} />
                     </div>
 
                     <PdfReflowReader
@@ -124,13 +119,7 @@ export default function MobileNewsShow({ post, config }: Props) {
             <MobileLayout>
                 <Head title={post.title} />
                 <div className="space-y-4">
-                    <Link
-                        href={route(listRoute)}
-                        className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                        {`Voltar às ${listLabel}`}
-                    </Link>
+                    <BackLink href={route(listRoute)} ariaLabel={`Voltar para ${listLabel}`} />
                     <InstagramFeedCard post={post} appUrl={appUrl} variant="detail" showRoute={showRoute} />
                 </div>
             </MobileLayout>
@@ -141,13 +130,7 @@ export default function MobileNewsShow({ post, config }: Props) {
         <MobileLayout>
             <Head title={post.title} />
             <div className="mx-auto w-full min-w-0 max-w-lg space-y-3">
-                <Link
-                    href={route(listRoute)}
-                    className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                >
-                    <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden />
-                    {`Voltar às ${listLabel}`}
-                </Link>
+                <BackLink href={route(listRoute)} ariaLabel={`Voltar para ${listLabel}`} />
 
                 <article className="min-w-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     {cover ? (

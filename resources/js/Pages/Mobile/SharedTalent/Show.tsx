@@ -10,6 +10,7 @@ import InputError from '@/Components/InputError';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { FormEventHandler, useState } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Listing {
     id: number;
@@ -69,12 +70,7 @@ export default function SharedTalentShow({ listing, reportReasons }: Props) {
             <Head title={listing.title} />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link
-                    href={route('mobile.shared-talents.index')}
-                    className="text-sm font-medium text-brand-600 hover:text-brand-700"
-                >
-                    ← Explorar talentos
-                </Link>
+                <BackLink href={route('mobile.shared-talents.index')} ariaLabel="Voltar para Explorar talentos" />
 
                 {listing.photo_url && (
                     <img src={listing.photo_url} alt="" className="h-48 w-full rounded-2xl object-cover sm:h-64" />

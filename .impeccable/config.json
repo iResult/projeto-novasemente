@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-10-10T02:27:30.152Z",
         "reason": "Borda esquerda do resumo já existia no arquivo; a edição só corrige o horário de publicação no fuso da igreja."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "resources/js/Pages/Mobile/LibraryShow.tsx"
+        ],
+        "createdAt": "2026-10-31T15:26:29.036Z",
+        "reason": "Agent: border-l-4 is a blockquote rule inside sanitized article HTML, not a card accent"
       }
     ]
   }

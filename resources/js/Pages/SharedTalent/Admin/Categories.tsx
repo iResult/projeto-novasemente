@@ -7,9 +7,10 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
+import BackLink from '@/Components/BackLink';
 
 interface Category {
     id: number;
@@ -40,9 +41,7 @@ export default function SharedTalentAdminCategories({ categories }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} />
                 }
                 title="Categorias"
                 actions={

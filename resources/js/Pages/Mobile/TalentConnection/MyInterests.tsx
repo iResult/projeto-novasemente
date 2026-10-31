@@ -11,6 +11,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { CHAT_MESSAGE_SENDS_EMAIL_SUBTITLE } from '@/constants/chatEmailNotice';
+import BackLink from '@/Components/BackLink';
 
 interface InterestRow {
     id: number;
@@ -155,9 +156,7 @@ export default function TalentConnectionMyInterests({ asInterested, asPublisher 
             <Head title="Meus interesses" />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-8">
-                <Link href={route('mobile.talents.index')} className="text-sm font-medium text-brand-600">
-                    ← Central de Serviços
-                </Link>
+                <BackLink href={route('mobile.talents.index')} ariaLabel="Voltar para Central de Serviços" />
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Meus interesses</h1>
 
                 <section>

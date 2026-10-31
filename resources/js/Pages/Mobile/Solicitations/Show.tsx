@@ -1,4 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
+import BackLink from '@/Components/BackLink';
 import { Head, Link } from '@inertiajs/react';
 import { solicitationsBackLinkClass } from '@/Pages/Mobile/Solicitations/solicitationNavClasses';
 import { useState } from 'react';
@@ -58,9 +59,7 @@ export default function Show({
             <Head title={solicitation.typeLabel} />
             <div className="space-y-4">
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                    <Link href={hubUrl} className={solicitationsBackLinkClass}>
-                        ← Solicitações
-                    </Link>
+                    <BackLink href={hubUrl} ariaLabel="Voltar para Solicitações" />
                     <span className="text-zinc-300 dark:text-zinc-600">·</span>
                     <Link href={mineUrl} className={solicitationsBackLinkClass}>
                         Meus pedidos

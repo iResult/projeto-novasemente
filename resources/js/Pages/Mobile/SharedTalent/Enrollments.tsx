@@ -9,10 +9,11 @@ import InputLabel from '@/Components/InputLabel';
 import SelectInput from '@/Components/SelectInput';
 import TextInput from '@/Components/TextInput';
 import Textarea from '@/Components/Textarea';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { CHAT_MESSAGE_SENDS_EMAIL_SUBTITLE } from '@/constants/chatEmailNotice';
+import BackLink from '@/Components/BackLink';
 
 interface EnrollmentRow {
     id: number;
@@ -45,9 +46,7 @@ export default function SharedTalentEnrollments({ enrollments, myListings }: Pro
             <Head title="Participantes" />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link href={route('mobile.shared-talents.index')} className="text-sm font-medium text-brand-600">
-                    ← Doar Talentos
-                </Link>
+                <BackLink href={route('mobile.shared-talents.index')} ariaLabel="Voltar para Doar Talentos" />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Participantes</h1>
                     {myListings.length > 0 && (

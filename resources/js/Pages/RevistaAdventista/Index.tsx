@@ -287,7 +287,6 @@ export default function RevistaAdventistaIndex({ articles, canManage, sections, 
                                                         imageUrl: hero,
                                                         publishedLabel: formatDate(article.published_at),
                                                         meta: article.author_name ? [article.author_name] : undefined,
-                                                        backLabel: '← Revista',
                                                     })
                                                 }
                                             />

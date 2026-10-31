@@ -1,5 +1,6 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     linked: boolean;
@@ -14,9 +15,7 @@ export default function PastorMyAvailability({ linked }: Props) {
             <Head title="Agenda Pastoral" />
             <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                    <Link href={route('mobile.home')} className="text-sm text-zinc-500 underline">
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Agenda Pastoral</h1>
 

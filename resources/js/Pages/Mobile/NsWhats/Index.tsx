@@ -1,8 +1,8 @@
+import BackLink from '@/Components/BackLink';
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
     ArchiveBoxIcon,
-    ArrowLeftIcon,
     BookmarkIcon,
     MagnifyingGlassIcon,
     PlusIcon,
@@ -752,28 +752,22 @@ export default function NsWhatsIndex({
                             <div className="flex shrink-0 items-center justify-between gap-2 px-3 pb-0.5 pt-2.5">
                                 {viewingArchived ? (
                                     <>
-                                        <button
-                                            type="button"
+                                        <BackLink
+                                            iconOnly
                                             onClick={backToMainList}
-                                            className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                                            aria-label="Voltar para conversas"
-                                        >
-                                            <ArrowLeftIcon className="h-5 w-5" strokeWidth={2} />
-                                        </button>
+                                            ariaLabel="Voltar para conversas"
+                                        />
                                         <h1 className="min-w-0 flex-1 text-[20px] font-bold leading-none tracking-tight text-zinc-900 dark:text-white">
                                             Arquivadas
                                         </h1>
                                     </>
                                 ) : (
                                     <>
-                                        <button
-                                            type="button"
+                                        <BackLink
+                                            iconOnly
                                             onClick={() => router.get(route('mobile.home'))}
-                                            className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                                            aria-label="Voltar para a Home"
-                                        >
-                                            <ArrowLeftIcon className="h-5 w-5" strokeWidth={2} />
-                                        </button>
+                                            ariaLabel="Voltar para a Home"
+                                        />
                                         <h1 className="min-w-0 flex-1 truncate text-[20px] font-bold leading-none tracking-tight text-zinc-900 dark:text-white">
                                             NS Conecta
                                         </h1>
@@ -954,14 +948,7 @@ export default function NsWhatsIndex({
                                 className="relative flex shrink-0 items-center gap-1.5 border-b border-zinc-200/80 bg-[#f0f2f5] px-2 py-1.5 dark:border-zinc-800 dark:bg-zinc-900 sm:px-2.5"
                                 aria-busy={loadingConversation || undefined}
                             >
-                                <button
-                                    type="button"
-                                    onClick={backToList}
-                                    className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full md:hidden"
-                                    aria-label="Voltar"
-                                >
-                                    <ArrowLeftIcon className="h-4 w-4" />
-                                </button>
+                                <BackLink iconOnly onClick={backToList} ariaLabel="Voltar" className="md:hidden" />
                                 <UserListAvatar name={active.headerTitle} photoUrl={active.headerPhotoUrl} size="sm" />
                                 <div className={`min-w-0 flex-1 ${loadingConversation ? 'opacity-70' : ''}`}>
                                     <div className="truncate text-[14px] font-semibold leading-tight text-zinc-900 dark:text-white">
@@ -1028,14 +1015,12 @@ export default function NsWhatsIndex({
                     ) : showComposeDraft && composeDraft ? (
                         <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
                             <div className="flex shrink-0 items-center gap-1.5 border-b border-zinc-200/80 bg-[#f0f2f5] px-2 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
-                                <button
-                                    type="button"
+                                <BackLink
+                                    iconOnly
                                     onClick={() => setComposeDraft(null)}
-                                    className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full md:hidden"
-                                    aria-label="Voltar"
-                                >
-                                    <ArrowLeftIcon className="h-4 w-4" />
-                                </button>
+                                    ariaLabel="Voltar"
+                                    className="md:hidden"
+                                />
                                 <UserListAvatar
                                     name={composeDraft.title}
                                     photoUrl={composeDraft.photoUrl}

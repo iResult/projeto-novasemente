@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { CHURCH_INSTAGRAM_URL, CHURCH_WHATSAPP_INSTAGRAM_POST_URL } from '@/constants/churchSocial';
 import { InstagramBrandIcon, WhatsAppBrandIcon } from '@/Components/SocialBrandIcons';
+import BackLink from '@/Components/BackLink';
 
 interface ContactInfo {
     name: string;
@@ -33,12 +34,7 @@ export default function MobileContact({ contact }: Props) {
             <Head title="Fale conosco" />
             <div className="space-y-5">
                 <div>
-                    <Link
-                        href={route('mobile.home')}
-                        className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                    >
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Fale conosco</h1>
                 </div>
 

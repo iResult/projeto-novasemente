@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import PageHeader from '@/Components/PageHeader';
 import FlashMessages from '@/Components/FlashMessages';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface LogRow {
     id: number;
@@ -23,9 +24,7 @@ export default function TalentConnectionAdminLogs({ logs }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('talents.admin.dashboard')} className="cursor-pointer text-sm text-brand-600">
-                        ← Voltar ao painel
-                    </Link>
+                    <BackLink href={route('talents.admin.dashboard')} ariaLabel="Voltar para o painel" />
                 }
                 title="Logs"
                 subtitle="Rastreabilidade administrativa"

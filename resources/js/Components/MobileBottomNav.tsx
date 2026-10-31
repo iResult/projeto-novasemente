@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
             'mobile.fale',
             'mobile.fale.baby',
             'mobile.fale.bible',
+            'mobile.fale.other',
             'mobile.fale.pastor',
             'mobile.sobre-o-app',
             'mobile.settings',

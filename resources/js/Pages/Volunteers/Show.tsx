@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import Card from '@/Components/Card';
 import PageHeader from '@/Components/PageHeader';
@@ -102,12 +103,7 @@ export default function Show({ volunteer: v }: Props) {
             <PageHeader
                 title="Detalhe do voluntário"
                 lead={
-                    <Link
-                        href={route('volunteers.index')}
-                        className="text-sm font-medium text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
-                    >
-                        Voltar à lista
-                    </Link>
+                    <BackLink href={route('volunteers.index')} ariaLabel="Voltar para a lista" />
                 }
             />
 

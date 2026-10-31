@@ -1,4 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { usePage } from '@inertiajs/react';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import type { ReactNode } from 'react';
 
@@ -28,7 +29,11 @@ export default function PastoralAgendaModuleShell({
         (usePage().props as { auth?: { canAccessAdminMenu?: boolean } }).auth?.canAccessAdminMenu === true;
     const panelFallback = canAccessAdminMenu ? route('dashboard') : route('mobile.home');
     const backHref = pastoralModuleNavUrl ?? panelFallback;
-    const backLabel = pastoralModuleNavUrl ? '← Pastores' : canAccessAdminMenu ? '← Painel' : '← Início';
+    const backAriaLabel = pastoralModuleNavUrl
+        ? 'Voltar para pastores'
+        : canAccessAdminMenu
+          ? 'Voltar para o painel'
+          : 'Voltar para o início';
 
     return (
         <div className="min-w-0 space-y-8 pb-4">
@@ -38,12 +43,11 @@ export default function PastoralAgendaModuleShell({
                     aria-hidden
                 />
                 <div className="pointer-events-none absolute bottom-0 left-1/3 h-32 w-64 rounded-full bg-primary-500/15 blur-3xl" aria-hidden />
-                <Link
+                <BackLink
                     href={backHref}
-                    className="relative text-sm font-medium text-zinc-300 transition-colors hover:text-white"
-                >
-                    {backLabel}
-                </Link>
+                    ariaLabel={backAriaLabel}
+                    className="relative !text-zinc-300 hover:!text-white"
+                />
                 <div className="relative mt-4 flex flex-wrap items-end gap-3 sm:mt-5 sm:gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15 sm:h-14 sm:w-14">
                         <ClockIcon className="h-7 w-7 text-emerald-300 sm:h-8 sm:w-8" aria-hidden />

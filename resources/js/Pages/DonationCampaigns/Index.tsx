@@ -675,7 +675,6 @@ export default function DonationCampaignsIndex({ campaigns, canManage, canManage
                                                     statusLabels[campaign.status] ?? campaign.status,
                                                     ...metaParts.slice(0, 2),
                                                 ],
-                                                backLabel: '← Oferta',
                                             })
                                         }
                                     />

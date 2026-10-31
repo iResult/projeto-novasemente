@@ -1,7 +1,8 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { WhatsAppBrandIcon } from '@/Components/SocialBrandIcons';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 type CommunityCard = {
     id: number;
@@ -48,12 +49,7 @@ export default function MobileCommunities({ communities }: Props) {
             <Head title="Comunidades" />
             <div className="mx-auto w-full max-w-3xl space-y-5 lg:max-w-6xl">
                 <div>
-                    <Link
-                        href={route('mobile.home')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white lg:text-3xl">
                         Comunidades
                     </h1>

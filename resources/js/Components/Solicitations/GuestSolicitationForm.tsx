@@ -1,5 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import Textarea from '@/Components/Textarea';
@@ -7,6 +7,7 @@ import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
 import SelectInput from '@/Components/SelectInput';
+import BackLink from '@/Components/BackLink';
 
 interface Option {
     value: number;
@@ -43,12 +44,7 @@ export default function GuestSolicitationForm({ title, intro, storeUrl, pastorOp
             <Head title={title} />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4">
                 <div>
-                    <Link
-                        href={route('mobile.fale')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Fale com a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.fale')} ariaLabel="Voltar para Fale com a Nova Semente" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">{title}</h1>
                     <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{intro}</p>
                 </div>

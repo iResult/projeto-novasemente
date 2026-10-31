@@ -1,7 +1,7 @@
 import MissionTripSignupForm, { type MissionTripSignupConfig } from '@/Components/Mission/MissionTripSignupForm';
 import MissionTripSignupSuccessModal from '@/Components/Mission/MissionTripSignupSuccessModal';
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import {
     CalendarDaysIcon,
@@ -10,6 +10,7 @@ import {
     MapPinIcon,
     UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 interface Props extends MissionTripSignupConfig {
     missionHomeUrl: string;
@@ -38,12 +39,7 @@ export default function MissionTripSignup({ storeUrl, professions, missionHomeUr
             <Head title="Inscrição — Missão Tailândia & Mianmar" />
             <div className="mx-auto w-full max-w-2xl space-y-6 lg:max-w-3xl">
                 <div>
-                    <Link
-                        href={missionHomeUrl}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Missão Tailândia & Mianmar
-                    </Link>
+                    <BackLink href={missionHomeUrl} ariaLabel="Voltar para Missão Tailândia & Mianmar" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white lg:text-3xl">
                         Inscrição — Missão Tailândia & Mianmar
                     </h1>

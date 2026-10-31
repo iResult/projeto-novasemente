@@ -3,9 +3,10 @@ import BrDateInput from '@/Components/BrDateInput';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { CakeIcon } from '@heroicons/react/24/outline';
 import { FormEventHandler } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     cancelHref: string;
@@ -29,12 +30,7 @@ export default function BirthDatePrompt({ cancelHref, birthDate, maxBirthDate }:
 
             <div className="mx-auto w-full max-w-lg space-y-5 pb-8">
                 <div>
-                    <Link
-                        href={cancelHref}
-                        className="inline-flex cursor-pointer text-sm font-medium text-rose-700 hover:underline dark:text-rose-300"
-                    >
-                        ← Voltar
-                    </Link>
+                    <BackLink href={cancelHref} />
                 </div>
 
                 <section className="rounded-3xl border border-rose-200/80 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-5 shadow-sm dark:border-rose-900/50 dark:from-rose-950 dark:via-zinc-900 dark:to-amber-950/40">

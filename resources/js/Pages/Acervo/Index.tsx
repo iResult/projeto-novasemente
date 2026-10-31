@@ -235,7 +235,6 @@ export default function AcervoIndex({ items, canManage }: Props) {
                                                         ? `${item.videoCount} ${item.videoCount === 1 ? 'vídeo' : 'vídeos'}`
                                                         : 'Playlist do YouTube',
                                                 imageUrl: item.thumbnail,
-                                                backLabel: '← Séries',
                                             });
                                         }}
                                         className="!bg-white/90 shadow dark:!bg-zinc-800/90"

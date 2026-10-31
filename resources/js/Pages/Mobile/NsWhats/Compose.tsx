@@ -1,6 +1,7 @@
+import BackLink from '@/Components/BackLink';
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Head, router, useForm } from '@inertiajs/react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
@@ -153,9 +154,7 @@ export default function NsWhatsCompose({
             <MobileLayout flush hideTopbar hideBottomNav>
                 <Head title={`NS Conecta — ${selectedMinistry.name}`} />
                 <div className="mx-auto max-w-lg space-y-4">
-                    <Link href={route('mobile.ns-whats.compose')} className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-primary-600">
-                        <ArrowLeftIcon className="h-4 w-4" /> Departamentos
-                    </Link>
+                    <BackLink href={route('mobile.ns-whats.compose')} ariaLabel="Voltar para departamentos" />
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{selectedMinistry.name}</h1>
                     {selectedMinistry.description ? (
                         <p className="text-sm text-zinc-600 dark:text-zinc-400">{selectedMinistry.description}</p>
@@ -324,9 +323,7 @@ export default function NsWhatsCompose({
         <MobileLayout flush hideTopbar hideBottomNav>
             <Head title="Com quem você deseja falar?" />
             <div className="mx-auto max-w-2xl space-y-4">
-                <Link href={indexUrl} className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-primary-600">
-                    <ArrowLeftIcon className="h-4 w-4" /> Conversas
-                </Link>
+                <BackLink href={indexUrl} ariaLabel="Voltar para as conversas" />
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Com quem você deseja falar?</h1>
 
                 <label className="relative block">

@@ -544,7 +544,6 @@ export default function Index({
                                                               year: 'numeric',
                                                           })
                                                         : null,
-                                                    backLabel: '← Enquetes',
                                                 })
                                             }
                                         />

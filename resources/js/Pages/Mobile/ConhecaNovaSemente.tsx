@@ -1,16 +1,10 @@
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
-import {
-    ClockIcon,
-    EyeIcon,
-    HeartIcon,
-    MapPinIcon,
-    UserCircleIcon,
-    UserGroupIcon,
-} from '@heroicons/react/24/outline';
+import { Head } from '@inertiajs/react';
+import { ClockIcon, EyeIcon, HeartIcon, MapPinIcon, UserCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
+import BackLink from '@/Components/BackLink';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
 
@@ -76,12 +70,7 @@ export default function ConhecaNovaSemente() {
             <Head title="Conheça a Nova Semente" />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4 sm:max-w-xl md:max-w-2xl">
                 <div>
-                    <Link
-                        href={route('mobile.home')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Conheça a Nova Semente
                     </h1>

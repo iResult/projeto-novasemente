@@ -79,6 +79,8 @@ return [
                 'mobile.fale.baby.store',
                 'mobile.fale.bible',
                 'mobile.fale.bible.store',
+                'mobile.fale.other',
+                'mobile.fale.other.store',
                 'mobile.fale.pastor',
                 'mobile.fale.pastor.store',
             ],

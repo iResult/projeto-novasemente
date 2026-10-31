@@ -11,6 +11,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { CHAT_MESSAGE_SENDS_EMAIL_SUBTITLE } from '@/constants/chatEmailNotice';
+import BackLink from '@/Components/BackLink';
 
 interface EnrollmentRow {
     id: number;
@@ -34,9 +35,7 @@ export default function SharedTalentMyEnrollments({ enrollments }: Props) {
             <Head title="Minhas inscrições" />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link href={route('mobile.shared-talents.index')} className="text-sm font-medium text-brand-600">
-                    ← Doar Talentos
-                </Link>
+                <BackLink href={route('mobile.shared-talents.index')} ariaLabel="Voltar para Doar Talentos" />
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Minhas inscrições</h1>
                 {enrollments.length === 0 ? (
                     <p className="text-sm text-zinc-600">Você ainda não se inscreveu em nenhum talento.</p>

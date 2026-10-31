@@ -1,5 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import Textarea from '@/Components/Textarea';
@@ -11,6 +11,7 @@ import NsWhatsChatComposer from '@/Components/NsWhats/NsWhatsChatComposer';
 import { NsWhatsMessageBubble, NsWhatsSystemPill } from '@/Components/NsWhats/NsWhatsMessageBubble';
 import { FormEventHandler, useRef, useEffect, useState } from 'react';
 import { sendNsWhatsMessage, type NsWhatsMessagePayload } from '@/utils/nsWhatsSendMessage';
+import BackLink from '@/Components/BackLink';
 
 type Message = {
     id: number;
@@ -117,9 +118,7 @@ export default function LeaderShow({ conversation, peerLeaders, otherMinistries,
             <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col overflow-hidden border-zinc-200 bg-white pb-[env(safe-area-inset-bottom,0px)] dark:border-zinc-800 dark:bg-zinc-950 md:border-x">
                 <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-zinc-200/80 bg-[#f0f2f5] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
                     <div className="min-w-0 flex-1">
-                        <Link href={indexUrl} className="inline-flex cursor-pointer text-sm font-medium text-[#00a884]">
-                            ← Conversas
-                        </Link>
+                        <BackLink href={indexUrl} ariaLabel="Voltar para Conversas" />
                         <h1 className="truncate text-[16px] font-semibold leading-tight text-zinc-900 dark:text-white">
                             {conversation.headerTitle}
                         </h1>

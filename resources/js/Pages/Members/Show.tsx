@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
 import { activeInactivePillClass } from '@/lib/statusBadges';
 import Card from '@/Components/Card';
 import PageHeader from '@/Components/PageHeader';
@@ -29,12 +30,7 @@ export default function Show({ member }: Props) {
             <PageHeader
                 title="Detalhes do usuário"
                 lead={
-                    <Link
-                        href={route('users.index')}
-                        className="text-sm font-medium text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
-                    >
-                        Voltar para lista
-                    </Link>
+                    <BackLink href={route('users.index')} ariaLabel="Voltar para a lista" />
                 }
             />
 

@@ -1,9 +1,9 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Html5Qrcode } from 'html5-qrcode';
 import {
-    ArrowLeftIcon,
     CameraIcon,
     ChevronDownIcon,
     MagnifyingGlassIcon,
@@ -318,22 +318,18 @@ export default function MobileInventory({ items, filters, canManage }: Props) {
         <MobileLayout>
             <Head title="Inventário" />
             <div className="space-y-6">
-                <div className="flex min-w-0 items-center gap-3">
-                    <Link
-                        href={route('mobile.home')}
-                        className="-ml-2 shrink-0 rounded-xl p-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        aria-label="Voltar"
-                    >
-                        <ArrowLeftIcon className="h-6 w-6" />
-                    </Link>
-                    <h1 className="min-w-0 flex-1 truncate text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
-                        Inventário
-                    </h1>
-                    {canManage ? (
-                        <AddButton variant="label" onClick={openNewItemForm} title="Novo item">
-                            Novo item
-                        </AddButton>
-                    ) : null}
+                <div className="space-y-1">
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
+                    <div className="flex min-w-0 items-center gap-3">
+                        <h1 className="min-w-0 flex-1 truncate text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
+                            Inventário
+                        </h1>
+                        {canManage ? (
+                            <AddButton variant="label" onClick={openNewItemForm} title="Novo item">
+                                Novo item
+                            </AddButton>
+                        ) : null}
+                    </div>
                 </div>
 
                 {canManage && (

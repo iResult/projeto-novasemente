@@ -5,8 +5,9 @@ import {
     normalizeDevotionalAudience,
     storeDevotionalAudience,
 } from '@/data/devotionalAudience';
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeftIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head, router } from '@inertiajs/react';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
 
 interface AudienceOption {
@@ -56,13 +57,7 @@ export default function MobileMeditationDaily({
         <MobileLayout>
             <Head title={audienceTitle} />
             <div className="space-y-4">
-                <Link
-                    href={route('mobile.home')}
-                    className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                >
-                    <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                    Voltar ao início
-                </Link>
+                <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
 
                 <header className="space-y-3">
                     <div className="space-y-1">

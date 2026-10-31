@@ -11,10 +11,11 @@ import Textarea from '@/Components/Textarea';
 import SelectInput from '@/Components/SelectInput';
 import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import TalentListingContactFields from '@/Components/Talents/TalentListingContactFields';
 import { confirmAction } from '@/utils/confirmDialog';
+import BackLink from '@/Components/BackLink';
 
 interface Listing {
     id: number;
@@ -121,9 +122,7 @@ export default function TalentConnectionMyListings({ listings, categories }: Pro
             <Head title="Minhas publicações" />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link href={route('mobile.talents.index')} className="text-sm font-medium text-brand-600">
-                    ← Central de Serviços
-                </Link>
+                <BackLink href={route('mobile.talents.index')} ariaLabel="Voltar para Central de Serviços" />
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Minhas publicações</h1>
 
                 {listings.length === 0 ? (

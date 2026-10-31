@@ -1,5 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { useNsTimerFollow } from '@/hooks/useNsTimerFollow';
@@ -8,6 +8,7 @@ import {
     type NsTimerFollow,
     type NsTimerStage,
 } from '@/utils/nsTimerFollow';
+import BackLink from '@/Components/BackLink';
 
 type Props = {
     follow: NsTimerFollow;
@@ -122,12 +123,7 @@ export default function AcompanharCulto({ follow: initial }: Props) {
             <Head title="Acompanhar Programação" />
             <div className="mx-auto w-full max-w-lg space-y-4 pb-6 sm:max-w-xl md:max-w-3xl">
                 <div>
-                    <Link
-                        href={route('mobile.conheca')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Acompanhar Programação
                     </h1>

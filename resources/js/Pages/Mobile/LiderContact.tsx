@@ -1,7 +1,7 @@
+import BackLink from '@/Components/BackLink';
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, useForm } from '@inertiajs/react';
 import {
-    ArrowLeftIcon,
     EllipsisVerticalIcon,
     MagnifyingGlassIcon,
     PencilSquareIcon,
@@ -327,14 +327,7 @@ export default function LiderContact({
                     {pane === 'compose' ? (
                         <div className="flex min-h-0 flex-1 flex-col bg-white dark:bg-zinc-950">
                             <div className="flex shrink-0 items-center gap-2 border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-                                <button
-                                    type="button"
-                                    onClick={backToList}
-                                    className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-300 dark:hover:bg-zinc-800"
-                                    aria-label="Voltar"
-                                >
-                                    <ArrowLeftIcon className="h-5 w-5" />
-                                </button>
+                                <BackLink iconOnly onClick={backToList} ariaLabel="Voltar" className="md:hidden" />
                                 <div className="min-w-0">
                                     <h2 className="font-semibold text-zinc-900 dark:text-white">Nova conversa</h2>
                                     <p className="truncate text-xs text-zinc-500">
@@ -419,14 +412,7 @@ export default function LiderContact({
                     ) : selectedRow ? (
                         <div className="flex min-h-0 flex-1 flex-col">
                             <div className="relative flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-[#f0f2f5] px-2 py-2 dark:border-zinc-800 dark:bg-zinc-900 sm:px-3">
-                                <button
-                                    type="button"
-                                    onClick={backToList}
-                                    className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-200/80 md:hidden dark:text-zinc-300 dark:hover:bg-zinc-800"
-                                    aria-label="Voltar"
-                                >
-                                    <ArrowLeftIcon className="h-5 w-5" />
-                                </button>
+                                <BackLink iconOnly onClick={backToList} ariaLabel="Voltar" className="md:hidden" />
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                                     {initials(contactTitle(selectedRow))}
                                 </div>

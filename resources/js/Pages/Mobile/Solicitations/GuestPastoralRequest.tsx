@@ -5,8 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SelectInput from '@/Components/SelectInput';
 import TextInput from '@/Components/TextInput';
 import type { PastoralPastorOpt } from '@/Components/PastoralAppointment/PastoralAppointmentForm';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useMemo } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     pastors: PastoralPastorOpt[];
@@ -56,12 +57,7 @@ export default function GuestPastoralRequest({ pastors, storeUrl }: Props) {
             <Head title="Agenda com o Pastor" />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4">
                 <div>
-                    <Link
-                        href={route('mobile.fale')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Fale com a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.fale')} ariaLabel="Voltar para Fale com a Nova Semente" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Agenda com o Pastor
                     </h1>

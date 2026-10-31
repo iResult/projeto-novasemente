@@ -6,6 +6,7 @@ import { ChevronRightIcon, FilmIcon, PlayCircleIcon } from '@heroicons/react/24/
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 import { useEffect } from 'react';
 import type React from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface CultoItem {
     id: number;
@@ -139,12 +140,7 @@ export default function MobileCulto({ cultos, liveCulto = null, showPostRegistra
             <Head title="Culto" />
             <PageHeader
                 lead={
-                    <Link
-                        href={route('mobile.home')}
-                        className="cursor-pointer text-sm text-zinc-500 underline dark:text-zinc-400"
-                    >
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                 }
                 title="Culto"
                 subtitle="Os últimos cultos da Nova Semente. Toque em um vídeo para reproduzir."

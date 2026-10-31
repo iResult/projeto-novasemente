@@ -5,8 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import Checkbox from '@/Components/Checkbox';
 import Textarea from '@/Components/Textarea';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Report {
     id: number;
@@ -47,9 +48,7 @@ export default function TalentConnectionAdminReports({ reports }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar ao painel
-                    </Link>
+                    <BackLink href={route('talents.admin.dashboard')} ariaLabel="Voltar para o painel" />
                 }
                 title="Denúncias"
                 subtitle="Conteúdo inadequado, abuso comercial e conduta"

@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import PageHeader from '@/Components/PageHeader';
 import FlashMessages from '@/Components/FlashMessages';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     enrollments: {
@@ -20,9 +21,7 @@ export default function SharedTalentAdminEnrollments({ enrollments }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} />
                 }
                 title="Inscrições"
             />

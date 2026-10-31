@@ -18,7 +18,8 @@ Diretrizes gerais para alterações de interface. Base: componentes, layouts e e
 
 - Usar React com TypeScript, Inertia e Tailwind existentes. Manter props tipadas e o alias `@/` definido em `tsconfig.json`; não introduzir outra biblioteca de interface para resolver um caso já atendido.
 - Colocar telas em `resources/js/Pages`, componentes reutilizáveis em `resources/js/Components` e usar o layout adequado de `resources/js/Layouts`. Seguir primeiro uma tela equivalente do mesmo módulo.
-- Antes de criar componente, procurar os existentes: `PageHeader`, `Card`, `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TextInput`, `SelectInput`, `Textarea`, `InputLabel`, `InputError` e `Modal`. Para listas e detalhes, verificar também `ListCard` e `RecordDetail`.
+- Antes de criar componente, procurar os existentes: `PageHeader`, `BackLink`, `Card`, `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TextInput`, `SelectInput`, `Textarea`, `InputLabel`, `InputError` e `Modal`. Para listas e detalhes, verificar também `ListCard` e `RecordDetail`.
+- A volta de tela usa `BackLink` (`resources/js/Components/BackLink.tsx`): seta Heroicons + «Voltar», cinza, sem caixa. O destino fica no `href`; o nome acessível, em `ariaLabel`. `iconOnly` só na faixa do NS Conecta, onde o título já está na mesma linha.
 - Usar a navegação e os formulários Inertia conforme o fluxo existente (`Link`, `router`, `useForm` e rotas nomeadas quando aplicáveis). Preservar erros de validação e feedback do servidor. Permissões visuais não substituem autorização no backend.
 
 ### Identidade visual

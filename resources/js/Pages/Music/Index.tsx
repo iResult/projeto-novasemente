@@ -227,7 +227,6 @@ export default function MusicIndex({ musicas, canManage }: Props) {
                                                     publishedLabel: m.published_at
                                                         ? formatDate(m.published_at)
                                                         : 'Rascunho',
-                                                    backLabel: '← Música',
                                                 })
                                             }
                                         />

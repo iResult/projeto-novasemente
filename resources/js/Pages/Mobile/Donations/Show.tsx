@@ -7,10 +7,10 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Modal from '@/Components/Modal';
+import BackLink from '@/Components/BackLink';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { GALLERY_IMAGE_ACCEPT } from '@/utils/mobilePhotoPick';
 import {
-    ArrowLeftIcon,
     CheckIcon,
     DocumentDuplicateIcon,
     PlayCircleIcon,
@@ -273,13 +273,7 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
             <Head title={campaign.title} />
             <div className="mx-auto max-w-3xl space-y-6">
                 <div className="flex items-start justify-between gap-3">
-                    <Link
-                        href={route('mobile.donations.index')}
-                        className="inline-flex min-w-0 flex-1 items-center gap-1 text-sm font-medium text-brand-600 dark:text-brand-400"
-                    >
-                        <ArrowLeftIcon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">Voltar às campanhas</span>
-                    </Link>
+                    <BackLink href={route('mobile.donations.index')} ariaLabel="Voltar para as campanhas" />
                     {isLoggedIn ? (
                         <Link
                             href={route('mobile.donations.my-donations')}

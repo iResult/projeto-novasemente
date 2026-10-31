@@ -385,6 +385,22 @@ class MobileChurchSolicitationController extends Controller
         return $this->storeGuestSolicitation($request, 'bible_study', 'mobile.fale.bible');
     }
 
+    public function guestOther(Request $request): Response|RedirectResponse
+    {
+        return $this->guestTypedForm(
+            $request,
+            'other',
+            'mobile.fale.other.store',
+            'Outro pedido',
+            'Envie um pedido que não se encaixa nos demais. Dá para enviar sem ter conta no app.',
+        );
+    }
+
+    public function storeGuestOther(Request $request): RedirectResponse
+    {
+        return $this->storeGuestSolicitation($request, 'other', 'mobile.fale.other');
+    }
+
     public function guestPastoral(Request $request): Response|RedirectResponse
     {
         if ($request->user() !== null) {
@@ -506,7 +522,7 @@ class MobileChurchSolicitationController extends Controller
     private function storeGuestSolicitation(Request $request, string $type, string $redirectRoute): RedirectResponse
     {
         abort_if($request->user() !== null, 404);
-        abort_unless(in_array($type, ['baptism', 'baby_presentation', 'bible_study'], true), 404);
+        abort_unless(in_array($type, ['baptism', 'baby_presentation', 'bible_study', 'other'], true), 404);
 
         $effectiveChurchId = $this->guestChurchId($request) ?? 0;
         SolicitationAssignees::normalizeAssignmentRequest($request);

@@ -1,3 +1,4 @@
+import BackLink from '@/Components/BackLink';
 import MobileLayout from '@/Layouts/MobileLayout';
 import Modal from '@/Components/Modal';
 import { Head, Link, router, useForm } from '@inertiajs/react';
@@ -344,14 +345,11 @@ export default function MobileAnoBiblico(props: Props) {
                             >
                                 <div className="flex items-start gap-3">
                                     {canDismissChallengePicker ? (
-                                        <button
-                                            type="button"
+                                        <BackLink
                                             onClick={closeChallengePicker}
-                                            className="mt-0.5 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
-                                            aria-label="Voltar ao plano"
-                                        >
-                                            <ArrowLeftIcon className="h-5 w-5" aria-hidden />
-                                        </button>
+                                            ariaLabel="Voltar ao plano"
+                                            className="mt-0.5"
+                                        />
                                     ) : null}
                                     <div className="min-w-0 flex-1">
                                         <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Desafios</div>

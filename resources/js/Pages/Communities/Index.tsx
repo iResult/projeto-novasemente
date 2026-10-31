@@ -331,7 +331,6 @@ export default function CommunitiesIndex({
                                                             ? imageSrc(c.coverUrl, appUrl)
                                                             : null,
                                                         meta: [c.isPublished ? 'Publicado' : 'Rascunho'],
-                                                        backLabel: '← Comunidades',
                                                     })
                                                 }
                                             />

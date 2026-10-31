@@ -9,6 +9,7 @@ import {
     GiftIcon,
 } from '@heroicons/react/24/outline';
 import { CakeIcon as CakeSolidIcon } from '@heroicons/react/24/solid';
+import BackLink from '@/Components/BackLink';
 
 type BirthdayRow = {
     id: number;
@@ -108,12 +109,7 @@ export default function LeaderBirthdays({
 
             <div className="mx-auto w-full max-w-lg space-y-5 pb-8 sm:max-w-xl">
                 <div>
-                    <Link
-                        href={route('mobile.profile')}
-                        className="inline-flex cursor-pointer items-center gap-1 text-sm font-medium text-rose-700 hover:underline dark:text-rose-300"
-                    >
-                        ← Meu perfil
-                    </Link>
+                    <BackLink href={route('mobile.profile')} ariaLabel="Voltar para o meu perfil" />
                 </div>
 
                 <section className="relative overflow-hidden rounded-3xl border border-rose-200/80 bg-gradient-to-br from-rose-50 via-white to-amber-50 p-5 shadow-sm dark:border-rose-900/50 dark:from-rose-950 dark:via-zinc-900 dark:to-amber-950/40">

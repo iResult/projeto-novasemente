@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import PageHeader from '@/Components/PageHeader';
 import FlashMessages from '@/Components/FlashMessages';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface Listing {
     id: number;
@@ -38,9 +39,7 @@ export default function SharedTalentAdminListings({ listings, statusFilter, stat
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar ao painel
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} ariaLabel="Voltar para o painel" />
                 }
                 title="Publicações"
                 subtitle="Aprovar e moderar talentos compartilhados"

@@ -10,6 +10,7 @@ import InputError from '@/Components/InputError';
 import { useState, FormEventHandler } from 'react';
 import { textIncludesSearch } from '@/utils/searchText';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
+import BackLink from '@/Components/BackLink';
 
 interface AcervoItem {
     id: number;
@@ -95,9 +96,7 @@ export default function MobileAcervoIndex({ items, playlistsUrl, canManage }: Pr
         <MobileLayout>
             <Head title="Séries" />
             <div className="space-y-6 -mt-8">
-                <Link href={route('mobile.home')} className="text-sm text-zinc-500 underline dark:text-zinc-400">
-                    ← Início
-                </Link>
+                <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                 {/* Título e botão Adicionar na mesma linha */}
                 <div className="flex items-center justify-between gap-3 flex-nowrap">
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white truncate min-w-0">Séries</h1>

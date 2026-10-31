@@ -4,7 +4,8 @@ import PageHeader from '@/Components/PageHeader';
 import VolunteerRequestsStaffSection, {
     type VolunteerRequestRow,
 } from '@/Components/Volunteers/VolunteerRequestsStaffSection';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 type VolunteerRequestMinistryOption = {
     id: number;
@@ -49,12 +50,7 @@ export default function Pedidos({
                 title="Pedidos"
                 subtitle="Pedidos de líderes e da secretaria. Abra um pedido para detalhes, chat ou anexar voluntário."
                 lead={
-                    <Link
-                        href={route('ministry-lead.volunteers.central')}
-                        className="cursor-pointer text-sm text-zinc-600 hover:underline dark:text-zinc-400"
-                    >
-                        ← Voluntários
-                    </Link>
+                    <BackLink href={route('ministry-lead.volunteers.central')} ariaLabel="Voltar para Voluntários" />
                 }
             />
             <VolunteerRequestsStaffSection

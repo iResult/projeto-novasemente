@@ -778,7 +778,6 @@ export default function Index({ events, eventsForMonth, month, year, canManage }
                                                                     ...(ev.location ? [ev.location] : []),
                                                                     ...(ev.price ? [ev.price] : []),
                                                                 ],
-                                                                backLabel: '← Eventos',
                                                             })
                                                         }
                                                     />

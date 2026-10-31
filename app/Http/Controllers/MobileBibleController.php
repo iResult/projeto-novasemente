@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\BibleBook;
 use App\Models\BibleVerse;
+use App\Models\UserBibleVerseMark;
 use App\Services\BibleReferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,7 +71,136 @@ class MobileBibleController extends Controller
         return Inertia::render('Mobile/Bible', [
             'books' => $books,
             'initial' => $initial,
+            'markedVerses' => $this->markedVerseKeys($request),
         ]);
+    }
+
+    public function marks(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
+        if (! Schema::hasTable('user_bible_verse_marks')) {
+            return response()->json([
+                'ok' => true,
+                'marks' => [],
+            ]);
+        }
+
+        $rows = DB::table('user_bible_verse_marks as m')
+            ->join('bible_books as b', 'b.key', '=', 'm.book_key')
+            ->join('bible_verses as v', function ($join) {
+                $join->on('v.book_id', '=', 'b.id')
+                    ->on('v.chapter', '=', 'm.chapter')
+                    ->on('v.verse', '=', 'm.verse');
+            })
+            ->where('m.user_id', $user->id)
+            ->orderByDesc('m.created_at')
+            ->orderByDesc('m.id')
+            ->get([
+                'm.book_key',
+                'b.name as book_name',
+                'm.chapter',
+                'm.verse',
+                'v.text',
+            ]);
+
+        $marks = $rows->map(function ($row) {
+            $chapter = (int) $row->chapter;
+            $verse = (int) $row->verse;
+            $bookName = (string) $row->book_name;
+
+            return [
+                'bookKey' => (string) $row->book_key,
+                'bookName' => $bookName,
+                'chapter' => $chapter,
+                'verse' => $verse,
+                'ref' => sprintf('%s %d:%d', $bookName, $chapter, $verse),
+                'text' => (string) $row->text,
+            ];
+        })->values()->all();
+
+        return response()->json([
+            'ok' => true,
+            'marks' => $marks,
+        ]);
+    }
+
+    public function toggleMark(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+        abort_unless(Schema::hasTable('user_bible_verse_marks'), 503);
+
+        $valid = $request->validate([
+            'book' => ['required', 'string', 'max:24'],
+            'chapter' => ['required', 'integer', 'min:1', 'max:200'],
+            'verse' => ['required', 'integer', 'min:1', 'max:200'],
+        ]);
+
+        $book = BibleBook::query()->where('key', $valid['book'])->first();
+        $verseExists = $book !== null && BibleVerse::query()
+            ->where('book_id', $book->id)
+            ->where('chapter', (int) $valid['chapter'])
+            ->where('verse', (int) $valid['verse'])
+            ->exists();
+
+        if ($book === null || ! $verseExists) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Versículo não encontrado.',
+            ], 422);
+        }
+
+        $existing = UserBibleVerseMark::query()
+            ->where('user_id', $user->id)
+            ->where('book_key', $book->key)
+            ->where('chapter', (int) $valid['chapter'])
+            ->where('verse', (int) $valid['verse'])
+            ->first();
+
+        if ($existing !== null) {
+            $existing->delete();
+            $marked = false;
+        } else {
+            UserBibleVerseMark::query()->create([
+                'user_id' => $user->id,
+                'book_key' => $book->key,
+                'chapter' => (int) $valid['chapter'],
+                'verse' => (int) $valid['verse'],
+            ]);
+            $marked = true;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'marked' => $marked,
+            'markedVerses' => $this->markedVerseKeys($request),
+        ]);
+    }
+
+    /**
+     * @return list<array{bookKey: string, chapter: int, verse: int}>
+     */
+    private function markedVerseKeys(Request $request): array
+    {
+        $user = $request->user();
+        if ($user === null || ! Schema::hasTable('user_bible_verse_marks')) {
+            return [];
+        }
+
+        return UserBibleVerseMark::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get(['book_key', 'chapter', 'verse'])
+            ->map(fn (UserBibleVerseMark $mark) => [
+                'bookKey' => $mark->book_key,
+                'chapter' => (int) $mark->chapter,
+                'verse' => (int) $mark->verse,
+            ])
+            ->values()
+            ->all();
     }
 
     public function chapter(Request $request)
@@ -192,4 +323,3 @@ class MobileBibleController extends Controller
         ]);
     }
 }
-

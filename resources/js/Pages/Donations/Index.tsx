@@ -504,7 +504,6 @@ export default function DonationsIndex({ campaigns, canManage, canManageMedia, c
                                                 campaignTypeLabels[campaign.type],
                                                 `${Math.round(campaign.progress_percent)}% da meta`,
                                             ],
-                                            backLabel: '← Doação',
                                         })
                                     }
                                 />

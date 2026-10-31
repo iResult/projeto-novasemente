@@ -1,5 +1,6 @@
+import BackLink from '@/Components/BackLink';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeftIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 import TextInput from '@/Components/TextInput';
 import UserListAvatar from '@/Components/UserListAvatar';
@@ -230,13 +231,7 @@ export default function NsWhatsNewChatPanel({
         return (
             <div className="flex h-full min-h-0 flex-col">
                 <div className="shrink-0 space-y-2 border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
-                    <button
-                        type="button"
-                        onClick={clearMinistry}
-                        className="inline-flex cursor-pointer items-center gap-1 text-[12px] font-medium text-[#00a884]"
-                    >
-                        <ArrowLeftIcon className="h-3.5 w-3.5" /> Departamentos
-                    </button>
+                    <BackLink onClick={clearMinistry} ariaLabel="Voltar para departamentos" />
                     <div>
                         <h2 className="text-[15px] font-semibold text-zinc-900 dark:text-white">{selectedMinistry.name}</h2>
                         {selectedMinistry.description ? (

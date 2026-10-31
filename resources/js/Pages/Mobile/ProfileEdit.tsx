@@ -1,10 +1,11 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import ProfileVolunteerSection from '@/Components/Profile/ProfileVolunteerSection';
 import type { VolunteerSignupCompletion } from '@/utils/volunteerSignupCompletion';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm';
 import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     mustVerifyEmail: boolean;
@@ -23,9 +24,7 @@ export default function MobileProfileEdit({ mustVerifyEmail, status, volunteerSi
 
             <div className="space-y-5">
                 <div className="space-y-1">
-                    <Link href={route('mobile.profile')} className="text-sm text-zinc-500 underline dark:text-zinc-400">
-                        ← Meu perfil
-                    </Link>
+                    <BackLink href={route('mobile.profile')} ariaLabel="Voltar para o meu perfil" />
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Editar perfil</h1>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">Atualize os seus dados e a sua senha.</p>
                 </div>

@@ -1,32 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-    AcademicCapIcon,
-    BanknotesIcon,
-    BookmarkSquareIcon,
-    CalendarDaysIcon,
-    CameraIcon,
-    ChatBubbleOvalLeftEllipsisIcon,
-    FilmIcon,
-    GiftIcon,
-    GlobeAltIcon,
-    HeartIcon,
-    LifebuoyIcon,
-    MusicalNoteIcon,
-    NewspaperIcon,
-    PlayCircleIcon,
-    RectangleStackIcon,
-    ChartBarIcon,
-    ChevronRightIcon,
-    ClipboardDocumentListIcon,
-    DevicePhoneMobileIcon,
-    SparklesIcon,
-    SunIcon,
-    UserGroupIcon,
-    UserPlusIcon,
-} from '@heroicons/react/24/outline';
-import type { ComponentType, SVGProps } from 'react';
+import { ChevronRightIcon, DevicePhoneMobileIcon, LifebuoyIcon } from '@heroicons/react/24/outline';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import FaleComNovaSementeHomeCard from '@/Components/Mobile/FaleComNovaSementeHomeCard';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
@@ -40,6 +15,7 @@ import AppNoveltyOverlay, {
     type PendingAppNoveltyPayload,
 } from '@/Components/Mobile/AppNoveltyOverlay';
 import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
+import HomeShortcutSearch from '@/Components/Mobile/HomeShortcutSearch';
 import {
     type DevotionalAudience,
     DEVOTIONAL_AUDIENCE_DEFAULT,
@@ -47,8 +23,7 @@ import {
 } from '@/data/devotionalAudience';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 import { arrangeHomeCardMosaic, homeCardPhotoPresentation } from '@/data/homeCardPilot';
-
-type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
+import { homeQuickActions } from '@/data/homeQuickActions';
 
 interface Props {
     showPostRegistrationBanner?: boolean;
@@ -76,190 +51,6 @@ function firstName(fullName: string): string {
     if (!t) return '';
     return t.split(/\s+/)[0] ?? t;
 }
-
-type QuickAction = {
-    id: string;
-    label: string;
-    subtitle: string;
-    route?: string;
-    routeParams?: Record<string, string | number>;
-    featureKey?: string;
-    leaderOnly?: boolean;
-    onClick?: () => void;
-    icon: MenuIcon;
-};
-
-/** Atalhos da Home: itens exclusivos + todos do antigo menu Mais (sem duplicar por rota). */
-const homeQuickActions: QuickAction[] = [
-    {
-        id: 'enquetes',
-        label: 'Enquetes',
-        subtitle: 'Responda e veja o resultado da congregação',
-        route: 'mobile.polls.index',
-        featureKey: 'polls',
-        icon: ChartBarIcon,
-    },
-    {
-        id: 'ano-biblico',
-        label: 'Ano Bíblico',
-        subtitle: 'Escolha um plano de leitura e acompanhe o seu progresso.',
-        route: 'mobile.ano-biblico',
-        featureKey: 'ano_biblico',
-        icon: BookmarkSquareIcon,
-    },
-    {
-        id: 'biblioteca',
-        label: 'Biblioteca',
-        subtitle: 'Livros, revistas, lição, meditação e Ellen G. White',
-        route: 'mobile.biblioteca',
-        featureKey: 'library',
-        icon: RectangleStackIcon,
-    },
-    {
-        id: 'caixa-promessas',
-        label: 'Caixa de Promessas',
-        subtitle: 'Uma mensagem especial para você',
-        featureKey: 'promise_box',
-        icon: SparklesIcon,
-    },
-    {
-        id: 'central-servicos',
-        label: 'Central de Serviços',
-        subtitle: 'Ofereça e encontre serviços na comunidade.',
-        route: 'mobile.talents.index',
-        featureKey: 'talents',
-        icon: UserGroupIcon,
-    },
-    {
-        id: 'classe-comecos',
-        label: 'Classe Começos',
-        subtitle: 'Estudo bíblico presencial ou on-line',
-        route: 'varios.classe-comecos',
-        featureKey: 'classe_comecos',
-        icon: AcademicCapIcon,
-    },
-    {
-        id: 'comunidades',
-        label: 'Comunidades',
-        subtitle: 'Grupos de interesse da igreja no WhatsApp',
-        route: 'mobile.communities',
-        featureKey: 'communities',
-        icon: ChatBubbleOvalLeftEllipsisIcon,
-    },
-    {
-        id: 'conviva',
-        label: 'Conviva',
-        subtitle: 'Check-in da classe no culto de sábado',
-        route: 'mobile.conviva.checkin',
-        featureKey: 'conviva',
-        icon: AcademicCapIcon,
-    },
-    {
-        id: 'culto',
-        label: 'Culto',
-        subtitle: 'Vídeos do culto online',
-        route: 'mobile.culto',
-        featureKey: 'culto',
-        icon: FilmIcon,
-    },
-    {
-        id: 'meditacao-diaria',
-        label: 'Meditação diária',
-        subtitle: 'Adulto, Mulher e Jovem',
-        route: 'mobile.meditacao-diaria',
-        featureKey: 'devotional',
-        icon: SunIcon,
-    },
-    {
-        id: 'licao',
-        label: 'Lição',
-        subtitle: 'Estudo da lição da escola sabatina',
-        route: 'mobile.biblioteca',
-        routeParams: { tab: 'lesson', solo: '1' },
-        featureKey: 'library',
-        icon: ClipboardDocumentListIcon,
-    },
-    {
-        id: 'doacao',
-        label: 'Doação',
-        subtitle: 'Seu gesto de amor pode transformar vidas e renovar esperanças',
-        route: 'mobile.donations.index',
-        featureKey: 'charity_donations',
-        icon: BanknotesIcon,
-    },
-    {
-        id: 'doar-talentos',
-        label: 'Doar Talentos',
-        subtitle: 'Compartilhe talentos, aprendizado e apoio gratuito na comunidade',
-        route: 'mobile.shared-talents.index',
-        featureKey: 'shared_talents',
-        icon: GiftIcon,
-    },
-    {
-        id: 'eventos',
-        label: 'Eventos',
-        subtitle: 'Agenda de eventos da igreja',
-        route: 'mobile.events',
-        featureKey: 'events',
-        icon: CalendarDaysIcon,
-    },
-    {
-        id: 'fotos',
-        label: 'Fotos',
-        subtitle: 'Veja o que nossos fotógrafos prepararam para você',
-        route: 'mobile.fotos',
-        featureKey: 'photos',
-        icon: CameraIcon,
-    },
-    {
-        id: 'missao',
-        label: 'Missão',
-        subtitle: 'Eventos, depoimentos, mural e cadastro missionário',
-        route: 'mobile.mission',
-        featureKey: 'mission',
-        icon: GlobeAltIcon,
-    },
-    {
-        id: 'musica',
-        label: 'Música',
-        subtitle: 'Cante nossas músicas',
-        route: 'mobile.musica',
-        featureKey: 'musica',
-        icon: MusicalNoteIcon,
-    },
-    {
-        id: 'revista-adventista',
-        label: 'Revista Adventista',
-        subtitle: 'Artigos, editoriais e colunas da Revista Adventista',
-        route: 'mobile.revista-adventista',
-        featureKey: 'revista_adventista',
-        icon: NewspaperIcon,
-    },
-    {
-        id: 'saude',
-        label: 'Saúde',
-        subtitle: 'Conteúdos de saúde e bem-estar',
-        route: 'mobile.health',
-        featureKey: 'health',
-        icon: HeartIcon,
-    },
-    {
-        id: 'series',
-        label: 'Séries',
-        subtitle: 'Conheça todas as nossas séries',
-        route: 'mobile.acervo',
-        featureKey: 'acervo',
-        icon: PlayCircleIcon,
-    },
-    {
-        id: 'voluntario',
-        label: 'Voluntário',
-        subtitle: 'Faça seu cadastro',
-        route: 'volunteers.public-signup.page',
-        featureKey: 'volunteer_signup',
-        icon: UserPlusIcon,
-    },
-];
 
 export default function MobileHome({
     showPostRegistrationBanner = false,
@@ -381,7 +172,7 @@ export default function MobileHome({
     return (
         <MobileLayout allowHorizontalPan>
             <Head title="Home" />
-            <div className="mx-auto flex w-full max-w-lg flex-col gap-4 pb-6 sm:max-w-xl md:max-w-3xl lg:max-w-5xl">
+            <div className="mx-auto flex w-full max-w-lg flex-col gap-4 pb-6 sm:max-w-xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl">
                 {showPostRegistrationBanner ? (
                     <div
                         className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50"
@@ -394,7 +185,7 @@ export default function MobileHome({
                     </div>
                 ) : null}
 
-                <div className={`flex flex-col gap-3 ${showPostRegistrationBanner ? '' : '-mt-3'}`}>
+                <div className={`relative z-20 flex flex-col gap-3 ${showPostRegistrationBanner ? '' : '-mt-3'}`}>
                 <header className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
                         <p className="truncate text-xl font-semibold leading-snug tracking-tight text-zinc-900 dark:text-white">
@@ -402,6 +193,12 @@ export default function MobileHome({
                         </p>
                     </div>
                 </header>
+                <HomeShortcutSearch
+                    actions={homeQuickActions}
+                    meditationAudience={meditationAudience}
+                    isMinistryLeader={isMinistryLeader}
+                    onOpenPromise={openPromise}
+                />
 
                 {/*
                     Atalhos Oferta NS, Dízimo e Pacto e Conviva — comentados para teste.
@@ -436,7 +233,7 @@ export default function MobileHome({
                     <FaleComNovaSementeHomeCard pendingCount={nsWhatsPendingReply} />
                 </div>
                 <section aria-label="Atalhos" className="relative z-[1]">
-                    <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
+                    <div className="grid w-full grid-cols-2 items-stretch gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                         {gridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const isSpotlightCard = Boolean(
@@ -486,7 +283,7 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <div className="mx-auto mt-8 grid w-full max-w-lg grid-cols-2 gap-2 [&>:only-child]:col-span-2">
+                <div className="mt-8 grid w-full grid-cols-2 gap-2 [&>:only-child]:col-span-2 lg:grid-cols-4 lg:[&>:only-child]:col-span-1">
                     <Link href={route('mobile.sobre-o-app')} className={homeFooterLinkClass}>
                         <DevicePhoneMobileIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">

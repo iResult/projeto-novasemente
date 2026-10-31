@@ -7,8 +7,8 @@ import Textarea from '@/Components/Textarea';
 import TextInput from '@/Components/TextInput';
 import PollResultsCard from '@/Components/Polls/PollResultsCard';
 import type { PollResults } from '@/Components/Polls/pollTypes';
+import BackLink from '@/Components/BackLink';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
 import { FormEventHandler, useMemo, useState } from 'react';
 
@@ -153,14 +153,8 @@ export default function MobilePollsShow({
         <MobileLayout>
             <Head title="Enquete" />
             <div className="mx-auto max-w-3xl space-y-5">
-                <div className="flex items-center gap-3">
-                    <Link
-                        href={route('mobile.polls.index')}
-                        className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                        aria-label="Voltar"
-                    >
-                        <ArrowLeftIcon className="h-5 w-5" />
-                    </Link>
+                <div className="space-y-1">
+                    <BackLink href={route('mobile.polls.index')} ariaLabel="Voltar para as enquetes" />
                     <div>
                         <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">Enquete</h1>
                         {!poll.is_open && (

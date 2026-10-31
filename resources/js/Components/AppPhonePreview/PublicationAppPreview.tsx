@@ -1,3 +1,4 @@
+import BackLink from '@/Components/BackLink';
 import AppPhonePreview from '@/Components/AppPhonePreview/AppPhonePreview';
 
 export type PublicationAppPreviewData = {
@@ -7,8 +8,6 @@ export type PublicationAppPreviewData = {
     imageUrl?: string | null;
     meta?: string[];
     publishedLabel?: string | null;
-    /** Texto do “voltar” no topo do preview. */
-    backLabel?: string;
 };
 
 type Props = {
@@ -36,7 +35,6 @@ export default function PublicationAppPreview({ show, onClose, item }: Props) {
     const excerpt = item?.excerpt?.trim() || '';
     const imageUrl = item?.imageUrl?.trim() || '';
     const typeLabel = item?.typeLabel?.trim() || 'Publicação';
-    const backLabel = item?.backLabel?.trim() || '← Publicações';
     const when = item?.publishedLabel?.trim() || null;
     const meta = (item?.meta ?? []).filter(Boolean);
 
@@ -46,7 +44,7 @@ export default function PublicationAppPreview({ show, onClose, item }: Props) {
                 <p className="py-10 text-center text-sm text-zinc-500">Nada para pré-visualizar.</p>
             ) : (
                 <div className="space-y-3">
-                    <p className="text-[12px] font-medium text-teal-700 dark:text-teal-300">{backLabel}</p>
+                    <BackLink />
 
                     <article className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/90 dark:bg-zinc-900 dark:ring-zinc-700">
                         {imageUrl ? (

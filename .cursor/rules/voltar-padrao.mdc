@@ -1,0 +1,31 @@
+---
+description: Seta de voltar única no app e no painel
+alwaysApply: true
+---
+
+# Voltar de tela
+
+Sair de uma tela usa o componente `BackLink` (`resources/js/Components/BackLink.tsx`).
+
+## Visual
+
+- Seta `ArrowLeftIcon` + a palavra **Voltar**
+- Cinza (`text-zinc-500`), sem caixa, sem sombra, sem sublinhado e sem verde de marca
+- Primeira linha, acima do título (slot `lead` do `PageHeader` quando a página já usa o header)
+- Alvo de toque com `min-h-10` e `cursor-pointer`
+
+## Uso
+
+```tsx
+<BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
+```
+
+- O destino continua no `href`. Não trocar a rota ao padronizar o visual.
+- `ariaLabel` descreve o destino quando o rótulo visível é só «Voltar».
+- `iconOnly` apenas na faixa do NS Conecta (e no cabeçalho de conversa), onde o título já está na mesma linha. Exige `ariaLabel`.
+
+## Não é este controle
+
+- Chevron de calendário, carrossel, PDF ou foto anterior/próxima
+- Botão **Voltar** de passo de formulário (`SecondaryButton`)
+- Ações de conteúdo («Voltar a exibir», «Voltar a este item»)

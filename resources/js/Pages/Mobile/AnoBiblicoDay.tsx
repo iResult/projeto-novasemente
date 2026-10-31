@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { BookOpenIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 type ChapterRow = { bookKey: string; bookName: string; bookId: number; chapter: number };
 
@@ -50,9 +51,7 @@ export default function MobileAnoBiblicoDay({ day, display, chapters, checked, c
 
             <div className="space-y-6">
                 <div>
-                    <Link href={route('mobile.ano-biblico')} className="cursor-pointer text-sm font-semibold text-zinc-700 hover:underline dark:text-zinc-200">
-                        ← Ano Bíblico
-                    </Link>
+                    <BackLink href={route('mobile.ano-biblico')} ariaLabel="Voltar para Ano Bíblico" />
                     <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">Dia {day}</h1>
                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{display}</p>
                 </div>

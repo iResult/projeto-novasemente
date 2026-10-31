@@ -23,6 +23,7 @@ import {
 import { confirmAction } from '@/utils/confirmDialog';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 import { formatListPreview } from '@/utils/formatListPreview';
+import BackLink from '@/Components/BackLink';
 
 interface MinistryRef {
     id: number;
@@ -288,9 +289,7 @@ export default function Board({
             <Head title={`Voluntários — ${ministry.name}`} />
             <PageHeader
                 lead={
-                    <Link href={indexUrl} className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400">
-                        ← Todos os ministérios
-                    </Link>
+                    <BackLink href={indexUrl} ariaLabel="Voltar para Todos os ministérios" />
                 }
                 title={ministry.name}
                 subtitle="Lista de voluntários cadastrados na igreja (como em Voluntários). Filtre pelo formulário de inscrição, encaminhe para este ministério e faça a liberação na ficha."

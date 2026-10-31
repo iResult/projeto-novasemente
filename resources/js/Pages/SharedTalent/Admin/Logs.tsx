@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import PageHeader from '@/Components/PageHeader';
 import FlashMessages from '@/Components/FlashMessages';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     logs: {
@@ -21,9 +22,7 @@ export default function SharedTalentAdminLogs({ logs }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="cursor-pointer text-sm text-brand-600">
-                        ← Voltar
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} />
                 }
                 title="Logs de auditoria"
             />

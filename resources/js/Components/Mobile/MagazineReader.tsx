@@ -1,7 +1,7 @@
+import BackLink from '@/Components/BackLink';
 import PdfOriginalViewer from '@/Components/Mobile/PdfOriginalViewer';
 import PdfReflowReader from '@/Components/Mobile/PdfReflowReader';
-import { Link } from '@inertiajs/react';
-import { ArrowLeftIcon, DocumentTextIcon, NewspaperIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, NewspaperIcon } from '@heroicons/react/24/outline';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type ReadMode = 'choose' | 'original' | 'text';
@@ -91,22 +91,9 @@ export default function MagazineReader({
 
     const backControl =
         mode === 'choose' ? (
-            <Link
-                href={backHref}
-                className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-            >
-                <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                {backLabel}
-            </Link>
+            <BackLink href={backHref} ariaLabel={backLabel === 'Voltar' ? undefined : backLabel} />
         ) : (
-            <button
-                type="button"
-                onClick={returnToChoose}
-                className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-            >
-                <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                Voltar às opções de leitura
-            </button>
+            <BackLink onClick={returnToChoose} ariaLabel="Voltar às opções de leitura" />
         );
 
     if (mode === 'original') {

@@ -1,21 +1,11 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
-import {
-    CheckIcon,
-    ClipboardDocumentIcon,
-    MapIcon,
-    MapPinIcon,
-    ShareIcon,
-} from '@heroicons/react/24/outline';
+import { Head } from '@inertiajs/react';
+import { CheckIcon, ClipboardDocumentIcon, MapIcon, MapPinIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-import {
-    CHURCH_ADDRESS_LINE,
-    CHURCH_MAP_EMBED_URL,
-    CHURCH_MAPS_SEARCH_URL,
-    CHURCH_WAZE_URL,
-} from '@/constants/churchLocation';
+import { CHURCH_ADDRESS_LINE, CHURCH_MAP_EMBED_URL, CHURCH_MAPS_SEARCH_URL, CHURCH_WAZE_URL } from '@/constants/churchLocation';
 import { shareContent } from '@/utils/shareContent';
 import { appToast } from '@/utils/appToast';
+import BackLink from '@/Components/BackLink';
 
 const actionBtnClass =
     'inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/40 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-white';
@@ -53,12 +43,7 @@ export default function MobileLocation() {
             <Head title="Localização" />
             <div className="space-y-5">
                 <div>
-                    <Link
-                        href={route('mobile.conheca')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
                         Localização
                     </h1>

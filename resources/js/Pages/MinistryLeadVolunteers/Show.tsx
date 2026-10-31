@@ -1,5 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head, router, useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import Card from '@/Components/Card';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -78,9 +79,7 @@ export default function Show({ ministry, volunteer, criteria, boardUrl, updateCl
         <AdminLayout>
             <Head title={`${volunteer.name ?? 'Voluntário'} — ${ministry.name}`} />
             <div className="mb-4">
-                <Link href={boardUrl} className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400">
-                    ← {ministry.name}
-                </Link>
+                <BackLink href={boardUrl} ariaLabel={`Voltar para ${ministry.name}`} />
             </div>
             <PageHeader title={volunteer.name ?? 'Voluntário'} subtitle={ministry.name} />
 

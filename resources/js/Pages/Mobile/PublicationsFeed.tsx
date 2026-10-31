@@ -1,3 +1,4 @@
+import HomeShortcutSearch from '@/Components/Mobile/HomeShortcutSearch';
 import PublicationFeedCard, { type PublicationFeedItem } from '@/Components/Mobile/PublicationFeedCard';
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, usePage } from '@inertiajs/react';
@@ -81,7 +82,9 @@ export default function PublicationsFeed({ items }: Props) {
     return (
         <MobileLayout>
             <Head title="Publicações" />
-            <div className="mx-auto w-full max-w-lg space-y-8 sm:max-w-none">
+            <div className="mx-auto w-full max-w-lg sm:max-w-none">
+                <HomeShortcutSearch />
+                <div className="mt-4 space-y-8">
                 {feedItems.length === 0 ? (
                     <div className="px-2 py-20 text-center">
                         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-teal-500/15 to-emerald-600/10 ring-1 ring-inset ring-teal-600/15 dark:from-teal-400/10 dark:to-emerald-500/5 dark:ring-teal-400/20">
@@ -129,6 +132,7 @@ export default function PublicationsFeed({ items }: Props) {
                         )}
                     </>
                 )}
+                </div>
             </div>
         </MobileLayout>
     );

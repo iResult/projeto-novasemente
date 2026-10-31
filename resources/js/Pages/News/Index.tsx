@@ -759,7 +759,6 @@ export default function Index({ posts, filters, canManage, config }: Props) {
                                                         ? formatChurchDateTime(p.published_at)
                                                         : 'Rascunho',
                                                     meta: [typeShortLabel(p.content_type ?? 'article')],
-                                                    backLabel: '← Publicações',
                                                 });
                                             }}
                                         />

@@ -1,12 +1,9 @@
 import CampaignSevenMeContribute from '@/Components/Donations/CampaignSevenMeContribute';
 import DizimoPactoStory from '@/Components/Offerings/DizimoPactoStory';
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
-import {
-    ArrowLeftIcon,
-    CheckIcon,
-    DocumentDuplicateIcon,
-} from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
+import { CheckIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 interface DonationInfo {
@@ -85,14 +82,8 @@ export default function MobileOfferings({ donation, localOffer, offeringUrl }: P
             <Head title="Dízimos e Pacto" />
             <div className="mx-auto w-full max-w-lg space-y-8 sm:max-w-2xl">
                 <section className="space-y-4">
-                    <header className="flex items-start gap-3">
-                        <Link
-                            href={route('mobile.oferta')}
-                            className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
-                            aria-label="Voltar"
-                        >
-                            <ArrowLeftIcon className="h-5 w-5" />
-                        </Link>
+                    <header className="space-y-1">
+                        <BackLink href={route('mobile.oferta')} ariaLabel="Voltar para a oferta" />
                         <div className="min-w-0">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">
                                 Como contribuir

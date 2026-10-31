@@ -213,7 +213,6 @@ export default function PhotoAlbumsIndex({ albums, canManage, hasDriveApiKey }: 
                                                         title: a.title,
                                                         imageUrl: cover,
                                                         publishedLabel,
-                                                        backLabel: '← Fotos',
                                                     })
                                                 }
                                             />

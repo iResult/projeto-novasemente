@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeftIcon, PlayCircleIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
+import { PlayCircleIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 interface AcervoEpisode {
@@ -51,13 +52,7 @@ export default function MobileAcervoShow({ item }: Props) {
         <MobileLayout>
             <Head title={item.title} />
             <div className="space-y-4">
-                <Link
-                    href={route('mobile.acervo')}
-                    className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                >
-                    <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                    Voltar às séries
-                </Link>
+                <BackLink href={route('mobile.acervo')} ariaLabel="Voltar para as séries" />
 
                 <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div className="border-b border-zinc-100 p-4 dark:border-zinc-800 sm:p-6">

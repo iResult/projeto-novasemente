@@ -1,14 +1,11 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 import { ArrowTopRightOnSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCallback, useState } from 'react';
-import {
-    ADVENTIST_BELIEFS_SOURCE,
-    adventistBeliefs,
-    type AdventistBelief,
-} from '@/data/adventistBeliefs';
+import { ADVENTIST_BELIEFS_SOURCE, adventistBeliefs, type AdventistBelief } from '@/data/adventistBeliefs';
 import beliefFullText from '@/data/adventistBeliefsFullText.gen';
+import BackLink from '@/Components/BackLink';
 
 export default function MobileBeliefs() {
     const [open, setOpen] = useState<AdventistBelief | null>(null);
@@ -22,12 +19,7 @@ export default function MobileBeliefs() {
             <Head title="Em que cremos" />
             <div className="space-y-5">
                 <div>
-                    <Link
-                        href={route('mobile.conheca')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Em que cremos</h1>
                     <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                         Os adventistas do sétimo dia aceitam a Bíblia como regra de fé e prática. Abaixo estão os 28

@@ -1,3 +1,4 @@
+import BackLink from '@/Components/BackLink';
 import AppPhonePreview from '@/Components/AppPhonePreview/AppPhonePreview';
 import SaturdayProgramScheduleView, {
     type SaturdaySchedule,
@@ -37,9 +38,7 @@ export default function SaturdayProgramPhonePreview({ show, row, onClose }: Prop
 
     return (
         <AppPhonePreview show={show} onClose={onClose}>
-            <p className="text-[12px] font-medium text-teal-700 dark:text-teal-300">
-                ← Conheça a Nova Semente
-            </p>
+            <BackLink ariaLabel="Voltar para Conheça a Nova Semente" />
             <h1 className="mt-2 text-[1.35rem] font-bold leading-tight tracking-tight text-zinc-900 dark:text-white">
                 {title}
             </h1>

@@ -1,6 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, useForm, Link, router } from '@inertiajs/react';
-import { solicitationsBackLinkClass } from '@/Pages/Mobile/Solicitations/solicitationNavClasses';
+import { Head, useForm, router } from '@inertiajs/react';
 import { FormEventHandler, useMemo } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import Textarea from '@/Components/Textarea';
@@ -11,6 +10,7 @@ import InputError from '@/Components/InputError';
 import SelectInput from '@/Components/SelectInput';
 import PastorVisitScheduleSection from '@/Components/Solicitations/PastorVisitScheduleSection';
 import type { MemberPastoralBookingPayload } from '@/Components/Solicitations/SolicitationDetailPanel';
+import BackLink from '@/Components/BackLink';
 
 interface Option {
     value: number;
@@ -80,9 +80,7 @@ export default function Create({
             <Head title={typeLabel} />
             <div className="space-y-6">
                 <div>
-                    <Link href={route('mobile.solicitations.hub')} className={solicitationsBackLinkClass}>
-                        ← Solicitações
-                    </Link>
+                    <BackLink href={route('mobile.solicitations.hub')} ariaLabel="Voltar para Solicitações" />
                     <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">{typeLabel}</h1>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                         A igreja responderá pelo seu pedido através do App e e-mail. Informe telefone e e-mail para

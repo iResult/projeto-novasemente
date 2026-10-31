@@ -3,6 +3,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import ImageDownloadButton from '@/Components/ImageDownloadButton';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { useLayoutEffect, useRef, useState } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface PastorPublic {
     id: number;
@@ -85,9 +86,7 @@ export default function MobilePastors({ pastors, churchName }: Props) {
             <Head title="Pastores" />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4 sm:max-w-xl md:max-w-2xl">
                 <div>
-                    <Link href={route('mobile.conheca')} className="cursor-pointer text-sm text-brand-600 hover:underline dark:text-brand-400">
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">Pastores</h1>
                     {churchName && <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{churchName}</p>}
                     <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">

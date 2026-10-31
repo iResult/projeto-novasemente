@@ -11,6 +11,7 @@ import SelectInput from '@/Components/SelectInput';
 import InputError from '@/Components/InputError';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Listing {
     id: number;
@@ -104,9 +105,7 @@ export default function SharedTalentMyListings({ listings, categories, modalityO
             <Head title="Minhas publicações" />
             <FlashMessages />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link href={route('mobile.shared-talents.index')} className="text-sm font-medium text-brand-600">
-                    ← Doar Talentos
-                </Link>
+                <BackLink href={route('mobile.shared-talents.index')} ariaLabel="Voltar para Doar Talentos" />
                 <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Minhas publicações</h1>
                 {listings.length === 0 ? (
                     <p className="text-sm text-zinc-600">

@@ -2,9 +2,10 @@ import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
 import MobileLayout from '@/Layouts/MobileLayout';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { BookOpenIcon, CalendarDaysIcon, ChatBubbleLeftRightIcon, HandRaisedIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { Head, usePage } from '@inertiajs/react';
+import { BookOpenIcon, CalendarDaysIcon, ChatBubbleLeftRightIcon, EllipsisHorizontalCircleIcon, HandRaisedIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
+import BackLink from '@/Components/BackLink';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
 
@@ -69,6 +70,15 @@ export default function FaleComNovaSemente({ nsWhatsPendingReply = 0 }: { nsWhat
             featureKey: 'volunteer_signup',
         },
         {
+            id: 'outro-pedido',
+            label: 'Outro pedido',
+            subtitle: 'Outro pedido à igreja',
+            href: loggedIn
+                ? route('mobile.solicitations.hub', { novo: 1, tipo: 'other' })
+                : route('mobile.fale.other'),
+            icon: EllipsisHorizontalCircleIcon,
+        },
+        {
             id: 'ns-whats',
             label: 'NS Conecta',
             subtitle: 'Converse com departamentos, líderes e voluntários',
@@ -87,12 +97,7 @@ export default function FaleComNovaSemente({ nsWhatsPendingReply = 0 }: { nsWhat
             <Head title="Fale com a Nova Semente" />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4 sm:max-w-xl md:max-w-3xl">
                 <div>
-                    <Link
-                        href={route('mobile.home')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Fale com a Nova Semente
                     </h1>

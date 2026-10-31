@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link } from '@inertiajs/react';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 type Row = {
     day: number;
@@ -22,9 +23,7 @@ export default function MobileAnoBiblicoHistory({ items }: Props) {
 
             <div className="space-y-6">
                 <div>
-                    <Link href={route('mobile.ano-biblico')} className="cursor-pointer text-sm font-semibold text-zinc-700 hover:underline dark:text-zinc-200">
-                        ← Ano Bíblico
-                    </Link>
+                    <BackLink href={route('mobile.ano-biblico')} ariaLabel="Voltar para Ano Bíblico" />
                     <h1 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Histórico</h1>
                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Quando você concluiu cada capítulo</p>
                 </div>

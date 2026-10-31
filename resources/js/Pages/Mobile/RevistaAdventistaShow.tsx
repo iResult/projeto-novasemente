@@ -1,7 +1,8 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import NewsPostCover from '@/Components/News/NewsPostCover';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, NewspaperIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head, usePage } from '@inertiajs/react';
+import { ArrowTopRightOnSquareIcon, NewspaperIcon } from '@heroicons/react/24/outline';
 
 interface Article {
     id: number;
@@ -52,13 +53,10 @@ export default function MobileRevistaAdventistaShow({ article }: Props) {
         <MobileLayout>
             <Head title={article.title} />
             <div className="mx-auto w-full min-w-0 max-w-lg space-y-3">
-                <Link
+                <BackLink
                     href={route('mobile.revista-adventista', article.section ? { section: article.section } : {})}
-                    className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                >
-                    <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden />
-                    Voltar à Revista Adventista
-                </Link>
+                    ariaLabel="Voltar para a Revista Adventista"
+                />
 
                 <article className="min-w-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     {cover ? (
@@ -104,7 +102,7 @@ export default function MobileRevistaAdventistaShow({ article }: Props) {
                         )}
 
                         {article.excerpt && (
-                            <p className="mt-3 border-l-4 border-teal-500 pl-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                            <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
                                 {article.excerpt}
                             </p>
                         )}

@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeftIcon, FilmIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
+import { FilmIcon } from '@heroicons/react/24/outline';
 
 interface CultoShow {
     id: number;
@@ -32,13 +33,7 @@ export default function MobileCultoShow({ culto }: Props) {
         <MobileLayout>
             <Head title={culto.title} />
             <div className="space-y-4">
-                <Link
-                    href={route('mobile.culto')}
-                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                >
-                    <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                    Voltar ao culto
-                </Link>
+                <BackLink href={route('mobile.culto')} ariaLabel="Voltar para o culto" />
 
                 <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div className="border-b border-zinc-100 p-4 dark:border-zinc-800 sm:p-6">

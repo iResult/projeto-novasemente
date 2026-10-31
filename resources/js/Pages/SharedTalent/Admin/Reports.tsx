@@ -5,8 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import Checkbox from '@/Components/Checkbox';
 import Textarea from '@/Components/Textarea';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import BackLink from '@/Components/BackLink';
 
 interface Report {
     id: number;
@@ -32,9 +33,7 @@ export default function SharedTalentAdminReports({ reports }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} />
                 }
                 title="Denúncias"
             />

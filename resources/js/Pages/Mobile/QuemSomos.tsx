@@ -1,5 +1,6 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 export default function MobileQuemSomos() {
     return (
@@ -7,12 +8,7 @@ export default function MobileQuemSomos() {
             <Head title="Quem somos" />
             <div className="space-y-5">
                 <div>
-                    <Link
-                        href={route('mobile.conheca')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary-600 dark:text-primary-400">
                         Sobre a NS
                     </p>

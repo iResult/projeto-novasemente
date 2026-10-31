@@ -2,7 +2,8 @@ import MobileLayout from '@/Layouts/MobileLayout';
 import SobreOAppModal from '@/Components/Mobile/SobreOAppModal';
 import SobreOAppPanel from '@/Components/Mobile/SobreOAppPanel';
 import { useMinWidthMd } from '@/hooks/useMinWidthMd';
-import { Head, Link, router } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head, router } from '@inertiajs/react';
 
 interface Props {
     backRoute: string;
@@ -30,12 +31,10 @@ export default function MobileSobreOApp({ backRoute, backLabel }: Props) {
             <Head title="Sobre o APP" />
             <div className="space-y-5">
                 <div>
-                    <Link
+                    <BackLink
                         href={route(backRoute)}
-                        className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← {backLabel}
-                    </Link>
+                        ariaLabel={backLabel.replace(/^←\s*/, '').trim() === 'Voltar' ? undefined : `Voltar para ${backLabel.replace(/^←\s*/, '').trim()}`}
+                    />
                     <h1 className="mt-3 text-center text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Sobre o APP
                     </h1>

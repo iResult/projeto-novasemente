@@ -2,7 +2,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import PageHeader from '@/Components/PageHeader';
 import FlashMessages from '@/Components/FlashMessages';
 import SecondaryButton from '@/Components/SecondaryButton';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
 
 interface Props {
     reviews: {
@@ -24,9 +25,7 @@ export default function SharedTalentAdminReviews({ reviews }: Props) {
             <FlashMessages />
             <PageHeader
                 lead={
-                    <Link href={route('shared-talents.admin.dashboard')} className="text-sm text-brand-600">
-                        ← Voltar
-                    </Link>
+                    <BackLink href={route('shared-talents.admin.dashboard')} />
                 }
                 title="Avaliações"
             />

@@ -16,7 +16,7 @@ Os nomes abaixo foram encontrados no inventário real do banco local; a lista é
 | Ministérios e voluntariado | `ministries`, `volunteers`, `ministry_user`, `ministry_volunteer`, `volunteer_church_pipelines` |
 | Escalas | `service_schedules`, `schedule_assignments`, `schedule_roles`, `schedule_checkin_dates` |
 | Conteúdo e programação | `news`, `events`, `cultos`, `musicas`, `weekly_programs`, `saturday_programs`, `photo_albums` |
-| Biblioteca e Bíblia | `library_books`, `library_lesson_notes`, `bible_books`, `bible_verses`, `versiculos_caixinha` |
+| Biblioteca e Bíblia | `library_books`, `library_lesson_notes`, `bible_books`, `bible_verses`, `user_bible_verse_marks`, `versiculos_caixinha` |
 | Comunicação e atendimento | `church_conversations`, `church_conversation_messages`, `church_solicitations`, `app_support_tickets`, `pastoral_appointments` |
 | Missões e participação | `mission_events`, `mission_volunteers`, `polls`, `poll_options`, `poll_votes`, `conviva_classes`, `talent_listings`, `shared_talent_listings` |
 | Doações e finanças | `donation_campaigns`, `campaign_donations`, `charity_campaigns`, `charity_donations`, `financial_transactions` |

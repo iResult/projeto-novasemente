@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
-import { ArrowLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
+import { Head, useForm, router } from '@inertiajs/react';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import AddButton from '@/Components/AddButton';
 import PageHeader from '@/Components/PageHeader';
 import Card from '@/Components/Card';
@@ -104,15 +105,7 @@ export default function ChurchServicesIndex({ church, services }: Props) {
             <Head title={`Horários de culto – ${church.name}`} />
             <PageHeader
                 title={`Horários de culto: ${church.name}`}
-                lead={
-                    <Link
-                        href={route('churches.index')}
-                        className="inline-flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    >
-                        <ArrowLeftIcon className="w-4 h-4" />
-                        Voltar
-                    </Link>
-                }
+                lead={<BackLink href={route('churches.index')} ariaLabel="Voltar para as igrejas" />}
                 actions={<AddButton variant="label" onClick={openCreate} title="Adicionar horário">Adicionar horário</AddButton>}
             />
 

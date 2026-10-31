@@ -556,7 +556,6 @@ export default function LibraryBooksIndex({
                                                         ...(b.author?.name ? [b.author.name] : []),
                                                         ...(cacheLabel ? [cacheLabel] : []),
                                                     ],
-                                                    backLabel: '← Biblioteca',
                                                 })
                                             }
                                         />

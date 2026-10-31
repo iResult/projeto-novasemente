@@ -1,9 +1,10 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import PdfOriginalViewer from '@/Components/Mobile/PdfOriginalViewer';
 import SaturdayProgramLiveSchedule from '@/Components/ProgramacaoSabado/SaturdayProgramLiveSchedule';
 import type { SaturdaySchedule } from '@/Components/Mobile/SaturdayProgramScheduleView';
+import BackLink from '@/Components/BackLink';
 
 type ProgramPayload =
     | {
@@ -68,12 +69,7 @@ export default function ProgramacaoSabado({ program }: Props) {
                 <Head title={program.title} />
                 <div className="mx-auto w-full max-w-lg space-y-4 pb-4 sm:max-w-xl md:max-w-2xl">
                     <div>
-                        <Link
-                            href={backHref}
-                            className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                        >
-                            ← Conheça a Nova Semente
-                        </Link>
+                        <BackLink href={backHref} ariaLabel="Voltar para Conheça a Nova Semente" />
                         <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                             {program.title}
                         </h1>
@@ -130,12 +126,7 @@ export default function ProgramacaoSabado({ program }: Props) {
             <Head title="Programação do Sábado" />
             <div className="mx-auto w-full max-w-lg space-y-6 pb-4 sm:max-w-xl md:max-w-2xl">
                 <div>
-                    <Link
-                        href={backHref}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={backHref} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
                         Programação do Sábado
                     </h1>

@@ -6,7 +6,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import MobileSupportTicketPanel, {
     type MobileSupportTicketPanelProps,
 } from '@/Components/Support/MobileSupportTicketPanel';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useMemo, useState, FormEventHandler, useEffect } from 'react';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import InputLabel from '@/Components/InputLabel';
@@ -16,6 +16,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { GALLERY_IMAGE_ACCEPT } from '@/utils/mobilePhotoPick';
 import InputError from '@/Components/InputError';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
+import BackLink from '@/Components/BackLink';
 
 type SupportTicketListItem = {
     publicToken: string;
@@ -140,9 +141,7 @@ export default function MobileSupport({
             <div className="space-y-5">
                 <PageHeader
                     lead={
-                        <Link href={route('mobile.home')} className="text-sm text-zinc-500 underline dark:text-zinc-400">
-                            ← Início
-                        </Link>
+                        <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     }
                     title="Suporte do app"
                     subtitle={

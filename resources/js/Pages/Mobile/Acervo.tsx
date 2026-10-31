@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { PlayCircleIcon, Bars3Icon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import BackLink from '@/Components/BackLink';
 
 interface PlaylistItem {
     id: string;
@@ -21,9 +22,7 @@ export default function MobileAcervo({ playlists, playlistsUrl }: Props) {
             <Head title="Séries" />
             <div className="space-y-6">
                 <div>
-                    <Link href={route('mobile.home')} className="text-sm text-zinc-500 underline dark:text-zinc-400">
-                        ← Início
-                    </Link>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Séries</h1>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                         Veja todas as séries já passadas na Nova Semente.

@@ -244,7 +244,6 @@ export default function CultoIndex({ cultos: cultosProp }: Props) {
                                                 publishedLabel: c.published_at
                                                     ? formatDate(c.published_at)
                                                     : 'Rascunho',
-                                                backLabel: '← Culto',
                                             })
                                         }
                                     />

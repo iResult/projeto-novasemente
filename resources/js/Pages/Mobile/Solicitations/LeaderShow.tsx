@@ -1,4 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
+import BackLink from '@/Components/BackLink';
 import { Head, Link } from '@inertiajs/react';
 import { solicitationsBackLinkClass } from '@/Pages/Mobile/Solicitations/solicitationNavClasses';
 import { useState } from 'react';
@@ -46,9 +47,7 @@ export default function LeaderShow({
             <Head title={solicitation.subject?.trim() ? `${solicitation.subject} · Líder` : `Chat · ${solicitation.typeLabel}`} />
             <div className="space-y-4">
                 <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                    <Link href={hubUrl} className={solicitationsBackLinkClass}>
-                        ← Conversas como líder
-                    </Link>
+                    <BackLink href={hubUrl} ariaLabel="Voltar para Conversas como líder" />
                     <span className="text-zinc-300 dark:text-zinc-600">·</span>
                     <Link href={mineUrl} className={solicitationsBackLinkClass}>
                         Início

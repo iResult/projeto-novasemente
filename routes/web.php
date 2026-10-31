@@ -519,6 +519,10 @@ Route::get('/mobile/estudo-biblico', [MobileChurchSolicitationController::class,
 Route::post('/mobile/estudo-biblico', [MobileChurchSolicitationController::class, 'storeGuestBible'])
     ->middleware('throttle:10,1')
     ->name('mobile.fale.bible.store');
+Route::get('/mobile/outro-pedido', [MobileChurchSolicitationController::class, 'guestOther'])->name('mobile.fale.other');
+Route::post('/mobile/outro-pedido', [MobileChurchSolicitationController::class, 'storeGuestOther'])
+    ->middleware('throttle:10,1')
+    ->name('mobile.fale.other.store');
 Route::get('/mobile/agenda-com-o-pastor', [MobileChurchSolicitationController::class, 'guestPastoral'])->name('mobile.fale.pastor');
 Route::post('/mobile/agenda-com-o-pastor', [MobileChurchSolicitationController::class, 'storeGuestPastoral'])
     ->middleware('throttle:10,1')
@@ -544,6 +548,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/mobile/biblioteca/marcadores', [MobileController::class, 'toggleLibraryBookBookmark'])
         ->middleware('throttle:60,1')
         ->name('mobile.biblioteca.bookmarks.toggle');
+    Route::get('/mobile/biblia/marcados', [MobileBibleController::class, 'marks'])
+        ->middleware('throttle:80,1')
+        ->name('mobile.bible.marks');
+    Route::post('/mobile/biblia/marcadores', [MobileBibleController::class, 'toggleMark'])
+        ->middleware('throttle:60,1')
+        ->name('mobile.bible.marks.toggle');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

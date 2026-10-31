@@ -5,8 +5,9 @@ import ListCardActionRow from '@/Components/ListCard/ListCardActionRow';
 import ListCardTextActionButton from '@/Components/ListCard/ListCardTextActionButton';
 import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
+import BackLink from '@/Components/BackLink';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeftIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { FormEventHandler, useState } from 'react';
 import { inertiaListModalSave } from '@/utils/inertiaListModalSave';
 
@@ -83,13 +84,7 @@ export default function MyDonations({ donations }: Props) {
         <MobileLayout>
             <Head title="Minhas contribuições" />
             <div className="mx-auto max-w-3xl space-y-6">
-                <Link
-                    href={route('mobile.campaigns.index')}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 dark:text-brand-400"
-                >
-                    <ArrowLeftIcon className="h-4 w-4" />
-                    Voltar às campanhas
-                </Link>
+                <BackLink href={route('mobile.campaigns.index')} ariaLabel="Voltar para as campanhas" />
 
                 <div>
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white sm:text-3xl">Minhas contribuições</h1>

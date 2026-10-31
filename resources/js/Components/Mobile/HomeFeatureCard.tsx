@@ -149,8 +149,8 @@ export default function HomeFeatureCard({
     const subtitleClass = onLightPhoto
         ? 'text-zinc-700'
         : `text-white ${onPhotoShadow}`;
-    const mosaicClass = `group relative flex h-full w-full cursor-pointer flex-col self-stretch overflow-hidden rounded-2xl border text-left font-[inherit] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 aspect-[4/5] min-w-0 ${
-        spotlight ? 'border-brand-600/40 dark:border-brand-400/40' : 'border-zinc-200 dark:border-zinc-800'
+    const mosaicClass = `group relative flex h-full w-full cursor-pointer flex-col self-stretch overflow-hidden rounded-2xl border text-left font-[inherit] shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 aspect-[4/5] min-w-0 md:hover:-translate-y-0.5 md:hover:shadow-md ${
+        spotlight ? 'border-brand-600/40 dark:border-brand-400/40' : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700'
     }`;
 
     const iconBadge = (

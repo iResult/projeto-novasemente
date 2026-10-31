@@ -279,7 +279,6 @@ export default function RevistaAdventistaAcervoIndex({ editions, canManage, avai
                                                           : 'Sem PDF',
                                                     edition.is_active ? 'Ativa' : 'Inativa',
                                                 ],
-                                                backLabel: '← Revista',
                                             })
                                         }
                                     />

@@ -1,10 +1,20 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { MagnifyingGlassIcon, XMarkIcon, BookOpenIcon } from '@heroicons/react/24/outline';
+import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeForSearch } from '@/utils/searchText';
 import ListSearchHint from '@/Components/ListSearchHint';
 import { isListSearchBelowMinimum, LIST_SEARCH_DEBOUNCE_MS, LIST_SEARCH_MIN_LENGTH } from '@/utils/listSearch';
+import {
+    groupConsecutiveBibleMarks,
+    useBibleVerseMarks,
+    type BibleVerseMark,
+    type BibleVerseMarkGroup,
+    type BibleVerseMarkKey,
+} from '@/hooks/useBibleVerseMarks';
+import { appToast } from '@/utils/appToast';
+import BackLink from '@/Components/BackLink';
 
 type Testament = 'old' | 'new';
 
@@ -29,6 +39,7 @@ type InitialPayload = {
 interface Props {
     books: BibleBook[];
     initial: InitialPayload;
+    markedVerses?: BibleVerseMarkKey[];
 }
 
 type SearchResult = {
@@ -109,6 +120,78 @@ function readLastReading(): LastReading | null {
     }
 }
 
+function BibleMarkedVersesPanel({
+    marks,
+    status,
+    onOpen,
+    onRemove,
+}: {
+    marks: BibleVerseMark[];
+    status: 'idle' | 'loading' | 'error';
+    onOpen: (mark: BibleVerseMark) => void;
+    onRemove: (group: BibleVerseMarkGroup) => void;
+}) {
+    const groups = groupConsecutiveBibleMarks(marks);
+
+    return (
+        <section className="space-y-3" aria-label="Meus versículos">
+            {status === 'loading' ? (
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Carregando…</p>
+            ) : status === 'error' ? (
+                <p className="text-sm text-amber-700 dark:text-amber-300">Não foi possível carregar os versículos marcados.</p>
+            ) : groups.length === 0 ? (
+                <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    Nenhum versículo marcado. Toque no número de um versículo para guardar.
+                </p>
+            ) : (
+                <ul className="space-y-2">
+                    {groups.map((group) => {
+                        const range = group.startVerse !== group.endVerse;
+                        return (
+                            <li key={`${group.bookKey}-${group.chapter}-${group.startVerse}-${group.endVerse}`}>
+                                <div className="flex items-start gap-2 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                                    <button
+                                        type="button"
+                                        onClick={() => onOpen(group.marks[0])}
+                                        className="min-w-0 flex-1 cursor-pointer text-left"
+                                    >
+                                        <p className="font-semibold text-zinc-900 dark:text-white">{group.ref}</p>
+                                        <div className="mt-1 space-y-2">
+                                            {group.marks.map((mark) => (
+                                                <p
+                                                    key={mark.verse}
+                                                    className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300"
+                                                >
+                                                    {range ? (
+                                                        <span className="mr-1.5 font-semibold text-zinc-500 dark:text-zinc-400">
+                                                            {mark.verse}
+                                                        </span>
+                                                    ) : null}
+                                                    {mark.text}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onRemove(group)}
+                                        className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-brand-700 hover:bg-zinc-100 dark:text-brand-300 dark:hover:bg-zinc-800"
+                                        aria-label={
+                                            range ? `Desmarcar versículos ${group.ref}` : `Desmarcar versículo ${group.ref}`
+                                        }
+                                    >
+                                        <BookmarkSolidIcon className="h-5 w-5" aria-hidden />
+                                    </button>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 function writeLastReading(value: { bookKey: string; chapter: number }) {
     if (typeof window === 'undefined') return;
     try {
@@ -132,7 +215,7 @@ function scrollToInMain(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
     main.scrollTo({ top: Math.max(0, main.scrollTop + delta), behavior });
 }
 
-export default function MobileBible({ books, initial }: Props) {
+export default function MobileBible({ books, initial, markedVerses = [] }: Props) {
     const [testament, setTestament] = useState<Testament>(initial?.book.testament ?? 'old');
     const [selectedBook, setSelectedBook] = useState<BibleBook | null>(() => {
         if (!initial?.book) return null;
@@ -152,6 +235,8 @@ export default function MobileBible({ books, initial }: Props) {
     const readerCardRef = useRef<HTMLDivElement | null>(null);
     const pendingScrollRef = useRef<{ toTitle: boolean; verse: number | null } | null>(null);
     const [focusedVerse, setFocusedVerse] = useState<number | null>(null);
+    const [showMarked, setShowMarked] = useState(false);
+    const { marks, count: markedCount, listStatus, isMarked, toggle, loadList } = useBibleVerseMarks(markedVerses);
 
     const booksByTestament = useMemo(() => {
         const old = books.filter((b) => b.testament === 'old');
@@ -346,33 +431,48 @@ export default function MobileBible({ books, initial }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [emptyBible, books.length]);
 
+    useEffect(() => {
+        if (!showMarked) return;
+        void loadList();
+    }, [showMarked, loadList]);
+
+    const openMarkedVerse = (mark: BibleVerseMark) => {
+        const book = books.find((item) => item.key === mark.bookKey) ?? null;
+        if (!book) {
+            appToast('Este versículo não está disponível.', 'error');
+            return;
+        }
+        setShowMarked(false);
+        setSearch('');
+        setSearchResults([]);
+        setTestament(book.testament);
+        setFocusedVerse(mark.verse);
+        void loadChapter(book.key, mark.chapter, { scrollToReader: true, focusVerse: mark.verse });
+    };
+
     return (
         <MobileLayout>
             <Head title="Bíblia" />
 
             <div className="space-y-5">
                 <div className="space-y-2">
-                    <Link href={route('mobile.home')} className="text-sm text-zinc-500 underline dark:text-zinc-400">
-                        ← Início
-                    </Link>
-                    <div className="flex items-center justify-between gap-3">
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                            Bíblia
-                        </h1>
-                    </div>
+                    <BackLink href={route('mobile.home')} ariaLabel="Voltar para o início" />
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        Bíblia
+                    </h1>
                 </div>
 
                 <div className="space-y-3">
                     <div
                         className="-mx-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] px-1 [&::-webkit-scrollbar]:hidden"
                         role="tablist"
-                        aria-label="Testamento"
+                        aria-label="Seções da Bíblia"
                     >
                         {([
                             { value: 'old' as const, label: 'Antigo Testamento' },
                             { value: 'new' as const, label: 'Novo Testamento' },
                         ] as const).map((t) => {
-                            const active = testament === t.value;
+                            const active = !showMarked && testament === t.value;
                             return (
                                 <button
                                     key={t.value}
@@ -380,10 +480,11 @@ export default function MobileBible({ books, initial }: Props) {
                                     role="tab"
                                     aria-selected={active}
                                     onClick={() => {
+                                        setShowMarked(false);
                                         setTestament(t.value);
                                         if (selectedBook?.testament !== t.value) setSelectedBook(null);
                                     }}
-                                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                                    className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${
                                         active
                                             ? 'bg-brand-600 text-white'
                                             : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
@@ -393,7 +494,31 @@ export default function MobileBible({ books, initial }: Props) {
                                 </button>
                             );
                         })}
+                        <button
+                            type="button"
+                            role="tab"
+                            aria-selected={showMarked}
+                            onClick={() => setShowMarked(true)}
+                            className={`inline-flex shrink-0 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-semibold transition ${
+                                showMarked
+                                    ? 'bg-brand-600 text-white'
+                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'
+                            }`}
+                        >
+                            Meus versículos
+                            {markedCount > 0 ? (
+                                <span
+                                    className={`ml-2 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5 ${
+                                        showMarked ? 'bg-white text-brand-800' : 'bg-brand-600 text-white'
+                                    }`}
+                                >
+                                    {markedCount > 99 ? '99+' : markedCount}
+                                </span>
+                            ) : null}
+                        </button>
                     </div>
+
+                    {showMarked ? null : (
 
                     <div className="relative">
                         <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" aria-hidden />
@@ -416,9 +541,23 @@ export default function MobileBible({ books, initial }: Props) {
                             </button>
                         ) : null}
                     </div>
+                    )}
                 </div>
 
-                {emptyBible ? (
+                {showMarked ? (
+                    <BibleMarkedVersesPanel
+                        marks={marks}
+                        status={listStatus}
+                        onOpen={openMarkedVerse}
+                        onRemove={(group) => {
+                            void (async () => {
+                                for (const mark of group.marks) {
+                                    await toggle(mark);
+                                }
+                            })();
+                        }}
+                    />
+                ) : emptyBible ? (
                     <div
                         role="alert"
                         className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-100"
@@ -559,10 +698,36 @@ export default function MobileBible({ books, initial }: Props) {
                                                     : ''
                                             }`}
                                         >
-                                            <div className="w-8 shrink-0">
-                                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 text-[12px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                                                    {v.verse}
-                                                </span>
+                                            <div className="-my-1.5 w-8 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    aria-pressed={isMarked(selectedBook.key, chapter, v.verse)}
+                                                    aria-label={
+                                                        isMarked(selectedBook.key, chapter, v.verse)
+                                                            ? `Desmarcar versículo ${v.verse}`
+                                                            : `Marcar versículo ${v.verse}`
+                                                    }
+                                                    onClick={() => {
+                                                        void toggle({
+                                                            bookKey: selectedBook.key,
+                                                            bookName: selectedBook.name,
+                                                            chapter,
+                                                            verse: v.verse,
+                                                            text: v.text,
+                                                        });
+                                                    }}
+                                                    className="-ml-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"
+                                                >
+                                                    <span
+                                                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-bold ${
+                                                            isMarked(selectedBook.key, chapter, v.verse)
+                                                                ? 'bg-brand-600 text-white'
+                                                                : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'
+                                                        }`}
+                                                    >
+                                                        {v.verse}
+                                                    </span>
+                                                </button>
                                             </div>
                                             <p className="text-[15px] leading-relaxed text-zinc-900 dark:text-zinc-100">
                                                 {v.text}

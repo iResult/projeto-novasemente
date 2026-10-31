@@ -64,6 +64,39 @@ class FaleComNovaSementeTest extends TestCase
         $this->assertSame('Paulo', $study->memberDisplayName());
     }
 
+    public function test_guest_can_send_another_request_and_logged_in_member_opens_the_hub(): void
+    {
+        $this->seed(ChurchSeeder::class);
+        $church = Church::query()->firstOrFail();
+
+        $this->get(route('mobile.fale.other'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Mobile/Solicitations/GuestRequest')
+                ->where('title', 'Outro pedido'));
+
+        $this->post(route('mobile.fale.other.store'), [
+            'message' => 'Quero conversar sobre outra coisa.',
+            'guest_name' => 'Rita',
+            'email' => 'rita@example.com',
+            'phone' => '11944443333',
+        ])->assertRedirect(route('mobile.fale.other'))
+            ->assertSessionHas('success');
+
+        $other = ChurchSolicitation::query()->where('type', 'other')->first();
+        $this->assertNotNull($other);
+        $this->assertSame($church->id, $other->church_id);
+        $this->assertNull($other->user_id);
+        $this->assertSame('Rita', $other->memberDisplayName());
+        $this->assertSame('rita@example.com', $other->memberEmail());
+
+        $member = User::factory()->create(['church_id' => $church->id]);
+
+        $this->actingAs($member)
+            ->get(route('mobile.fale.other'))
+            ->assertRedirect(route('mobile.solicitations.hub', ['novo' => 1, 'tipo' => 'other']));
+    }
+
     public function test_logged_in_member_is_sent_to_the_account_hub(): void
     {
         $this->seed(ChurchSeeder::class);

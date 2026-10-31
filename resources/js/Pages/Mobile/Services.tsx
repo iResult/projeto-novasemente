@@ -1,7 +1,8 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import WeeklyProgramSchedule, { type WeeklyProgramScheduleItem } from '@/Components/WeeklyProgramSchedule';
+import BackLink from '@/Components/BackLink';
 
 interface ServiceItem {
     id: number;
@@ -33,12 +34,7 @@ export default function MobileServices({ churchName, services, weeklyProgram = [
             <Head title="Horários" />
             <div className="mx-auto w-full max-w-lg space-y-8 pb-6 sm:max-w-xl">
                 <header>
-                    <Link
-                        href={route('mobile.conheca')}
-                        className="cursor-pointer text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                    >
-                        ← Conheça a Nova Semente
-                    </Link>
+                    <BackLink href={route('mobile.conheca')} ariaLabel="Voltar para Conheça a Nova Semente" />
                     <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
                         Horários
                     </h1>

@@ -1,7 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head, usePage } from '@inertiajs/react';
 import {
-    ArrowLeftIcon,
     ArrowTopRightOnSquareIcon,
     DocumentTextIcon,
     XMarkIcon,
@@ -136,13 +136,7 @@ export default function MobileLibraryShow({ book }: Props) {
                     ) : (
                         <>
                             <div className="mb-3 px-4 sm:px-0">
-                                <Link
-                                    href={route('mobile.biblioteca')}
-                                    className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-                                >
-                                    <ArrowLeftIcon className="h-4 w-4" aria-hidden />
-                                    Voltar à biblioteca
-                                </Link>
+                                <BackLink href={route('mobile.biblioteca')} ariaLabel="Voltar para a biblioteca" />
                             </div>
                             <PdfReflowReader
                                 title={book.title}
@@ -216,13 +210,7 @@ export default function MobileLibraryShow({ book }: Props) {
             <Head title={book.title} />
 
             <div className="space-y-4">
-                <Link
-                    href={route('mobile.biblioteca')}
-                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                >
-                    <ArrowLeftIcon className="w-4 h-4" aria-hidden />
-                    Voltar à biblioteca
-                </Link>
+                <BackLink href={route('mobile.biblioteca')} ariaLabel="Voltar para a biblioteca" />
 
                 <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     {cover ? (

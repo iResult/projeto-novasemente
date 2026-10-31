@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import BackLink from '@/Components/BackLink';
+import { Head } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
 /** Ilustração simples: pessoa à mesa / trabalhando — animação CSS reutilizável. */
@@ -51,7 +52,6 @@ interface Props {
     title: string;
     description: string;
     backHref?: string;
-    backLabel?: string;
 }
 
 /**
@@ -61,21 +61,13 @@ export default function ComingSoonPage({
     title,
     description,
     backHref,
-    backLabel = '← Voltar',
     children,
 }: PropsWithChildren<Props>) {
     return (
         <>
             <Head title={title} />
             <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center space-y-6 px-4 py-10 text-center">
-                {backHref && (
-                    <Link
-                        href={backHref}
-                        className="self-start text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                    >
-                        {backLabel}
-                    </Link>
-                )}
+                {backHref ? <BackLink href={backHref} className="self-start" /> : null}
                 <WorkingIllustration />
                 <div>
                     <h1 className="text-xl font-bold text-zinc-900 dark:text-white">{title}</h1>
