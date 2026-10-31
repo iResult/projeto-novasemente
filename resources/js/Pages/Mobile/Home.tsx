@@ -16,7 +16,6 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
-    MapPinIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
     ChevronRightIcon,
@@ -29,6 +28,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
+import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
@@ -84,7 +84,6 @@ type QuickAction = {
     route?: string;
     routeParams?: Record<string, string | number>;
     featureKey?: string;
-    featureAny?: readonly string[];
     leaderOnly?: boolean;
     onClick?: () => void;
     icon: MenuIcon;
@@ -115,14 +114,6 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
-    },
-    {
-        id: 'conheca',
-        label: 'Conheça a Nova Semente',
-        subtitle: 'Quem somos, pastores e horários',
-        route: 'mobile.conheca',
-        featureAny: ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'],
-        icon: MapPinIcon,
     },
     {
         id: 'biblioteca',
@@ -381,13 +372,7 @@ export default function MobileHome({
             .map((action) =>
                 action.id === 'caixa-promessas' ? { ...action, onClick: openPromise } : action,
             )
-            .filter((action) => {
-                if (action.featureAny && action.featureAny.length > 0) {
-                    return action.featureAny.some((key) => isEnabled(key));
-                }
-
-                return !action.featureKey || isEnabled(action.featureKey);
-            })
+            .filter((action) => !action.featureKey || isEnabled(action.featureKey))
             .filter((action) => !action.leaderOnly || isMinistryLeader)
             .map((action) => ({ kind: 'action' as const, id: action.id, label: action.label, action }));
 
@@ -459,6 +444,7 @@ export default function MobileHome({
                 {sabbathBanner && !showMeditationBanner ? (
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} layout="strip" />
                 ) : null}
+                <ConhecaNovaSementeHomeCard />
                 <section aria-label="Atalhos" className="relative z-[1]">
                     <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
                         {gridItems.map((item) => {
