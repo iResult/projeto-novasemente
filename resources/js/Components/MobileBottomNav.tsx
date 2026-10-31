@@ -1,15 +1,14 @@
 import { Link } from '@inertiajs/react';
+import PrayingHandsIcon from '@/Components/PrayingHandsIcon';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
 import {
     HomeIcon as HomeOutlineIcon,
     HandRaisedIcon as HandRaisedOutlineIcon,
-    BanknotesIcon as BanknotesOutlineIcon,
     BookOpenIcon as BookOpenOutlineIcon,
 } from '@heroicons/react/24/outline';
 import {
     HomeIcon as HomeSolidIcon,
     HandRaisedIcon as HandRaisedSolidIcon,
-    BanknotesIcon as BanknotesSolidIcon,
     BookOpenIcon as BookOpenSolidIcon,
 } from '@heroicons/react/24/solid';
 import type { ComponentType, SVGProps } from 'react';
@@ -141,8 +140,8 @@ const navItems: NavItem[] = [
             'mobile.campaigns.my-donations',
             'mobile.campaigns.dispute',
         ],
-        icon: BanknotesOutlineIcon,
-        iconActive: BanknotesSolidIcon,
+        icon: PrayingHandsIcon,
+        iconActive: PrayingHandsIcon,
     },
     {
         name: 'Bíblia',

@@ -16,7 +16,6 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
-    BookOpenIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
     ClipboardDocumentListIcon,
@@ -114,14 +113,6 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
-    },
-    {
-        id: 'biblia',
-        label: 'Bíblia',
-        subtitle: 'Leitura e busca de versículos',
-        route: 'mobile.bible',
-        featureKey: 'bible',
-        icon: BookOpenIcon,
     },
     {
         id: 'biblioteca',

@@ -14,7 +14,7 @@ export const homeCardPhotoPresentation: Record<string, HomeCardPresentation> = {
         textTheme: 'light',
         gradientVariant: 'soft',
     },
-    biblia: {
+    'ano-biblico': {
         image: '/images/home-cards-pilot/biblia.jpg?v=4',
         imagePosition: 'center bottom',
         textTheme: 'light',
