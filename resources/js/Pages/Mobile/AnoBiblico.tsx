@@ -21,10 +21,17 @@ const outlineCtaClass =
 const primaryCtaSmClass =
     'inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800 active:bg-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100';
 
+type GuestReading = {
+    day: number;
+    display: string;
+    chapters: { bookKey: string; bookName: string; bookId: number; chapter: number }[];
+};
+
 type Props =
     | {
           needsLogin: true;
           installed?: boolean;
+          guestReading?: GuestReading | null;
       }
     | {
           needsLogin: false;
@@ -225,15 +232,53 @@ export default function MobileAnoBiblico(props: Props) {
                 </div>
 
                 {props.needsLogin ? (
-                    <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-                        <p className="font-semibold text-zinc-900 dark:text-white">Entre para usar o Ano Bíblico</p>
-                        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                            Para acompanhar leituras, histórico e progresso diário, faça login na sua conta.
-                        </p>
-                        <div className="mt-4">
-                            <Link href={loginRedirectHref} className={primaryCtaClass}>
-                                Fazer login
-                            </Link>
+                    <div className="space-y-4">
+                        {props.guestReading && props.guestReading.chapters.length > 0 ? (
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                                <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Leitura de hoje</div>
+                                <div className="mt-1 text-lg font-bold text-zinc-900 dark:text-white">{props.guestReading.display}</div>
+                                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Dia {props.guestReading.day} do plano de 365 dias.</p>
+                                <ul className="mt-4 space-y-2">
+                                    {props.guestReading.chapters.map((chapter) => (
+                                        <li key={`${chapter.bookId}-${chapter.chapter}`}>
+                                            <Link
+                                                href={route('mobile.bible', {
+                                                    book: chapter.bookKey,
+                                                    chapter: chapter.chapter,
+                                                    from: 'ano-biblico',
+                                                })}
+                                                className="flex cursor-pointer items-center justify-between rounded-xl bg-zinc-50 px-3 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 dark:bg-zinc-800/60 dark:text-white dark:hover:bg-zinc-800"
+                                            >
+                                                <span>
+                                                    {chapter.bookName} {chapter.chapter}
+                                                </span>
+                                                <BookOpenIcon className="h-5 w-5 shrink-0 text-zinc-400" aria-hidden />
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                                <p className="font-semibold text-zinc-900 dark:text-white">Leitura do dia indisponível</p>
+                                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                                    O plano de leitura ainda não está pronto nesta igreja. A Bíblia continua aberta para consulta.
+                                </p>
+                                <Link href={route('mobile.bible')} className={`${primaryCtaClass} mt-4`}>
+                                    Abrir Bíblia
+                                </Link>
+                            </div>
+                        )}
+                        <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                            <p className="font-semibold text-zinc-900 dark:text-white">Progresso fica na sua conta</p>
+                            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                                Histórico, desafios e marcar o dia como lido pedem login. A leitura de hoje já está acima.
+                            </p>
+                            <div className="mt-4">
+                                <Link href={loginRedirectHref} className={primaryCtaClass}>
+                                    Entrar para acompanhar
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 ) : props.installed === false ? (

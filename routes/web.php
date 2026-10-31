@@ -55,7 +55,6 @@ use App\Http\Controllers\MobileNsWhatsLeaderController;
 use App\Http\Controllers\MobilePastoralAppointmentController;
 use App\Http\Controllers\MobilePromiseBoxController;
 use App\Http\Controllers\MobileSupportController;
-use App\Http\Controllers\MoreController;
 use App\Http\Controllers\MusicaController;
 use App\Http\Controllers\MyMinistryVolunteersController;
 use App\Http\Controllers\NewsController;
@@ -146,7 +145,14 @@ Route::post('/enquete/v/{token}', [PollPublicVoteController::class, 'store'])
     ->middleware('throttle:20,1')
     ->name('polls.vote.store');
 
-Route::get('/mais', [MoreController::class, 'index'])->name('more.index');
+// Enquetes no app: visitante responde sem conta (1 voto por IP).
+Route::get('/mobile/enquetes', [PollMobileController::class, 'index'])->name('mobile.polls.index');
+Route::get('/mobile/enquetes/{poll}', [PollMobileController::class, 'show'])->name('mobile.polls.show');
+Route::post('/mobile/enquetes/{poll}/votar', [PollMobileController::class, 'vote'])
+    ->middleware('throttle:30,1')
+    ->name('mobile.polls.vote');
+
+Route::get('/mais', fn () => redirect()->route('mobile.home'))->name('more.index');
 Route::get('/varios/escala', [VariosController::class, 'schedule'])->name('varios.schedule');
 Route::get('/varios/servicos', [VariosController::class, 'services'])->name('varios.services');
 Route::get('/varios/classe-comecos', [VariosController::class, 'classeComecos'])->name('varios.classe-comecos');
@@ -210,6 +216,18 @@ Route::get('/mobile/publicacoes/{feedId}/comentarios', [PublicationEngagementCon
     ->middleware('throttle:60,1')
     ->where('feedId', '[A-Za-z0-9_-]+')
     ->name('mobile.publications.comments.index');
+// Curtir e comentar: enquete aceita visitante; os demais tipos continuam exigindo conta no controller.
+Route::post('/mobile/publicacoes/{feedId}/like', [PublicationEngagementController::class, 'toggleLike'])
+    ->middleware('throttle:60,1')
+    ->where('feedId', '[A-Za-z0-9_-]+')
+    ->name('mobile.publications.like');
+Route::post('/mobile/publicacoes/{feedId}/comentarios', [PublicationEngagementController::class, 'storeComment'])
+    ->middleware('throttle:30,1')
+    ->where('feedId', '[A-Za-z0-9_-]+')
+    ->name('mobile.publications.comments.store');
+Route::delete('/mobile/publicacoes/comentarios/{comment}', [PublicationEngagementController::class, 'destroyOwnComment'])
+    ->middleware('throttle:30,1')
+    ->name('mobile.publications.comments.destroy');
 Route::get('/mobile/comunidade', [CommunityController::class, 'mobile'])->name('mobile.communities');
 Route::get('/mobile/missao', [MissionHubController::class, 'index'])->name('mobile.mission');
 Route::get('/mobile/missao/home', [MissionHubController::class, 'home'])->name('mobile.mission.home');
@@ -221,8 +239,32 @@ Route::post('/mobile/missao/inscricao', [MissionTripRegistrationController::clas
 Route::get('/mobile/missao/eventos', [MissionHubController::class, 'events'])->name('mobile.mission.events');
 Route::get('/mobile/missao/recados', [MissionHubController::class, 'messages'])->name('mobile.mission.messages');
 Route::post('/mobile/missao/recados', [MissionHubController::class, 'storeMessage'])
-    ->middleware(['auth', 'throttle:30,1'])
+    ->middleware('throttle:30,1')
     ->name('mobile.mission.messages.store');
+Route::get('/mobile/conviva', [ConvivaCheckinController::class, 'show'])->name('mobile.conviva.checkin');
+Route::get('/mobile/talentos', [TalentConnectionController::class, 'index'])->name('mobile.talents.index');
+Route::get('/mobile/talentos/{talentListing}', [TalentConnectionController::class, 'show'])
+    ->whereNumber('talentListing')
+    ->name('mobile.talents.show');
+Route::get('/mobile/doar-talentos', [SharedTalentController::class, 'index'])->name('mobile.shared-talents.index');
+Route::get('/mobile/doar-talentos/{sharedTalentListing}', [SharedTalentController::class, 'show'])
+    ->whereNumber('sharedTalentListing')
+    ->name('mobile.shared-talents.show');
+Route::post('/mobile/campanhas/{donationCampaign}/receipt', [DonationCampaignMobileController::class, 'uploadReceipt'])
+    ->middleware('throttle:20,1')
+    ->name('mobile.campaigns.receipt');
+Route::post('/mobile/campanhas/{donationCampaign}/donate', [DonationCampaignMobileController::class, 'confirmDonation'])
+    ->middleware('throttle:20,1')
+    ->name('mobile.campaigns.donate');
+Route::post('/mobile/doacoes/{charityCampaign}/receipt', [CharityCampaignMobileController::class, 'uploadReceipt'])
+    ->middleware('throttle:20,1')
+    ->name('mobile.donations.receipt');
+Route::post('/mobile/doacoes/{charityCampaign}/donate', [CharityCampaignMobileController::class, 'confirmDonation'])
+    ->middleware('throttle:20,1')
+    ->name('mobile.donations.donate');
+Route::post('/mobile/doacoes/{charityCampaign}/itens/promessa', [CharityCampaignMobileController::class, 'pledgeItemDonation'])
+    ->middleware('throttle:20,1')
+    ->name('mobile.donations.items.pledge');
 Route::get('/mobile/missao/quem-somos', [MissionHubController::class, 'about'])->name('mobile.mission.about');
 Route::get('/mobile/missao/mural', [MissionHubController::class, 'wall'])->name('mobile.mission.wall');
 Route::get('/mobile/missao/mural/{missionWallItem}', [MissionHubController::class, 'wallShow'])->name('mobile.mission.wall.show');
@@ -298,8 +340,9 @@ Route::post('/mobile/ano-biblico/desafios/recalcular-atual', [MobileAnoBiblicoCo
     ->name('mobile.ano-biblico.challenges.recalculate');
 Route::get('/mobile/sobre-o-app', [MobileController::class, 'sobreOApp'])->name('mobile.sobre-o-app');
 Route::get('/mobile/conheca-a-nova-semente', [MobileController::class, 'conhecaNovaSemente'])->name('mobile.conheca');
+Route::get('/mobile/fale-com-a-nova-semente', [MobileController::class, 'faleComNovaSemente'])->name('mobile.fale');
 Route::get('/mobile/programacao-sabado', [MobileController::class, 'programacaoSabado'])->name('mobile.programacao-sabado');
-Route::middleware(['auth', 'throttle:90,1'])->group(function () {
+Route::middleware('throttle:90,1')->group(function () {
     Route::get('/mobile/acompanhar-culto', [NsTimerFollowController::class, 'show'])
         ->name('mobile.acompanhar-culto');
     Route::get('/mobile/acompanhar-culto/live', [NsTimerFollowController::class, 'live'])
@@ -391,15 +434,14 @@ Route::post('/mobile/suporte', [MobileSupportController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('mobile.support.store');
 Route::get('/mobile/suporte/ticket/{token}/mensagens', [MobileSupportController::class, 'ticketMessages'])
-    ->middleware('auth')
     ->name('mobile.support.ticket.messages');
 Route::get('/mobile/suporte/ticket/{token}', [MobileSupportController::class, 'ticket'])
     ->name('mobile.support.ticket');
 Route::post('/mobile/suporte/ticket/{token}/messages', [MobileSupportController::class, 'sendMessage'])
-    ->middleware('auth')
+    ->middleware('throttle:30,1')
     ->name('mobile.support.messages.store');
 Route::patch('/mobile/suporte/ticket/{token}/close', [MobileSupportController::class, 'closeTicket'])
-    ->middleware('auth')
+    ->middleware('throttle:20,1')
     ->name('mobile.support.close');
 Route::post('/mobile/suporte/ticket/{token}/ocultar', [MobileSupportController::class, 'hideFromUser'])
     ->middleware('auth')
@@ -462,8 +504,25 @@ Route::post('/voluntario/convite/{token}/recusar', [VolunteerMinistryInvitationP
     ->middleware('throttle:20,1')
     ->name('volunteers.ministry-invite.decline');
 
-// Batismo: visitantes veem tela de explicação + atalhos; logados seguem para o hub.
+// Batismo: visitante abre direto o formulário; logado segue para a lista.
 Route::get('/mobile/batismo', [MobileChurchSolicitationController::class, 'baptismHub'])->name('mobile.baptism');
+Route::post('/mobile/batismo', [MobileChurchSolicitationController::class, 'storeGuestBaptism'])
+    ->middleware('throttle:10,1')
+    ->name('mobile.baptism.store');
+
+// Fale com a Nova Semente: visitante envia o pedido; logado abre o hub da conta.
+Route::get('/mobile/apresentacao-de-bebe', [MobileChurchSolicitationController::class, 'guestBaby'])->name('mobile.fale.baby');
+Route::post('/mobile/apresentacao-de-bebe', [MobileChurchSolicitationController::class, 'storeGuestBaby'])
+    ->middleware('throttle:10,1')
+    ->name('mobile.fale.baby.store');
+Route::get('/mobile/estudo-biblico', [MobileChurchSolicitationController::class, 'guestBible'])->name('mobile.fale.bible');
+Route::post('/mobile/estudo-biblico', [MobileChurchSolicitationController::class, 'storeGuestBible'])
+    ->middleware('throttle:10,1')
+    ->name('mobile.fale.bible.store');
+Route::get('/mobile/agenda-com-o-pastor', [MobileChurchSolicitationController::class, 'guestPastoral'])->name('mobile.fale.pastor');
+Route::post('/mobile/agenda-com-o-pastor', [MobileChurchSolicitationController::class, 'storeGuestPastoral'])
+    ->middleware('throttle:10,1')
+    ->name('mobile.fale.pastor.store');
 
 // Solicitações: visitantes veem tela de explicação + atalhos; logados seguem para o hub.
 Route::get('/mobile/solicitacoes', [MobileChurchSolicitationController::class, 'hub'])->name('mobile.solicitations.hub');
@@ -485,18 +544,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/mobile/biblioteca/marcadores', [MobileController::class, 'toggleLibraryBookBookmark'])
         ->middleware('throttle:60,1')
         ->name('mobile.biblioteca.bookmarks.toggle');
-
-    Route::post('/mobile/publicacoes/{feedId}/like', [PublicationEngagementController::class, 'toggleLike'])
-        ->middleware('throttle:60,1')
-        ->where('feedId', '[A-Za-z0-9_-]+')
-        ->name('mobile.publications.like');
-    Route::post('/mobile/publicacoes/{feedId}/comentarios', [PublicationEngagementController::class, 'storeComment'])
-        ->middleware('throttle:30,1')
-        ->where('feedId', '[A-Za-z0-9_-]+')
-        ->name('mobile.publications.comments.store');
-    Route::delete('/mobile/publicacoes/comentarios/{comment}', [PublicationEngagementController::class, 'destroyOwnComment'])
-        ->middleware('throttle:30,1')
-        ->name('mobile.publications.comments.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -846,20 +893,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/events/{event}/active', [EventController::class, 'setActive'])->name('events.active')->middleware('permission:events.manage');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy')->middleware('permission:events.manage');
     /** admin|super_admin: hasAnyRole; resto: permissão culto.manage (evita 403 quando Gate/BD ficam desalinhados). */
-    Route::post('/mobile/campanhas/{donationCampaign}/receipt', [DonationCampaignMobileController::class, 'uploadReceipt'])
-        ->name('mobile.campaigns.receipt');
-    Route::post('/mobile/campanhas/{donationCampaign}/donate', [DonationCampaignMobileController::class, 'confirmDonation'])
-        ->name('mobile.campaigns.donate');
     Route::get('/mobile/minhas-doacoes', [DonationCampaignMobileController::class, 'myDonations'])
         ->name('mobile.campaigns.my-donations');
     Route::post('/mobile/minhas-doacoes/{campaignDonation}/reclamacao', [DonationCampaignMobileController::class, 'submitDispute'])
         ->name('mobile.campaigns.dispute');
-    Route::post('/mobile/doacoes/{charityCampaign}/receipt', [CharityCampaignMobileController::class, 'uploadReceipt'])
-        ->name('mobile.donations.receipt');
-    Route::post('/mobile/doacoes/{charityCampaign}/donate', [CharityCampaignMobileController::class, 'confirmDonation'])
-        ->name('mobile.donations.donate');
-    Route::post('/mobile/doacoes/{charityCampaign}/itens/promessa', [CharityCampaignMobileController::class, 'pledgeItemDonation'])
-        ->name('mobile.donations.items.pledge');
     Route::get('/mobile/doacoes/minhas', [CharityCampaignMobileController::class, 'myDonations'])
         ->name('mobile.donations.my-donations');
     Route::post('/mobile/doacoes/minhas/{charityDonation}/reclamacao', [CharityCampaignMobileController::class, 'submitDispute'])
@@ -1195,43 +1232,30 @@ Route::middleware('auth')->group(function () {
         ->name('support.close')
         ->middleware('role:super_admin');
 
-    // Enquetes (membro — login obrigatório)
-    Route::get('/mobile/enquetes', [PollMobileController::class, 'index'])->name('mobile.polls.index');
-    Route::get('/mobile/enquetes/{poll}', [PollMobileController::class, 'show'])->name('mobile.polls.show');
-    Route::post('/mobile/enquetes/{poll}/votar', [PollMobileController::class, 'vote'])
-        ->middleware('throttle:30,1')
-        ->name('mobile.polls.vote');
-
-    // CONVIVA — check-in do aluno (sábado)
-    Route::get('/mobile/conviva', [ConvivaCheckinController::class, 'show'])
-        ->name('mobile.conviva.checkin');
+    // CONVIVA — a lista de salas é pública; o check-in continua na conta.
     Route::post('/mobile/conviva/checkin', [ConvivaCheckinController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('mobile.conviva.checkin.store');
 
-    // Solicitações (membro — requer login para enviar/acompanhar)
-    Route::get('/mobile/talentos', [TalentConnectionController::class, 'index'])->name('mobile.talents.index');
+    // Central de Serviços e Doar Talentos: a vitrine é pública; publicar e conversar exigem conta.
     Route::get('/mobile/talentos/minhas-publicacoes', [TalentConnectionController::class, 'myListings'])->name('mobile.talents.my-listings');
     Route::get('/mobile/talentos/meus-interesses', [TalentConnectionController::class, 'myInterests'])->name('mobile.talents.my-interests');
     Route::post('/mobile/talentos', [TalentConnectionController::class, 'store'])->name('mobile.talents.store');
     Route::put('/mobile/talentos/{talentListing}', [TalentConnectionController::class, 'update'])->name('mobile.talents.update');
     Route::patch('/mobile/talentos/{talentListing}/status', [TalentConnectionController::class, 'updateStatus'])->name('mobile.talents.status');
     Route::delete('/mobile/talentos/{talentListing}', [TalentConnectionController::class, 'destroy'])->name('mobile.talents.destroy');
-    Route::get('/mobile/talentos/{talentListing}', [TalentConnectionController::class, 'show'])->name('mobile.talents.show');
     Route::post('/mobile/talentos/{talentListing}/interesse', [TalentConnectionController::class, 'expressInterest'])->name('mobile.talents.interest');
     Route::post('/mobile/talentos/{talentListing}/denuncia', [TalentConnectionController::class, 'storeReport'])->name('mobile.talents.report');
     Route::patch('/mobile/talentos/interesses/{talentInterest}/status', [TalentConnectionController::class, 'updateInterestStatus'])->name('mobile.talents.interest.status');
     Route::post('/mobile/talentos/interesses/{talentInterest}/mensagens', [TalentConnectionController::class, 'storeMessage'])->name('mobile.talents.interest.messages');
     Route::post('/mobile/talentos/interesses/{talentInterest}/avaliacao', [TalentConnectionController::class, 'storeReview'])->name('mobile.talents.interest.review');
 
-    Route::get('/mobile/doar-talentos', [SharedTalentController::class, 'index'])->name('mobile.shared-talents.index');
     Route::get('/mobile/doar-talentos/minhas-publicacoes', [SharedTalentController::class, 'myListings'])->name('mobile.shared-talents.my-listings');
     Route::get('/mobile/doar-talentos/minhas-inscricoes', [SharedTalentController::class, 'myEnrollments'])->name('mobile.shared-talents.my-enrollments');
     Route::get('/mobile/doar-talentos/participantes', [SharedTalentController::class, 'enrollments'])->name('mobile.shared-talents.enrollments');
     Route::post('/mobile/doar-talentos', [SharedTalentController::class, 'store'])->name('mobile.shared-talents.store');
     Route::put('/mobile/doar-talentos/{sharedTalentListing}', [SharedTalentController::class, 'update'])->name('mobile.shared-talents.update');
     Route::patch('/mobile/doar-talentos/{sharedTalentListing}/status', [SharedTalentController::class, 'updateStatus'])->name('mobile.shared-talents.status');
-    Route::get('/mobile/doar-talentos/{sharedTalentListing}', [SharedTalentController::class, 'show'])->name('mobile.shared-talents.show');
     Route::post('/mobile/doar-talentos/{sharedTalentListing}/inscricao', [SharedTalentController::class, 'enroll'])->name('mobile.shared-talents.enroll');
     Route::post('/mobile/doar-talentos/{sharedTalentListing}/denuncia', [SharedTalentController::class, 'storeReport'])->name('mobile.shared-talents.report');
     Route::post('/mobile/doar-talentos/{sharedTalentListing}/comunicados', [SharedTalentController::class, 'storeAnnouncement'])->name('mobile.shared-talents.announcements');

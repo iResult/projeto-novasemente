@@ -153,17 +153,9 @@ export default function MobileSupport({
                                 </span>
                             ) : null}
                             <span className="mt-1 block text-zinc-600 dark:text-zinc-400">
-                                Relate um problema, envie uma sugestão ou deixe seu elogio.
+                                Relate um problema, envie uma sugestão ou deixe seu elogio. Dá para acompanhar a
+                                conversa nesta tela sem entrar na conta.
                             </span>
-                            {!isAuthenticated ? (
-                                <span className="mt-2 block text-xs text-amber-800 dark:text-amber-200/90">
-                                    Pode enviar sem login; o chat completo fica disponível após entrar na conta.
-                                </span>
-                            ) : (
-                                <span className="mt-2 block text-xs text-zinc-500 dark:text-zinc-400">
-                                    Com login, você acompanha seus chamados e conversa com a equipe de suporte.
-                                </span>
-                            )}
                         </>
                     }
                     actions={<AddButton variant="label" onClick={openCreateModal} title="Novo chamado de suporte">Novo chamado</AddButton>}

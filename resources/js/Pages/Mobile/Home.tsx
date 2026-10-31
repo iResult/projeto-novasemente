@@ -12,12 +12,12 @@ import {
     GiftIcon,
     GlobeAltIcon,
     HeartIcon,
+    LifebuoyIcon,
     MusicalNoteIcon,
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
     ChartBarIcon,
-    ChatBubbleLeftRightIcon,
     ChevronRightIcon,
     ClipboardDocumentListIcon,
     DevicePhoneMobileIcon,
@@ -27,8 +27,8 @@ import {
     UserPlusIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
-import DropletIcon from '@/Components/Mobile/DropletIcon';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
+import FaleComNovaSementeHomeCard from '@/Components/Mobile/FaleComNovaSementeHomeCard';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
@@ -108,17 +108,9 @@ const homeQuickActions: QuickAction[] = [
         icon: BookmarkSquareIcon,
     },
     {
-        id: 'batismo',
-        label: 'Batismo',
-        subtitle: 'Ainda não é batizado? Faça parte da família NS',
-        route: 'mobile.baptism',
-        featureKey: 'baptism',
-        icon: DropletIcon,
-    },
-    {
         id: 'biblioteca',
         label: 'Biblioteca',
-        subtitle: 'Livros e PDFs para leitura e download',
+        subtitle: 'Livros, revistas, lição, meditação e Ellen G. White',
         route: 'mobile.biblioteca',
         featureKey: 'library',
         icon: RectangleStackIcon,
@@ -236,14 +228,6 @@ const homeQuickActions: QuickAction[] = [
         icon: MusicalNoteIcon,
     },
     {
-        id: 'ns-whats',
-        label: 'NS Conecta',
-        subtitle: 'Converse com departamentos, líderes e voluntários',
-        route: 'mobile.ns-whats.index',
-        featureKey: 'ns_whats',
-        icon: ChatBubbleLeftRightIcon,
-    },
-    {
         id: 'revista-adventista',
         label: 'Revista Adventista',
         subtitle: 'Artigos, editoriais e colunas da Revista Adventista',
@@ -322,6 +306,9 @@ export default function MobileHome({
 
     const { isEnabled } = useAppFeatures();
     const showMeditationBanner = Boolean(meditationBanner) && isEnabled('devotional');
+    const showSupport = isEnabled('support');
+    const homeFooterLinkClass =
+        'flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-2xl bg-white px-3 py-2 text-left shadow-sm ring-1 ring-zinc-200/80 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/70';
 
     const canBookmark = Boolean(user);
 
@@ -376,8 +363,8 @@ export default function MobileHome({
             .filter((action) => !action.leaderOnly || isMinistryLeader)
             .map((action) => ({ kind: 'action' as const, id: action.id, label: action.label, action }));
 
-        return arrangeHomeCardMosaic(actions);
-    }, [isEnabled, isMinistryLeader]);
+        return arrangeHomeCardMosaic(actions, bookmarks);
+    }, [bookmarks, isEnabled, isMinistryLeader]);
 
     useEffect(() => {
         if (!showPostRegistrationBanner || typeof window === 'undefined') {
@@ -444,13 +431,14 @@ export default function MobileHome({
                 {sabbathBanner && !showMeditationBanner ? (
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} layout="strip" />
                 ) : null}
-                <ConhecaNovaSementeHomeCard />
+                <div className="grid grid-cols-2 items-stretch gap-3 [&>:only-child]:col-span-2">
+                    <ConhecaNovaSementeHomeCard />
+                    <FaleComNovaSementeHomeCard pendingCount={nsWhatsPendingReply} />
+                </div>
                 <section aria-label="Atalhos" className="relative z-[1]">
                     <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
                         {gridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
-                            const pendingBadge =
-                                id === 'ns-whats' && nsWhatsPendingReply > 0 ? nsWhatsPendingReply : null;
                             const isSpotlightCard = Boolean(
                                 (Array.isArray(moduleSpotlight?.home_card_ids) &&
                                     moduleSpotlight.home_card_ids.includes(id)) ||
@@ -479,7 +467,6 @@ export default function MobileHome({
                                     href={href}
                                     onClick={onClick}
                                     spotlight={isSpotlightCard}
-                                    pendingCount={pendingBadge}
                                     layout={presentation ? 'photo' : 'plain'}
                                     presentation={presentation}
                                     bookmark={
@@ -499,16 +486,24 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <Link
-                    href={route('mobile.sobre-o-app')}
-                    className="mx-auto flex min-h-11 w-full max-w-lg cursor-pointer items-center gap-2.5 rounded-2xl bg-white px-3.5 py-2 text-left shadow-sm ring-1 ring-zinc-200/80 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/70"
-                >
-                    <DevicePhoneMobileIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                        Sobre o APP
-                    </span>
-                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" aria-hidden strokeWidth={1.75} />
-                </Link>
+                <div className="mx-auto mt-8 grid w-full max-w-lg grid-cols-2 gap-2 [&>:only-child]:col-span-2">
+                    <Link href={route('mobile.sobre-o-app')} className={homeFooterLinkClass}>
+                        <DevicePhoneMobileIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                            Sobre o APP
+                        </span>
+                        <ChevronRightIcon className="hidden h-4 w-4 shrink-0 text-zinc-300 sm:block dark:text-zinc-600" aria-hidden strokeWidth={1.75} />
+                    </Link>
+                    {showSupport ? (
+                        <Link href={route('mobile.support.index')} className={homeFooterLinkClass}>
+                            <LifebuoyIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                                Suporte do App
+                            </span>
+                            <ChevronRightIcon className="hidden h-4 w-4 shrink-0 text-zinc-300 sm:block dark:text-zinc-600" aria-hidden strokeWidth={1.75} />
+                        </Link>
+                    ) : null}
+                </div>
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>

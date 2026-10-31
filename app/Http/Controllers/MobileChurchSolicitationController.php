@@ -62,6 +62,19 @@ class MobileChurchSolicitationController extends Controller
         return Church::resolveWorkingId($request);
     }
 
+    /** Igreja em contexto, ou a primeira ativa quando o visitante ainda não escolheu. */
+    private function guestChurchId(Request $request): ?int
+    {
+        $churchId = $this->currentChurchId($request);
+        if ($churchId !== null) {
+            return $churchId;
+        }
+
+        $fallback = Church::query()->orderByDesc('active')->orderBy('name')->value('id');
+
+        return $fallback !== null ? (int) $fallback : null;
+    }
+
     public static function typeLabel(string $type): string
     {
         return match ($type) {
@@ -146,7 +159,7 @@ class MobileChurchSolicitationController extends Controller
     }
 
     /**
-     * @return array{start: \Carbon\Carbon, modality: string}
+     * @return array{start: Carbon, modality: string}
      */
     private static function resolvePastoralVisitSlot(
         int $churchId,
@@ -273,10 +286,9 @@ class MobileChurchSolicitationController extends Controller
         $user = $request->user();
 
         if ($user === null) {
-            return Inertia::render('Mobile/Solicitations/BaptismGuest', [
-                'registerUrl' => route('register'),
-                'redirectAfterLogin' => route('mobile.baptism', [], false),
-                'redirectAfterLoginStudy' => route('mobile.solicitations.create', ['type' => 'bible_study'], false),
+            return Inertia::render('Mobile/Solicitations/BaptismRequest', [
+                'storeUrl' => route('mobile.baptism.store'),
+                'pastorOptions' => SolicitationAssignees::pastorOptions($this->guestChurchId($request)),
             ]);
         }
 
@@ -331,6 +343,222 @@ class MobileChurchSolicitationController extends Controller
             'hideConversationReturnTo' => 'baptism_hub',
             ...self::contactFormDefaults($user),
         ]);
+    }
+
+    /**
+     * Pedido de batismo de quem não está logado: grava o contato e não devolve lista nem ficha.
+     */
+    public function storeGuestBaptism(Request $request): RedirectResponse
+    {
+        return $this->storeGuestSolicitation($request, 'baptism', 'mobile.baptism');
+    }
+
+    public function guestBaby(Request $request): Response|RedirectResponse
+    {
+        return $this->guestTypedForm(
+            $request,
+            'baby_presentation',
+            'mobile.fale.baby.store',
+            'Apresentação de bebê',
+            'Peça a apresentação de uma criança no culto. Dá para enviar sem ter conta no app.',
+        );
+    }
+
+    public function storeGuestBaby(Request $request): RedirectResponse
+    {
+        return $this->storeGuestSolicitation($request, 'baby_presentation', 'mobile.fale.baby');
+    }
+
+    public function guestBible(Request $request): Response|RedirectResponse
+    {
+        return $this->guestTypedForm(
+            $request,
+            'bible_study',
+            'mobile.fale.bible.store',
+            'Pedido de Estudo Bíblico',
+            'Peça para estudar a Bíblia com alguém da igreja. Dá para enviar sem ter conta no app.',
+        );
+    }
+
+    public function storeGuestBible(Request $request): RedirectResponse
+    {
+        return $this->storeGuestSolicitation($request, 'bible_study', 'mobile.fale.bible');
+    }
+
+    public function guestPastoral(Request $request): Response|RedirectResponse
+    {
+        if ($request->user() !== null) {
+            return redirect()->route('mobile.solicitations.hub', ['novo' => 1, 'tipo' => 'pastoral']);
+        }
+
+        $churchId = $this->guestChurchId($request);
+
+        return Inertia::render('Mobile/Solicitations/GuestPastoralRequest', [
+            'pastors' => $churchId !== null ? PastoralBookingInertiaProps::pastorsWithSlots($churchId) : [],
+            'storeUrl' => route('mobile.fale.pastor.store'),
+        ]);
+    }
+
+    public function storeGuestPastoral(Request $request): RedirectResponse
+    {
+        abort_if($request->user() !== null, 404);
+
+        $churchId = $this->guestChurchId($request);
+        abort_unless($churchId, 404);
+
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email', ''))),
+            'phone' => trim((string) $request->input('phone', '')),
+            'guest_name' => trim(preg_replace('/\s+/u', ' ', (string) $request->input('guest_name', '')) ?? ''),
+            'subject' => trim((string) $request->input('subject', '')),
+            'notes' => trim((string) $request->input('notes', '')),
+        ]);
+
+        SolicitationAssignees::normalizeAssignmentRequest($request);
+
+        $valid = $request->validate([
+            'guest_name' => ['required', 'string', 'min:2', 'max:80'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'assigned_pastor_id' => ['required', 'integer', Rule::exists('pastors', 'id')->where('church_id', $churchId)],
+            'preferred_start' => ['required', 'string', 'max:64'],
+            'preferred_modality' => ['nullable', 'string', Rule::in(['presential', 'online'])],
+            'subject' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+        ], [
+            'guest_name.required' => 'Informe seu nome ou apelido.',
+            'guest_name.min' => 'Use pelo menos 2 letras no nome ou apelido.',
+            'email.required' => 'Informe um e-mail de contato.',
+            'email.email' => 'Informe um endereço de e-mail válido.',
+            'phone.required' => 'Informe um telefone de contato.',
+            'assigned_pastor_id.required' => 'Selecione o pastor.',
+            'assigned_pastor_id.exists' => 'O pastor indicado não é válido para esta igreja.',
+            'preferred_start.required' => 'Selecione um dos horários disponíveis.',
+        ]);
+
+        $resolved = self::resolvePastoralVisitSlot(
+            $churchId,
+            (int) $valid['assigned_pastor_id'],
+            (string) $valid['preferred_start'],
+            $valid['preferred_modality'] ?? null,
+            null,
+        );
+
+        $subject = trim((string) ($valid['subject'] ?? ''));
+        $notes = trim((string) ($valid['notes'] ?? ''));
+        $parts = array_values(array_filter([
+            $subject !== '' ? 'Assunto: '.$subject : null,
+            $notes !== '' ? $notes : null,
+        ]));
+
+        $solicitation = ChurchSolicitation::create([
+            'church_id' => $churchId,
+            'user_id' => null,
+            'type' => 'pastor_visit',
+            'status' => 'pending',
+            'subject' => $subject !== '' ? $subject : null,
+            'message' => $parts === [] ? 'Pedido de horário com o pastor.' : implode("\n\n", $parts),
+            'preferred_date' => $resolved['start']->copy()->timezone((string) config('app.timezone'))->format('Y-m-d'),
+            'assigned_pastor_id' => (int) $valid['assigned_pastor_id'],
+            'meta' => [
+                'guest_name' => $valid['guest_name'],
+                'guest_email' => $valid['email'],
+                'guest_phone' => $valid['phone'],
+                'pastoral_visit' => [
+                    'preferred_start' => $resolved['start']->toIso8601String(),
+                    'preferred_modality' => $resolved['modality'],
+                ],
+            ],
+        ]);
+
+        app(SolicitationChatNotifier::class)->notifyChurchSolicitationsHandlerOfNewRequest(
+            $solicitation,
+            $churchId,
+        );
+
+        return redirect()
+            ->route('mobile.fale.pastor')
+            ->with('success', 'Pedido enviado. A igreja entra em contato pelo e-mail ou telefone informados.');
+    }
+
+    private function guestTypedForm(
+        Request $request,
+        string $type,
+        string $storeRoute,
+        string $title,
+        string $intro,
+    ): Response|RedirectResponse {
+        if ($request->user() !== null) {
+            return redirect()->route('mobile.solicitations.hub', ['novo' => 1, 'tipo' => $type]);
+        }
+
+        return Inertia::render('Mobile/Solicitations/GuestRequest', [
+            'title' => $title,
+            'intro' => $intro,
+            'storeUrl' => route($storeRoute),
+            'pastorOptions' => SolicitationAssignees::pastorOptions($this->guestChurchId($request)),
+        ]);
+    }
+
+    /**
+     * Pedido de visitante: grava o contato e não devolve lista nem ficha.
+     */
+    private function storeGuestSolicitation(Request $request, string $type, string $redirectRoute): RedirectResponse
+    {
+        abort_if($request->user() !== null, 404);
+        abort_unless(in_array($type, ['baptism', 'baby_presentation', 'bible_study'], true), 404);
+
+        $effectiveChurchId = $this->guestChurchId($request) ?? 0;
+        SolicitationAssignees::normalizeAssignmentRequest($request);
+
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email', ''))),
+            'phone' => trim((string) $request->input('phone', '')),
+            'guest_name' => trim(preg_replace('/\s+/u', ' ', (string) $request->input('guest_name', '')) ?? ''),
+        ]);
+
+        $valid = $request->validate(array_merge([
+            'message' => ['required', 'string', 'max:5000'],
+            'guest_name' => ['required', 'string', 'min:2', 'max:80'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+        ], SolicitationAssignees::assignmentRules($effectiveChurchId ?: null)), [
+            'message.required' => 'Escreva uma mensagem.',
+            'guest_name.required' => 'Informe seu nome ou apelido.',
+            'guest_name.min' => 'Use pelo menos 2 letras no nome ou apelido.',
+            'email.required' => 'Informe um e-mail de contato.',
+            'email.email' => 'Informe um endereço de e-mail válido.',
+            'phone.required' => 'Informe um telefone de contato.',
+        ]);
+
+        $message = trim((string) $valid['message']);
+        $pastorId = $valid['assigned_pastor_id'] ?? null;
+
+        $solicitation = ChurchSolicitation::create([
+            'church_id' => $effectiveChurchId ?: null,
+            'user_id' => null,
+            'type' => $type,
+            'status' => BaptismSolicitationStatus::PENDING,
+            'message' => $message,
+            'preferred_date' => $valid['preferred_date'] ?? null,
+            'assigned_pastor_id' => $pastorId !== null && $pastorId !== '' ? (int) $pastorId : null,
+            'meta' => [
+                'guest_name' => $valid['guest_name'],
+                'guest_email' => $valid['email'],
+                'guest_phone' => $valid['phone'],
+            ],
+        ]);
+
+        if ($effectiveChurchId) {
+            app(SolicitationChatNotifier::class)->notifyChurchSolicitationsHandlerOfNewRequest(
+                $solicitation,
+                (int) $effectiveChurchId,
+            );
+        }
+
+        return redirect()
+            ->route($redirectRoute)
+            ->with('success', 'Pedido enviado. A igreja entra em contato pelo e-mail ou telefone informados.');
     }
 
     public function create(Request $request, string $type): Response

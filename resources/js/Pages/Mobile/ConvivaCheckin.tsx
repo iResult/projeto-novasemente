@@ -27,6 +27,7 @@ type Classmate = {
 
 interface Props {
     classes: ConvivaClassOption[];
+    canCheckIn?: boolean;
     suggestedClassId: number | null;
     isSaturday: boolean;
     checkinOpen: boolean;
@@ -106,6 +107,7 @@ function Header({ todayLabel, showDate = true }: { todayLabel: string; showDate?
 
 export default function ConvivaCheckin({
     classes,
+    canCheckIn = true,
     suggestedClassId,
     isSaturday,
     checkinOpen,
@@ -247,7 +249,14 @@ export default function ConvivaCheckin({
             <div className="mx-auto flex w-full max-w-lg flex-col gap-4">
                 <Header todayLabel={todayLabel} />
 
-                {checkinOpen ? (
+                {!canCheckIn ? (
+                    <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+                        As salas estão abertas para consulta. O check-in e a lista de colegas ficam na sua conta.{' '}
+                        <Link href={`${route('login')}?redirect=${encodeURIComponent(route('mobile.conviva.checkin'))}`} className="cursor-pointer font-semibold underline">
+                            Entrar
+                        </Link>
+                    </div>
+                ) : checkinOpen ? (
                     <div className="flex items-center gap-3 rounded-2xl bg-white px-3 py-3 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                             <CalendarDaysIcon className="h-5 w-5" />
@@ -272,6 +281,22 @@ export default function ConvivaCheckin({
                         <div className="mt-3 rounded-2xl bg-zinc-100 px-4 py-3 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300">
                             Nenhuma classe ativa no momento. Peça à secretaria para cadastrar.
                         </div>
+                    ) : !canCheckIn ? (
+                        <ul className="mt-3 flex flex-col gap-3">
+                            {classes.map((c) => (
+                                <li
+                                    key={c.id}
+                                    className="rounded-2xl bg-white px-4 py-4 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700"
+                                >
+                                    <span className="block truncate text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
+                                        {c.room_name}
+                                    </span>
+                                    {c.teacher_name ? (
+                                        <span className="mt-0.5 block text-sm text-zinc-500 dark:text-zinc-400">{c.teacher_name}</span>
+                                    ) : null}
+                                </li>
+                            ))}
+                        </ul>
                     ) : (
                         <ul className="mt-3 flex flex-col gap-3">
                             {classes.map((c) => {

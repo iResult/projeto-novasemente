@@ -26,10 +26,24 @@ class NsTimerFollowTest extends TestCase
         ]);
     }
 
-    public function test_guest_is_sent_to_login(): void
+    public function test_guest_can_view_the_schedule_without_login(): void
     {
+        Http::fake([
+            'https://nstimer.novasemente.com.br/_api/schedule/live' => Http::response($this->pendingBody(), 500),
+        ]);
+
         $this->get(route('mobile.acompanhar-culto'))
-            ->assertRedirect(route('login'));
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Mobile/AcompanharCulto')
+                ->where('follow.available', true)
+                ->where('follow.title', 'CULTO DE SÁBADO')
+                ->missing('follow.sections.0.stages.0.notes'));
+
+        $this->getJson(route('mobile.acompanhar-culto.live'))
+            ->assertOk()
+            ->assertJsonPath('available', true)
+            ->assertJsonMissingPath('sections.0.stages.0.notes');
     }
 
     public function test_pending_schedule_is_shown_from_error_body_without_operator_fields(): void

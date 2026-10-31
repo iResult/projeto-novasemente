@@ -68,7 +68,20 @@ return [
         'baptism' => [
             'label' => 'Batismo',
             'group' => 'inicio',
-            'routes' => ['mobile.baptism'],
+            'routes' => ['mobile.baptism', 'mobile.baptism.store'],
+        ],
+        'fale_com' => [
+            'label' => 'Fale com a Nova Semente',
+            'group' => 'inicio',
+            'routes' => [
+                'mobile.fale',
+                'mobile.fale.baby',
+                'mobile.fale.baby.store',
+                'mobile.fale.bible',
+                'mobile.fale.bible.store',
+                'mobile.fale.pastor',
+                'mobile.fale.pastor.store',
+            ],
         ],
         'devotional' => [
             'label' => 'Meditação diária',

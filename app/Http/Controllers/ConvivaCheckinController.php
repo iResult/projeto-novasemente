@@ -64,6 +64,7 @@ class ConvivaCheckinController extends Controller
 
         return Inertia::render('Mobile/ConvivaCheckin', [
             'classes' => $classes,
+            'canCheckIn' => $user !== null,
             'suggestedClassId' => $suggestedClassId ? (int) $suggestedClassId : null,
             'isSaturday' => $isSaturday,
             'checkinOpen' => $checkinOpen,

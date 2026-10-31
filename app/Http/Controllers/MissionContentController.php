@@ -193,7 +193,7 @@ class MissionContentController extends Controller
         return [
             'id' => $m->id,
             'body' => $m->body,
-            'authorName' => $m->user?->name ?? '—',
+            'authorName' => $m->user?->name ?? $m->guest_name ?? 'Visitante',
             'authorEmail' => $m->user?->email,
             'is_hidden' => $m->is_hidden,
             'moderationStatus' => $m->moderation_status,

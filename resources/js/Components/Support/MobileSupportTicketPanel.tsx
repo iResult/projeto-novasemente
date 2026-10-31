@@ -9,7 +9,6 @@ import InputLabel from '@/Components/InputLabel';
 import Textarea from '@/Components/Textarea';
 import InputError from '@/Components/InputError';
 import { CHAT_MESSAGE_SENDS_EMAIL_SUBTITLE } from '@/constants/chatEmailNotice';
-import { Link } from '@inertiajs/react';
 
 type ChatMessage = {
     id: number;
@@ -63,11 +62,9 @@ export default function MobileSupportTicketPanel({
     messages,
     canChat,
     showMessages,
-    isAuthenticated,
     isAdmin,
     staffReplySendsOwnerEmail = false,
     hideFromMyAppUrl = null,
-    isGuestTicket = false,
     guestName = null,
 }: MobileSupportTicketPanelProps) {
     const inertiaScrollOpts = inertiaListModalSave;
@@ -224,25 +221,7 @@ export default function MobileSupportTicketPanel({
 
             {!isClosed && !canChat && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
-                    {isGuestTicket && !isAuthenticated ? (
-                        <>
-                            Chamado registrado com sucesso. Para conversar com a equipe de suporte,{' '}
-                            <Link href={route('login')} className="font-semibold underline">
-                                faça login
-                            </Link>{' '}
-                            e abra um novo chamado ou aguarde contato por e-mail, se informou seus dados.
-                        </>
-                    ) : isAuthenticated ? (
-                        <>Este chamado está em andamento. Aguarde a resposta da equipe de suporte.</>
-                    ) : (
-                        <>
-                            Este chamado está em andamento. Para enviar respostas,{' '}
-                            <Link href={route('login')} className="font-semibold underline">
-                                faça login
-                            </Link>{' '}
-                            na sua conta.
-                        </>
-                    )}
+                    Este chamado está em andamento. Aguarde a resposta da equipe de suporte.
                 </div>
             )}
 

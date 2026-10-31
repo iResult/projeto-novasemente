@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 class MobileAnoBiblicoController extends Controller
 {
@@ -20,7 +20,10 @@ class MobileAnoBiblicoController extends Controller
 
     private function activeChallengeForUser(int $userId): ?object
     {
-        if (! $this->hasChallengesTables()) return null;
+        if (! $this->hasChallengesTables()) {
+            return null;
+        }
+
         return DB::table('ano_biblico_desafio_usuario as du')
             ->join('ano_biblico_desafios as d', 'd.id', '=', 'du.desafio_id')
             ->where('du.usuario_id', $userId)
@@ -40,7 +43,7 @@ class MobileAnoBiblicoController extends Controller
     }
 
     /**
-     * @param list<array{book_id:int,chapter:int}> $chaptersOrdered
+     * @param  list<array{book_id:int,chapter:int}>  $chaptersOrdered
      * @return array<string,int> key "bookId:chapter" => verse count
      */
     private function verseCountMapForChapters(array $chaptersOrdered): array
@@ -72,8 +75,8 @@ class MobileAnoBiblicoController extends Controller
      * Distribui capítulos por dias de calendário usando meta de versículos/dia (ceil(total/dias)),
      * empacotando capítulos inteiros até atingir a meta do dia (mínimo 1 capítulo por dia com leitura).
      *
-     * @param list<array{book_id:int,chapter:int}> $chaptersOrdered
-     * @param array<string,?string> $doneMap "livro:cap" => data_conclusao (marca concluído quando definido)
+     * @param  list<array{book_id:int,chapter:int}>  $chaptersOrdered
+     * @param  array<string,?string>  $doneMap  "livro:cap" => data_conclusao (marca concluído quando definido)
      * @return list<array{dia:int,data_leitura:string,livro_id:int,capitulo:int,concluido:int,data_conclusao:?string}>
      */
     private function scheduleChaptersByVerseBudget(
@@ -219,12 +222,18 @@ class MobileAnoBiblicoController extends Controller
 
     private function ensureUserPlan(int $userId): void
     {
-        if (! $this->hasUserPlanTables()) return;
-        if (! Schema::hasTable('plano_leitura')) return;
+        if (! $this->hasUserPlanTables()) {
+            return;
+        }
+        if (! Schema::hasTable('plano_leitura')) {
+            return;
+        }
 
         $hasUserRow = DB::table('ano_biblico_usuario')->where('usuario_id', $userId)->exists();
         $itemsCount = (int) DB::table('ano_biblico_usuario_itens')->where('usuario_id', $userId)->count();
-        if ($hasUserRow && $itemsCount > 0) return;
+        if ($hasUserRow && $itemsCount > 0) {
+            return;
+        }
 
         DB::transaction(function () use ($userId) {
             $today = now()->toDateString();
@@ -286,15 +295,21 @@ class MobileAnoBiblicoController extends Controller
 
     private function startDateForUser(int $userId): ?string
     {
-        if (! Schema::hasTable('ano_biblico_usuario')) return null;
+        if (! Schema::hasTable('ano_biblico_usuario')) {
+            return null;
+        }
         $v = DB::table('ano_biblico_usuario')->where('usuario_id', $userId)->value('data_inicio');
+
         return $v ? (string) $v : null;
     }
 
     private function endDateForUser(int $userId): ?string
     {
-        if (! Schema::hasTable('ano_biblico_usuario')) return null;
+        if (! Schema::hasTable('ano_biblico_usuario')) {
+            return null;
+        }
         $v = DB::table('ano_biblico_usuario')->where('usuario_id', $userId)->value('data_fim');
+
         return $v ? (string) $v : null;
     }
 
@@ -316,20 +331,70 @@ class MobileAnoBiblicoController extends Controller
         }
 
         $diff = Carbon::parse($nextPendingDate)->startOfDay()->diffInDays(Carbon::parse($today)->startOfDay(), false);
-        if ($diff === 0) return ['kind' => 'on_time', 'days' => 0, 'label' => 'Em dia'];
-        if ($diff > 0) return ['kind' => 'late', 'days' => $diff, 'label' => "Atrasado em {$diff} dia(s)"];
+        if ($diff === 0) {
+            return ['kind' => 'on_time', 'days' => 0, 'label' => 'Em dia'];
+        }
+        if ($diff > 0) {
+            return ['kind' => 'late', 'days' => $diff, 'label' => "Atrasado em {$diff} dia(s)"];
+        }
+
         return ['kind' => 'ahead', 'days' => abs($diff), 'label' => 'Adiantado'];
+    }
+
+    /**
+     * Leitura do calendário (dia do ano no plano de 365 dias), sem gravar progresso.
+     */
+    private function guestReadingResponse(): Response
+    {
+        $empty = Inertia::render('Mobile/AnoBiblico', [
+            'needsLogin' => true,
+            'guestReading' => null,
+        ]);
+
+        if (! Schema::hasTable('plano_leitura') || ! Schema::hasTable('bible_books')) {
+            return $empty;
+        }
+
+        $day = (int) now()->dayOfYear;
+        if (now()->isLeapYear() && $day >= 60) {
+            $day--;
+        }
+        $day = max(1, min(365, $day));
+
+        $chapters = DB::table('plano_leitura as p')
+            ->join('bible_books as b', 'b.id', '=', 'p.livro_id')
+            ->where('p.dia', $day)
+            ->orderBy('b.position')
+            ->orderBy('p.capitulo')
+            ->get(['b.key as book_key', 'b.name as book_name', 'b.id as book_id', 'p.capitulo as chapter'])
+            ->map(fn ($r) => [
+                'bookKey' => (string) $r->book_key,
+                'bookName' => (string) $r->book_name,
+                'bookId' => (int) $r->book_id,
+                'chapter' => (int) $r->chapter,
+            ])
+            ->values()
+            ->all();
+
+        if ($chapters === []) {
+            return $empty;
+        }
+
+        return Inertia::render('Mobile/AnoBiblico', [
+            'needsLogin' => true,
+            'guestReading' => [
+                'day' => $day,
+                'display' => $this->formatDisplay($chapters),
+                'chapters' => $chapters,
+            ],
+        ]);
     }
 
     public function index(Request $request): Response
     {
         $userId = $request->user()?->id;
         if (! $userId) {
-            // Mantém o padrão do app: visitante ainda pode navegar no "Mais",
-            // mas o progresso é por usuário.
-            return Inertia::render('Mobile/AnoBiblico', [
-                'needsLogin' => true,
-            ]);
+            return $this->guestReadingResponse();
         }
 
         $installed = Schema::hasTable('plano_leitura') && Schema::hasTable('leitura_usuario');
@@ -535,7 +600,7 @@ TXT;
                 'enabled' => $this->hasChallengesTables(),
                 'active' => null,
                 'mustChoose' => $this->hasChallengesTables()
-                    ? !DB::table('ano_biblico_desafio_usuario')->where('usuario_id', $userId)->exists()
+                    ? ! DB::table('ano_biblico_desafio_usuario')->where('usuario_id', $userId)->exists()
                     : false,
                 'available' => $this->hasChallengesTables()
                     ? DB::table('ano_biblico_desafios')->where('ativo', 1)->orderBy('id')->get(['id', 'chave', 'nome', 'descricao', 'tipo', 'duracao_dias', 'escopo'])
@@ -600,12 +665,19 @@ TXT;
             ->where('concluido', 0)
             ->min('data_leitura');
 
-        if (! $nextPendingDate) return ['kind' => 'done', 'days' => 0, 'label' => 'Concluído'];
+        if (! $nextPendingDate) {
+            return ['kind' => 'done', 'days' => 0, 'label' => 'Concluído'];
+        }
 
         $diff = Carbon::parse($nextPendingDate)->startOfDay()->diffInDays(Carbon::parse($today)->startOfDay(), false);
-        if ($diff === 0) return ['kind' => 'on_time', 'days' => 0, 'label' => 'Em dia'];
-        if ($diff > 0) return ['kind' => 'late', 'days' => $diff, 'label' => "Atrasado em {$diff} dia(s)"];
-        return ['kind' => 'ahead', 'days' => abs($diff), 'label' => "Adiantado em ".abs($diff)." dia(s)"];
+        if ($diff === 0) {
+            return ['kind' => 'on_time', 'days' => 0, 'label' => 'Em dia'];
+        }
+        if ($diff > 0) {
+            return ['kind' => 'late', 'days' => $diff, 'label' => "Atrasado em {$diff} dia(s)"];
+        }
+
+        return ['kind' => 'ahead', 'days' => abs($diff), 'label' => 'Adiantado em '.abs($diff).' dia(s)'];
     }
 
     public function challenges(Request $request)
@@ -936,7 +1008,9 @@ TXT;
             $set = array_fill_keys($checked, true);
             foreach ($chapters as $c) {
                 $key = ((int) $c['bookId']).':'.((int) $c['chapter']);
-                if (isset($set[$key])) $checkedCount++;
+                if (isset($set[$key])) {
+                    $checkedCount++;
+                }
             }
         }
         $total = count($chapters);
@@ -1068,6 +1142,7 @@ TXT;
         });
 
         $this->ensureUserPlan((int) $userId);
+
         return redirect()->route('mobile.ano-biblico')->with('success', 'Plano reiniciado para hoje.');
     }
 
@@ -1472,18 +1547,22 @@ TXT;
     }
 
     /**
-     * @param array<int, array{bookKey:string, bookName:string, chapter:int}> $chapters
+     * @param  array<int, array{bookKey:string, bookName:string, chapter:int}>  $chapters
      */
     private function formatDisplay(array $chapters): string
     {
-        if (! $chapters) return '';
+        if (! $chapters) {
+            return '';
+        }
 
         $out = [];
         $book = null;
         $nums = [];
 
         $flush = function () use (&$out, &$book, &$nums) {
-            if (! $book || ! $nums) return;
+            if (! $book || ! $nums) {
+                return;
+            }
             $nums = array_values(array_unique(array_map('intval', $nums)));
             sort($nums);
             $ranges = [];
@@ -1493,17 +1572,21 @@ TXT;
                 if ($start === null) {
                     $start = $n;
                     $prev = $n;
+
                     continue;
                 }
                 if ($n === $prev + 1) {
                     $prev = $n;
+
                     continue;
                 }
                 $ranges[] = [$start, $prev];
                 $start = $n;
                 $prev = $n;
             }
-            if ($start !== null && $prev !== null) $ranges[] = [$start, $prev];
+            if ($start !== null && $prev !== null) {
+                $ranges[] = [$start, $prev];
+            }
             $parts = array_map(fn ($r) => $r[0] === $r[1] ? (string) $r[0] : ($r[0].'–'.$r[1]), $ranges);
             $out[] = trim($book.' '.implode(', ', $parts));
         };
@@ -1512,12 +1595,14 @@ TXT;
             if ($book === null) {
                 $book = $c['bookName'];
                 $nums = [$c['chapter']];
+
                 continue;
             }
             if ($c['bookName'] !== $book) {
                 $flush();
                 $book = $c['bookName'];
                 $nums = [$c['chapter']];
+
                 continue;
             }
             $nums[] = $c['chapter'];
@@ -1527,4 +1612,3 @@ TXT;
         return implode('; ', $out);
     }
 }
-

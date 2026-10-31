@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\MobileChurchSolicitationController;
+use App\Support\BaptismSolicitationStatus;
+use App\Support\PastoralSolicitationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Pedidos formais à igreja. Tipos em {@see \App\Http\Controllers\MobileChurchSolicitationController}.
+ * Pedidos formais à igreja. Tipos em {@see MobileChurchSolicitationController}.
  *
  * `volunteer_request`: líder ou staff pede reforço de voluntários; `meta` com `ministry_id`,
  * `schedule_role_id` (opcional), `source` (`leader`|`staff`). Vários pedidos por quantidade:
@@ -73,34 +76,39 @@ class ChurchSolicitation extends Model
     public function allowsChat(): bool
     {
         if ($this->type === 'baptism') {
-            return \App\Support\BaptismSolicitationStatus::allowsChat((string) $this->status);
+            return BaptismSolicitationStatus::allowsChat((string) $this->status);
         }
 
         if (in_array($this->type, [
-            \App\Http\Controllers\MobileChurchSolicitationController::TYPE_VOLUNTEER_REQUEST,
-            \App\Http\Controllers\MobileChurchSolicitationController::TYPE_COMMUNICATION_REQUEST,
+            MobileChurchSolicitationController::TYPE_VOLUNTEER_REQUEST,
+            MobileChurchSolicitationController::TYPE_COMMUNICATION_REQUEST,
         ], true)) {
             return in_array($this->status, ['pending', 'in_progress'], true);
         }
 
-        if ($this->type === \App\Http\Controllers\MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
+        if ($this->type === MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
             return $this->informalPastoralLinkedMemberUserId() !== null
-                && \App\Support\PastoralSolicitationStatus::allowsChat((string) $this->status);
+                && PastoralSolicitationStatus::allowsChat((string) $this->status);
         }
 
-        return \App\Support\PastoralSolicitationStatus::allowsChat((string) $this->status);
+        return PastoralSolicitationStatus::allowsChat((string) $this->status);
     }
 
     public function memberDisplayName(): string
     {
-        if ($this->type === \App\Http\Controllers\MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
+        if ($this->type === MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
             $name = trim((string) data_get($this->meta, 'requester_name', ''));
             if ($name !== '') {
                 return $name;
             }
         }
 
-        return $this->user?->name ?? 'Usuário #'.$this->user_id;
+        $guestName = trim((string) data_get($this->meta, 'guest_name', ''));
+        if ($this->user_id === null && $guestName !== '') {
+            return $guestName;
+        }
+
+        return $this->user?->name ?? ($this->user_id ? 'Usuário #'.$this->user_id : 'Visitante');
     }
 
     public function memberPhotoUrl(): ?string
@@ -110,6 +118,12 @@ class ChurchSolicitation extends Model
 
     public function memberEmail(): ?string
     {
+        if ($this->user_id === null) {
+            $guest = trim((string) data_get($this->meta, 'guest_email', ''));
+
+            return $guest !== '' ? $guest : null;
+        }
+
         $email = $this->memberContactUser()?->email;
 
         return is_string($email) && trim($email) !== '' ? trim($email) : null;
@@ -117,6 +131,12 @@ class ChurchSolicitation extends Model
 
     public function memberPhone(): ?string
     {
+        if ($this->user_id === null) {
+            $guest = trim((string) data_get($this->meta, 'guest_phone', ''));
+
+            return $guest !== '' ? $guest : null;
+        }
+
         $phone = $this->memberContactUser()?->phone;
 
         return is_string($phone) && trim($phone) !== '' ? trim($phone) : null;
@@ -127,7 +147,7 @@ class ChurchSolicitation extends Model
      */
     public function memberContactUser(): ?User
     {
-        if ($this->type === \App\Http\Controllers\MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
+        if ($this->type === MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
             $uid = $this->informalPastoralLinkedMemberUserId();
             if ($uid === null) {
                 return null;
@@ -145,7 +165,7 @@ class ChurchSolicitation extends Model
 
     public function informalPastoralLinkedMemberUserId(): ?int
     {
-        if ($this->type !== \App\Http\Controllers\MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
+        if ($this->type !== MobileChurchSolicitationController::TYPE_PASTORAL_INFORMAL) {
             return null;
         }
 

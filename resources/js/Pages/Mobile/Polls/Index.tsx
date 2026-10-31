@@ -31,7 +31,7 @@ export default function MobilePollsIndex({ polls }: Props) {
                         Enquetes
                     </h1>
                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                        Responda às perguntas da congregação. Enquetes de texto livre não mostram resultado.
+                        Responda às perguntas da congregação.
                     </p>
                 </div>
 
@@ -67,7 +67,7 @@ export default function MobilePollsIndex({ polls }: Props) {
                                     </div>
                                     <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                                         {isText
-                                            ? 'Texto livre · sem resultado público'
+                                            ? 'Texto livre'
                                             : `${poll.options_count} opções · ${
                                                   poll.has_voted ? 'Você já respondeu' : '1 voto por pessoa'
                                               }`}

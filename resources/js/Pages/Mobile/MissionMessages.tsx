@@ -3,6 +3,8 @@ import MissionHubBackLink from '@/Components/Mission/MissionHubBackLink';
 import PrimaryButton from '@/Components/PrimaryButton';
 import Textarea from '@/Components/Textarea';
 import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 import FlashMessages from '@/Components/FlashMessages';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -27,6 +29,7 @@ interface Props {
     messages: MessageItem[];
     myPendingMessages: PendingItem[];
     canPost: boolean;
+    requiresGuestName?: boolean;
     storeUrl: string;
 }
 
@@ -50,9 +53,9 @@ function messageCardClass(isTeamHighlight: boolean): string {
     return 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900';
 }
 
-export default function MissionMessages({ messages, myPendingMessages, canPost, storeUrl }: Props) {
+export default function MissionMessages({ messages, myPendingMessages, canPost, requiresGuestName = false, storeUrl }: Props) {
     const { auth } = usePage().props as { auth?: { user?: { name: string } | null } };
-    const { data, setData, post, processing, errors, reset } = useForm({ body: '' });
+    const { data, setData, post, processing, errors, reset } = useForm({ body: '', guest_name: '' });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -94,9 +97,23 @@ export default function MissionMessages({ messages, myPendingMessages, canPost, 
 
                 {canPost ? (
                     <form onSubmit={submit} className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                            Publicar como {auth?.user?.name ?? 'você'}
-                        </p>
+                        {requiresGuestName ? (
+                            <div>
+                                <InputLabel htmlFor="mission_guest_name" value="Seu nome ou apelido" />
+                                <TextInput
+                                    id="mission_guest_name"
+                                    value={data.guest_name}
+                                    onChange={(e) => setData('guest_name', e.target.value)}
+                                    className="mt-1 w-full"
+                                    required
+                                />
+                                <InputError message={errors.guest_name} className="mt-1" />
+                            </div>
+                        ) : (
+                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                Publicar como {auth?.user?.name ?? 'você'}
+                            </p>
+                        )}
                         <Textarea
                             value={data.body}
                             onChange={(e) => setData('body', e.target.value)}
@@ -105,7 +122,10 @@ export default function MissionMessages({ messages, myPendingMessages, canPost, 
                             className="w-full"
                         />
                         <InputError message={errors.body} />
-                        <PrimaryButton type="submit" disabled={processing || !data.body.trim()}>
+                        <PrimaryButton
+                            type="submit"
+                            disabled={processing || !data.body.trim() || (requiresGuestName && data.guest_name.trim().length < 2)}
+                        >
                             Publicar depoimento
                         </PrimaryButton>
                     </form>

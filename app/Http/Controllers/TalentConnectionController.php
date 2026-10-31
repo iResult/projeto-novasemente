@@ -90,7 +90,7 @@ class TalentConnectionController extends Controller
         ];
 
         if ($detail) {
-            $data['contact_channels'] = TalentListingContact::channels($listing);
+            $data['contact_channels'] = $viewer !== null ? TalentListingContact::channels($listing) : [];
             $data['description'] = $listing->description;
             $data['availability'] = $listing->availability;
             $data['notes'] = $isOwner && ! TalentDemoListing::isDemoTalentListing($listing)
@@ -112,7 +112,7 @@ class TalentConnectionController extends Controller
 
     public function index(Request $request): Response
     {
-        $user = $this->assertAuthenticated($request);
+        $user = $request->user();
         $churchId = $this->talents->resolveChurchId($request);
 
         $query = TalentListing::query()
@@ -163,20 +163,20 @@ class TalentConnectionController extends Controller
                 ['value' => TalentListing::TYPE_SEEK, 'label' => TalentListing::typeLabel(TalentListing::TYPE_SEEK)],
                 ['value' => TalentListing::TYPE_EXCHANGE, 'label' => TalentListing::typeLabel(TalentListing::TYPE_EXCHANGE)],
             ],
-            'hasModuleMembership' => $this->talents->hasModuleMembership($user, $churchId),
+            'hasModuleMembership' => $user !== null && $this->talents->hasModuleMembership($user, $churchId),
         ]);
     }
 
     public function show(Request $request, TalentListing $talentListing): Response
     {
-        $user = $this->assertAuthenticated($request);
+        $user = $request->user();
         $churchId = $this->talents->resolveChurchId($request);
 
         if ($churchId !== null && (int) $talentListing->church_id !== $churchId) {
             abort(404);
         }
 
-        $isOwner = $talentListing->user_id === $user->id;
+        $isOwner = $user !== null && $talentListing->user_id === $user->id;
         if (! $isOwner && ! $talentListing->isVisibleToMembers()) {
             abort(404);
         }

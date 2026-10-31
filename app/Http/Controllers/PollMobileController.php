@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePollVoteRequest;
 use App\Models\Church;
 use App\Models\Poll;
+use App\Models\User;
 use App\Support\PollPresenter;
 use App\Support\PollVoting;
 use Illuminate\Http\Request;
@@ -22,7 +23,6 @@ class PollMobileController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        abort_unless($user !== null, 403);
 
         $churchId = $this->currentChurchId();
         $ip = PollVoting::clientIp($request);
@@ -36,7 +36,7 @@ class PollMobileController extends Controller
             ])
             ->open()
             // Enquete de sugestão (texto livre) sempre por último.
-            ->orderByRaw("CASE WHEN response_type = ? THEN 1 ELSE 0 END", [Poll::RESPONSE_TEXT])
+            ->orderByRaw('CASE WHEN response_type = ? THEN 1 ELSE 0 END', [Poll::RESPONSE_TEXT])
             ->latest()
             ->get();
 
@@ -55,26 +55,24 @@ class PollMobileController extends Controller
     public function show(Request $request, Poll $poll): Response
     {
         $user = $request->user();
-        abort_unless($user !== null, 403);
         $this->assertVisible($poll);
 
         $ip = PollVoting::clientIp($request);
         $hasVoted = PollVoting::hasVoted($poll, $user, $ip);
         $canSeeResults = $poll->showsResults()
-            && ($hasVoted || ($user->can('polls.manage') && (int) $poll->church_id === (int) $this->currentChurchId()));
+            && ($hasVoted || ($user !== null && $user->can('polls.manage') && (int) $poll->church_id === (int) $this->currentChurchId()));
 
         return Inertia::render('Mobile/Polls/Show', [
-            'poll' => PollPresenter::forMobileShow($poll, $user, $canSeeResults, $hasVoted),
+            'poll' => PollPresenter::forMobileShow($poll, $user, $canSeeResults, $hasVoted, $ip),
             'otherOpenUnansweredCount' => $hasVoted
-                ? $this->otherOpenUnansweredCount($poll, $user->id)
+                ? $this->otherOpenUnansweredCount($poll, $user, $ip)
                 : 0,
+            'suggestedVoterName' => trim((string) ($user?->name ?? '')),
         ]);
     }
 
     public function vote(StorePollVoteRequest $request, Poll $poll)
     {
-        $user = $request->user();
-        abort_unless($user !== null, 403);
         $this->assertSameChurch($poll);
 
         try {
@@ -97,18 +95,23 @@ class PollMobileController extends Controller
     /**
      * Outras enquetes abertas da igreja que o usuário ainda não respondeu.
      */
-    private function otherOpenUnansweredCount(Poll $current, int $userId): int
+    private function otherOpenUnansweredCount(Poll $current, ?User $user, string $ip): int
     {
         $churchId = (int) $current->church_id;
+        $voterKey = PollVoting::voterKey($user, $ip);
 
         return Poll::query()
             ->forChurch($churchId)
             ->open()
             ->where('id', '!=', $current->id)
-            ->whereDoesntHave('votes', function ($q) use ($userId) {
-                $q->where(function ($inner) use ($userId) {
-                    $inner->where('user_id', $userId)
-                        ->orWhere('voter_key', 'u:'.$userId);
+            ->whereDoesntHave('votes', function ($q) use ($user, $voterKey, $ip) {
+                $q->where(function ($inner) use ($user, $voterKey, $ip) {
+                    $inner->where('voter_key', $voterKey);
+                    if ($user !== null) {
+                        $inner->orWhere('user_id', $user->id);
+                    } else {
+                        $inner->orWhere('voter_ip', $ip);
+                    }
                 });
             })
             ->count();

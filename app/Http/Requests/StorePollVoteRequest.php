@@ -26,6 +26,7 @@ class StorePollVoteRequest extends FormRequest
         if ($poll instanceof Poll && $poll->isTextResponse()) {
             return [
                 'answer_text' => ['required', 'string', 'max:'.Poll::TEXT_ANSWER_MAX],
+                'voter_name' => ['required', 'string', 'min:2', 'max:80'],
             ];
         }
 
@@ -43,6 +44,9 @@ class StorePollVoteRequest extends FormRequest
             'option_ids.size' => 'Selecione apenas uma opção.',
             'answer_text.required' => 'Escreva sua sugestão.',
             'answer_text.max' => 'Use no máximo duas linhas curtas.',
+            'voter_name.required' => 'Informe seu nome ou apelido.',
+            'voter_name.min' => 'Use pelo menos 2 letras no nome ou apelido.',
+            'voter_name.max' => 'Nome ou apelido muito longo.',
             'other_text.min' => 'Digite pelo menos '.Poll::WRITE_IN_TEXT_MIN.' letras.',
             'other_text.max' => 'Texto muito longo.',
         ];

@@ -51,6 +51,7 @@ use App\Support\NsWhatsAccess;
 use App\Support\PendingAppNovelty;
 use App\Support\PublicationEngagement;
 use App\Support\PublicationFeed;
+use App\Support\PublicationGuest;
 use App\Support\PublicationsFeedAccess;
 use App\Support\ScheduleBoardViewData;
 use App\Support\SolicitationAssignees;
@@ -1369,6 +1370,20 @@ class MobileController extends Controller
         return Inertia::render('Mobile/ConhecaNovaSemente');
     }
 
+    public function faleComNovaSemente(Request $request): Response
+    {
+        $nsWhatsPendingReply = 0;
+        $user = $request->user();
+        $church = $this->currentChurch();
+        if ($user !== null && $church !== null) {
+            $nsWhatsPendingReply = NsWhatsAccess::pendingReplyCount($user, (int) $church->id);
+        }
+
+        return Inertia::render('Mobile/FaleComNovaSemente', [
+            'nsWhatsPendingReply' => $nsWhatsPendingReply,
+        ]);
+    }
+
     public function programacaoSabado(SaturdayProgramService $saturdayPrograms): Response
     {
         $churchId = $this->currentChurch()?->id;
@@ -1461,6 +1476,7 @@ class MobileController extends Controller
                 'type' => 'photos',
             ], $albums),
             $request->user(),
+            PublicationGuest::existingKey($request),
         );
 
         foreach ($albums as $i => $album) {

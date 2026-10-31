@@ -86,11 +86,39 @@ export function homeCardMosaicIsPhotoSlot(index: number): boolean {
     return (row + column) % 2 === 0;
 }
 
+/**
+ * Favoritos sobem dentro do próprio tipo (foto ou card claro).
+ * A grade continua alternando, então um favorito pode ficar abaixo de um item comum.
+ */
+function compareHomeCardMosaicOrder<T extends { id: string; label: string }>(
+    bookmarkedIds: readonly string[],
+): (a: T, b: T) => number {
+    const rank = new Map(bookmarkedIds.map((id, index) => [id, index]));
+
+    return (a, b) => {
+        const aRank = rank.get(a.id);
+        const bRank = rank.get(b.id);
+        const aBook = aRank === undefined ? 1 : 0;
+        const bBook = bRank === undefined ? 1 : 0;
+        if (aBook !== bBook) {
+            return aBook - bBook;
+        }
+        if (aRank !== undefined && bRank !== undefined && aRank !== bRank) {
+            return aRank - bRank;
+        }
+
+        return a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' });
+    };
+}
+
 /** Intercala foto e card claro. A linha de baixo começa pelo lado oposto. */
-export function arrangeHomeCardMosaic<T extends { id: string; label: string }>(items: T[]): T[] {
-    const byLabel = (a: T, b: T) => a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' });
-    const photos = items.filter((item) => homeCardPhotoPresentation[item.id]).sort(byLabel);
-    const plains = items.filter((item) => !homeCardPhotoPresentation[item.id]).sort(byLabel);
+export function arrangeHomeCardMosaic<T extends { id: string; label: string }>(
+    items: T[],
+    bookmarkedIds: readonly string[] = [],
+): T[] {
+    const compare = compareHomeCardMosaicOrder<T>(bookmarkedIds);
+    const photos = items.filter((item) => homeCardPhotoPresentation[item.id]).sort(compare);
+    const plains = items.filter((item) => !homeCardPhotoPresentation[item.id]).sort(compare);
     const arranged: T[] = [];
     let photoIndex = 0;
     let plainIndex = 0;

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Church;
 use App\Models\PublicationComment;
 use App\Models\PublicationLike;
+use App\Support\PublicationGuest;
 use App\Support\PublicationSubject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,25 +16,35 @@ class PublicationEngagementController extends Controller
 {
     public function toggleLike(Request $request, string $feedId): JsonResponse
     {
-        $user = $request->user();
-        abort_unless($user !== null, 401);
         abort_unless(Schema::hasTable('publication_likes'), 503);
 
         [$type, $subjectId, $churchId] = $this->resolveSubjectOrAbort($request, $feedId);
 
-        $existing = PublicationLike::query()
-            ->where('user_id', $user->id)
+        $user = $request->user();
+        $guestLike = $user === null && $type === 'polls';
+        abort_unless($user !== null || $guestLike, 401);
+
+        $query = PublicationLike::query()
             ->where('subject_type', $type)
-            ->where('subject_id', $subjectId)
-            ->first();
+            ->where('subject_id', $subjectId);
+
+        if ($user !== null) {
+            $query->where('user_id', $user->id);
+            $guestKey = null;
+        } else {
+            $guestKey = PublicationGuest::key($request);
+            $query->where('guest_key', $guestKey);
+        }
+
+        $existing = $query->first();
 
         if ($existing !== null) {
             $existing->delete();
             $liked = false;
         } else {
             PublicationLike::query()->create([
-                'user_id' => $user->id,
-                'guest_key' => null,
+                'user_id' => $user?->id,
+                'guest_key' => $guestKey,
                 'church_id' => $churchId,
                 'subject_type' => $type,
                 'subject_id' => $subjectId,
@@ -57,6 +69,8 @@ class PublicationEngagementController extends Controller
 
         [$type, $subjectId] = $this->resolveSubjectOrAbort($request, $feedId);
 
+        $guestKey = $request->user() === null ? PublicationGuest::existingKey($request) : null;
+
         $comments = PublicationComment::query()
             ->with(['user:id,name'])
             ->where('subject_type', $type)
@@ -64,7 +78,7 @@ class PublicationEngagementController extends Controller
             ->orderBy('created_at')
             ->limit(200)
             ->get()
-            ->map(fn (PublicationComment $c) => $this->serializeComment($c, $request->user()?->id));
+            ->map(fn (PublicationComment $c) => $this->serializeComment($c, $request->user()?->id, $guestKey));
 
         $commentsCount = PublicationComment::query()
             ->where('subject_type', $type)
@@ -79,14 +93,26 @@ class PublicationEngagementController extends Controller
 
     public function storeComment(Request $request, string $feedId): JsonResponse
     {
-        $user = $request->user();
-        abort_unless($user !== null, 401);
         abort_unless(Schema::hasTable('publication_comments'), 503);
 
         [$type, $subjectId, $churchId] = $this->resolveSubjectOrAbort($request, $feedId);
 
-        $data = $request->validate([
+        $user = $request->user();
+        $guestComment = $user === null && $type === 'polls';
+        abort_unless($user !== null || $guestComment, 401);
+
+        $rules = [
             'body' => ['required', 'string', 'min:1', 'max:1000'],
+        ];
+        if ($guestComment) {
+            $rules['author_name'] = ['required', 'string', 'min:2', 'max:80'];
+        }
+
+        $data = $request->validate($rules, [
+            'author_name.required' => 'Informe seu nome ou apelido.',
+            'author_name.min' => 'Use pelo menos 2 letras no nome ou apelido.',
+            'author_name.max' => 'Nome ou apelido muito longo.',
+            'body.required' => 'Escreva um comentário.',
         ]);
 
         $body = trim(strip_tags((string) $data['body']));
@@ -98,8 +124,17 @@ class PublicationEngagementController extends Controller
             ], 422);
         }
 
+        $authorName = null;
+        $guestKey = null;
+        if ($guestComment) {
+            $authorName = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $data['author_name'])) ?? '');
+            $guestKey = PublicationGuest::key($request);
+        }
+
         $comment = PublicationComment::query()->create([
-            'user_id' => $user->id,
+            'user_id' => $user?->id,
+            'author_name' => $authorName,
+            'guest_key' => $guestKey,
             'church_id' => $churchId,
             'subject_type' => $type,
             'subject_id' => $subjectId,
@@ -113,7 +148,7 @@ class PublicationEngagementController extends Controller
             ->count();
 
         return response()->json([
-            'comment' => $this->serializeComment($comment, $user->id),
+            'comment' => $this->serializeComment($comment, $user?->id, $guestKey),
             'comments_count' => $commentsCount,
         ], 201);
     }
@@ -121,10 +156,15 @@ class PublicationEngagementController extends Controller
     public function destroyOwnComment(Request $request, PublicationComment $comment): JsonResponse
     {
         $user = $request->user();
-        abort_unless($user !== null, 401);
-        abort_unless((int) $comment->user_id === (int) $user->id, 403);
+        $guestKey = $user === null ? PublicationGuest::existingKey($request) : null;
+        $ownsAsUser = $user !== null && (int) $comment->user_id === (int) $user->id;
+        $ownsAsGuest = $guestKey !== null
+            && $comment->subject_type === 'polls'
+            && $comment->guest_key === $guestKey;
+        abort_unless($user !== null || $ownsAsGuest, 401);
+        abort_unless($ownsAsUser || $ownsAsGuest, 403);
 
-        $comment->deleted_by = $user->id;
+        $comment->deleted_by = $user?->id;
         $comment->save();
         $comment->delete();
 
@@ -147,7 +187,7 @@ class PublicationEngagementController extends Controller
         $parsed = PublicationSubject::parseFeedId($feedId);
         abort_if($parsed === null, 404);
 
-        $churchId = \App\Models\Church::resolveWorkingId($request);
+        $churchId = Church::resolveWorkingId($request);
         abort_unless(
             PublicationSubject::exists($parsed['type'], $parsed['id'], $churchId),
             404
@@ -159,18 +199,20 @@ class PublicationEngagementController extends Controller
     /**
      * @return array{id: int, body: string, author_name: string, author_initial: string, is_mine: bool, created_at: string|null, created_at_label: string}
      */
-    private function serializeComment(PublicationComment $comment, ?int $viewerId): array
+    private function serializeComment(PublicationComment $comment, ?int $viewerId, ?string $guestKey = null): array
     {
-        $name = trim((string) ($comment->user?->name ?? 'Usuário'));
-        $initial = mb_strtoupper(mb_substr($name !== '' ? $name : 'U', 0, 1));
+        $name = trim((string) ($comment->user?->name ?? $comment->author_name ?? 'Visitante'));
+        $initial = mb_strtoupper(mb_substr($name !== '' ? $name : 'V', 0, 1));
         $created = $comment->created_at;
+        $isMine = ($viewerId !== null && (int) $comment->user_id === $viewerId)
+            || ($guestKey !== null && $guestKey !== '' && $comment->guest_key === $guestKey);
 
         return [
             'id' => $comment->id,
             'body' => $comment->body,
-            'author_name' => $name !== '' ? $name : 'Usuário',
+            'author_name' => $name !== '' ? $name : 'Visitante',
             'author_initial' => $initial,
-            'is_mine' => $viewerId !== null && (int) $comment->user_id === (int) $viewerId,
+            'is_mine' => $isMine,
             'created_at' => $created?->toIso8601String(),
             'created_at_label' => $created ? $created->diffForHumans() : '',
         ];

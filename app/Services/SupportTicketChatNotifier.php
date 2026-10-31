@@ -102,14 +102,15 @@ class SupportTicketChatNotifier
         $this->notifyOwnerOfTicketUpdate($ticket, $staff, true, trim($solutionText) !== '');
     }
 
-    /** Mensagem do membro na app → equipe de suporte (e pastoral, se aplicável). */
-    public function notifyStaffOfUserMessage(AppSupportTicket $ticket, User $member): void
+    /** Mensagem do membro ou visitante na app → equipe de suporte (e pastoral, se aplicável). */
+    public function notifyStaffOfUserMessage(AppSupportTicket $ticket, ?User $member): void
     {
         $typeLabel = SupportTicketAdminPresenter::typeLabel((string) $ticket->type);
         $title = 'Nova mensagem num ticket';
-        $body = $member->name.' escreveu sobre: '.$typeLabel.'.';
+        $who = $member?->name ?? ($ticket->guest_name ?: 'Visitante');
+        $body = $who.' escreveu sobre: '.$typeLabel.'.';
 
-        foreach ($this->messageRecipientUserIds($ticket, $member->id) as $userId) {
+        foreach ($this->messageRecipientUserIds($ticket, $member?->id) as $userId) {
             $this->pushInboxForStaff((int) $userId, $title, $body, $ticket->public_token);
         }
     }
@@ -136,7 +137,7 @@ class SupportTicketChatNotifier
     /**
      * @return list<int>
      */
-    private function messageRecipientUserIds(AppSupportTicket $ticket, int $senderUserId): array
+    private function messageRecipientUserIds(AppSupportTicket $ticket, ?int $senderUserId): array
     {
         $ids = SafeSpatieUsersByPermission::userIdsHavingAnyPermissionOrAdmins(
             ['support.manage'],

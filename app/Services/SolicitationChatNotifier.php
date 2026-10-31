@@ -14,15 +14,16 @@ use App\Support\CommunicationRequestOptions;
 use App\Support\LeaderOperationalNotifications;
 use App\Support\SafeSpatieUsersByPermission;
 use App\Support\UserMessagingPreferences;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class SolicitationChatNotifier
 {
     /**
-     * @return \Illuminate\Support\Collection<int, \App\Models\User>
+     * @return Collection<int, User>
      */
-    private function staffRecipientsForChurch(?int $churchId, ?int $excludeUserId = null): \Illuminate\Support\Collection
+    private function staffRecipientsForChurch(?int $churchId, ?int $excludeUserId = null): Collection
     {
         $users = SafeSpatieUsersByPermission::usersHavingAnyPermissionOrAdmins(
             ['solicitations.view', 'solicitations.manage'],
@@ -290,8 +291,8 @@ class SolicitationChatNotifier
             return;
         }
 
-        $member = User::query()->find($solicitation->user_id);
-        $memberName = $member?->name ?? 'Um membro';
+        $member = $solicitation->user_id ? User::query()->find($solicitation->user_id) : null;
+        $memberName = $member?->name ?? ($solicitation->user_id === null ? $solicitation->memberDisplayName() : 'Um membro');
         $typeLabel = MobileChurchSolicitationController::typeLabel($solicitation->type);
 
         $batchSuffix = ($batchCount !== null && $batchCount > 1)

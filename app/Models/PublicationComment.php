@@ -12,6 +12,8 @@ class PublicationComment extends Model
 
     protected $fillable = [
         'user_id',
+        'author_name',
+        'guest_key',
         'church_id',
         'subject_type',
         'subject_id',

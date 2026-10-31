@@ -40,7 +40,7 @@ export default function MobileSobreOApp({ backRoute, backLabel }: Props) {
                         Sobre o APP
                     </h1>
                     <p className="mt-2 text-center text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                        Versão, lojas, links e suporte.
+                        Versão, lojas e links.
                     </p>
                 </div>
 

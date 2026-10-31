@@ -37,7 +37,7 @@
                 <h2>Como solicitar</h2>
                 <ol>
                     <li>
-                        <strong>Pelo suporte no app</strong>: abra o app e acesse <em>Mais</em> → <em>Suporte</em>, e abra um chamado com o assunto
+                        <strong>Pelo suporte no app</strong>: abra o app e, na tela inicial, toque em <em>Suporte do App</em>. Abra um chamado com o assunto
                         <strong>“Exclusão de conta e dados”</strong>.
                     </li>
                     <li>

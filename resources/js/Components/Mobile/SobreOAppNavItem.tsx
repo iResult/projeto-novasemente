@@ -49,7 +49,7 @@ export default function SobreOAppNavItem({
                     <div className="min-w-0 flex-1">
                         <span className="block font-semibold text-zinc-900 dark:text-white">Sobre o APP</span>
                         <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Versão, lojas, links e suporte
+                            Versão, lojas e links
                         </span>
                     </div>
                 </button>
@@ -66,7 +66,7 @@ export default function SobreOAppNavItem({
             <div className="min-w-0 flex-1">
                 <span className="block font-semibold text-zinc-900 dark:text-white">Sobre o APP</span>
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Versão, lojas, links e suporte
+                    Versão, lojas e links
                 </span>
             </div>
         </Link>

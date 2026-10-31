@@ -7,7 +7,7 @@ import InputLabel from '@/Components/InputLabel';
 import Textarea from '@/Components/Textarea';
 import SelectInput from '@/Components/SelectInput';
 import InputError from '@/Components/InputError';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { FormEventHandler, useState } from 'react';
 
@@ -42,6 +42,9 @@ interface Props {
 }
 
 export default function SharedTalentShow({ listing, reportReasons }: Props) {
+    const page = usePage();
+    const loggedIn = Boolean((page.props as { auth?: { user?: unknown } }).auth?.user);
+    const loginHref = `${route('login')}?redirect=${encodeURIComponent(page.url)}`;
     const [reportOpen, setReportOpen] = useState(false);
     const enrollForm = useForm({ message: '' });
     const reportForm = useForm({ reason: '', description: '' });
@@ -134,6 +137,15 @@ export default function SharedTalentShow({ listing, reportReasons }: Props) {
                     </div>
                 )}
 
+                {!loggedIn ? (
+                    <Link
+                        href={loginHref}
+                        className="inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 px-4 py-3 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900"
+                    >
+                        Entre para solicitar participação
+                    </Link>
+                ) : null}
+
                 {listing.can_enroll && !listing.has_enrollment && (
                     <form onSubmit={submitEnroll} className="space-y-3 rounded-2xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/40">
                         <h2 className="font-semibold text-zinc-900 dark:text-white">Participar</h2>
@@ -156,14 +168,16 @@ export default function SharedTalentShow({ listing, reportReasons }: Props) {
                     </p>
                 )}
 
+                {loggedIn ? (
                 <button
                     type="button"
                     onClick={() => setReportOpen(true)}
-                    className="flex items-center gap-2 text-sm text-zinc-500 hover:text-red-600"
+                    className="flex cursor-pointer items-center gap-2 text-sm text-zinc-500 hover:text-red-600"
                 >
                     <ExclamationTriangleIcon className="h-4 w-4" />
                     Denunciar
                 </button>
+                ) : null}
             </div>
 
             <Modal show={reportOpen} onClose={() => setReportOpen(false)}>

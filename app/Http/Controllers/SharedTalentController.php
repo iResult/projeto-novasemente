@@ -13,9 +13,9 @@ use App\Models\User;
 use App\Services\SharedTalentNotifier;
 use App\Services\SharedTalentService;
 use App\Support\SearchTerm;
-use App\Support\TalentDemoListing;
 use App\Support\SharedTalentEnrollmentStatus;
 use App\Support\SharedTalentListingStatus;
+use App\Support\TalentDemoListing;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -132,7 +132,7 @@ class SharedTalentController extends Controller
 
     public function index(Request $request): Response
     {
-        $user = $this->assertAuthenticated($request);
+        $user = $request->user();
         $churchId = $this->sharedTalents->resolveChurchId($request);
 
         $query = SharedTalentListing::query()
@@ -185,20 +185,20 @@ class SharedTalentController extends Controller
             ],
             'modalityOptions' => $this->sharedTalents->modalityOptions(),
             'ageRangeOptions' => $this->sharedTalents->ageRangeOptions(),
-            'hasModuleMembership' => $this->sharedTalents->hasModuleMembership($user, $churchId),
+            'hasModuleMembership' => $user !== null && $this->sharedTalents->hasModuleMembership($user, $churchId),
         ]);
     }
 
     public function show(Request $request, SharedTalentListing $sharedTalentListing): Response
     {
-        $user = $this->assertAuthenticated($request);
+        $user = $request->user();
         $churchId = $this->sharedTalents->resolveChurchId($request);
 
         if ($churchId !== null && (int) $sharedTalentListing->church_id !== $churchId) {
             abort(404);
         }
 
-        $isOwner = $sharedTalentListing->user_id === $user->id;
+        $isOwner = $user !== null && $sharedTalentListing->user_id === $user->id;
         if (! $isOwner && ! $sharedTalentListing->isVisibleInCatalog()) {
             abort(404);
         }

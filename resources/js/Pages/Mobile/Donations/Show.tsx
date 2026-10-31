@@ -1,6 +1,7 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import DonationProgressBar from '@/Components/Donations/DonationProgressBar';
 import type { DonationTransparencyInfo } from '@/Components/Donations/DonationTransparencyNotice';
+import GuestDonorFields from '@/Components/Donations/GuestDonorFields';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
@@ -161,6 +162,8 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
         amount: '',
         is_anonymous: false,
         send_email_confirmation: false,
+        guest_name: '',
+        guest_phone: '',
     });
 
     const itemForm = useForm({
@@ -168,6 +171,8 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
         quantity: '1',
         notes: '',
         is_anonymous: false,
+        guest_name: '',
+        guest_phone: '',
     });
 
     const pixKey = pix.pix_key?.trim() || localOffer.pixKey;
@@ -551,6 +556,16 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
                                         Não foi possível ler o valor automaticamente. Informe o valor manualmente.
                                     </p>
                                 )}
+                                {!isLoggedIn ? (
+                                    <GuestDonorFields
+                                        name={data.guest_name}
+                                        phone={data.guest_phone}
+                                        nameError={errors.guest_name}
+                                        phoneError={errors.guest_phone}
+                                        onName={(value) => setData('guest_name', value)}
+                                        onPhone={(value) => setData('guest_phone', value)}
+                                    />
+                                ) : null}
                                 <div>
                                     <InputLabel htmlFor="donation_amount" value="Valor da doação (R$)" />
                                     <TextInput
@@ -580,7 +595,7 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
                                             </span>
                                         </span>
                                     </label>
-                                    {transparency.donor_email && (
+                                    {isLoggedIn && transparency.donor_email && (
                                         <label className="flex cursor-pointer items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                                             <input
                                                 type="checkbox"
@@ -613,6 +628,16 @@ export default function MobileDonationShow({ campaign, recentDonations, transpar
                             Conte qual item você pretende entregar e em qual quantidade. A equipe confirmará depois o recebimento.
                         </p>
                         <div>
+                            {!isLoggedIn ? (
+                                <GuestDonorFields
+                                    name={itemForm.data.guest_name}
+                                    phone={itemForm.data.guest_phone}
+                                    nameError={itemForm.errors.guest_name}
+                                    phoneError={itemForm.errors.guest_phone}
+                                    onName={(value) => itemForm.setData('guest_name', value)}
+                                    onPhone={(value) => itemForm.setData('guest_phone', value)}
+                                />
+                            ) : null}
                             <InputLabel htmlFor="item_description" value="Item que você vai doar" />
                             <TextInput
                                 id="item_description"

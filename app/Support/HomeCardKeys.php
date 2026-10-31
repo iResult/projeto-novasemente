@@ -21,6 +21,7 @@ final class HomeCardKeys
         'central-servicos',
         'classe-comecos',
         'comunidades',
+        'conviva',
         'culto',
         'horarios',
         'meditacao-diaria',

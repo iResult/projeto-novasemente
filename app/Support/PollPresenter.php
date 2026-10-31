@@ -140,6 +140,7 @@ final class PollPresenter
 
         $selectedOptionIds = [];
         $myAnswerText = null;
+        $myVoterName = null;
         $voted = $hasVoted ?? false;
 
         // Só a resposta de quem está vendo. Texto livre não lista as demais sugestões.
@@ -147,6 +148,9 @@ final class PollPresenter
             $myVote = PollVoting::findVote($poll, $viewer, $ip ?? '');
             if ($myVote) {
                 $voted = true;
+                $myVoterName = is_string($myVote->voter_name) && trim($myVote->voter_name) !== ''
+                    ? trim($myVote->voter_name)
+                    : null;
                 if ($poll->isTextResponse()) {
                     $myAnswerText = $myVote->answer_text;
                 } elseif ($myVote->poll_option_id !== null) {
@@ -178,6 +182,7 @@ final class PollPresenter
                 ])->values()->all(),
             'selected_option_ids' => $selectedOptionIds,
             'my_answer_text' => $myAnswerText,
+            'my_voter_name' => $myVoterName,
             'results' => $includeResults ? self::resultsPayload($poll) : null,
         ];
     }
@@ -191,9 +196,9 @@ final class PollPresenter
     }
 
     /**
-     * Respostas em texto sem identificar quem enviou.
+     * Sugestões em texto, com o nome ou apelido informado por quem enviou.
      *
-     * @return list<array{id: int, answer_text: string, created_at: string|null}>
+     * @return list<array{id: int, answer_text: string, voter_name: string|null, created_at: string|null}>
      */
     public static function textAnswersPayload(Poll $poll): array
     {
@@ -205,6 +210,9 @@ final class PollPresenter
             ->map(fn ($vote) => [
                 'id' => (int) $vote->id,
                 'answer_text' => (string) $vote->answer_text,
+                'voter_name' => is_string($vote->voter_name) && trim($vote->voter_name) !== ''
+                    ? trim($vote->voter_name)
+                    : null,
                 'created_at' => $vote->created_at?->toIso8601String(),
             ])
             ->values()

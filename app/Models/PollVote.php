@@ -14,6 +14,7 @@ class PollVote extends Model
         'poll_id',
         'poll_option_id',
         'answer_text',
+        'voter_name',
         'user_id',
         'voter_ip',
         'voter_key',

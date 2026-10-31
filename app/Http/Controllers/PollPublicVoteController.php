@@ -26,6 +26,7 @@ class PollPublicVoteController extends Controller
             'display_url' => $poll->display_enabled
                 ? route('polls.display', ['token' => $poll->public_token])
                 : null,
+            'suggestedVoterName' => trim((string) ($user?->name ?? '')),
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Church;
 use App\Models\News;
+use App\Models\Poll;
 use App\Models\PublicationComment;
 use App\Models\PublicationLike;
 use App\Models\User;
@@ -61,6 +62,60 @@ class PublicationEngagementTest extends TestCase
                 'body' => 'Olá',
             ])
             ->assertUnauthorized();
+    }
+
+    public function test_guest_can_like_and_comment_on_a_poll_without_login(): void
+    {
+        $church = $this->seedOpenFeed();
+        $author = User::factory()->create(['church_id' => $church->id]);
+        $poll = Poll::query()->create([
+            'church_id' => $church->id,
+            'created_by' => $author->id,
+            'question' => 'Qual palavra representa melhor o que você precisa?',
+            'allow_multiple' => false,
+            'response_type' => Poll::RESPONSE_CHOICE,
+            'status' => Poll::STATUS_OPEN,
+        ]);
+        $feedId = 'polls-'.$poll->id;
+
+        $this->withSession(['working_church_id' => $church->id])
+            ->postJson(route('mobile.publications.like', ['feedId' => $feedId]))
+            ->assertOk()
+            ->assertJson([
+                'liked' => true,
+                'likes_count' => 1,
+            ]);
+
+        $this->assertDatabaseHas('publication_likes', [
+            'user_id' => null,
+            'subject_type' => 'polls',
+            'subject_id' => $poll->id,
+        ]);
+
+        $this->withSession(['working_church_id' => $church->id])
+            ->postJson(route('mobile.publications.comments.store', ['feedId' => $feedId]), [
+                'body' => 'Paz',
+                'author_name' => 'Ana',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('comments_count', 1)
+            ->assertJsonPath('comment.author_name', 'Ana')
+            ->assertJsonPath('comment.body', 'Paz')
+            ->assertJsonPath('comment.is_mine', true);
+
+        $created = $this->withSession(['working_church_id' => $church->id])
+            ->postJson(route('mobile.publications.comments.store', ['feedId' => $feedId]), [
+                'body' => 'Para apagar',
+                'author_name' => 'Ana',
+            ])
+            ->assertCreated()
+            ->json('comment.id');
+
+        $this->deleteJson(route('mobile.publications.comments.destroy', ['comment' => $created]))
+            ->assertOk()
+            ->assertJsonPath('comments_count', 1);
+
+        $this->assertSoftDeleted('publication_comments', ['id' => $created]);
     }
 
     public function test_authenticated_user_can_toggle_like_and_comment(): void

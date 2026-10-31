@@ -542,6 +542,8 @@ class SolicitationAdminController extends Controller
             $query->where(function ($sub) use ($term) {
                 SearchTerm::whereAnyColumnLike($sub, ['message', 'subject'], $term);
                 $sub->orWhereHas('user', fn ($uq) => SearchTerm::whereAnyColumnLike($uq, ['name'], $term));
+                $sub->orWhere('meta->guest_name', 'like', '%'.$term.'%')
+                    ->orWhere('meta->guest_email', 'like', '%'.$term.'%');
             });
         }
 
@@ -566,9 +568,9 @@ class SolicitationAdminController extends Controller
                 'preferredDate' => $s->preferred_date?->format('Y-m-d'),
                 'createdAt' => $s->created_at?->toIso8601String(),
                 'updatedAt' => $s->updated_at?->toIso8601String(),
-                'memberLabel' => $s->user?->name ?? 'Usuário',
-                'memberEmail' => $s->user?->email,
-                'memberPhone' => $s->user?->phone,
+                'memberLabel' => $s->memberDisplayName(),
+                'memberEmail' => $s->memberEmail(),
+                'memberPhone' => $s->memberPhone(),
             ])
             ->values()
             ->all();

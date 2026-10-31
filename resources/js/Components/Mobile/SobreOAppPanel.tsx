@@ -1,12 +1,10 @@
 import AppVersionHistoryModal from '@/Components/AppVersionHistoryModal';
-import { useAppFeatures } from '@/hooks/useAppFeatures';
 import { useAppVersionLabels } from '@/hooks/useAppVersionLabels';
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import {
     ArrowTopRightOnSquareIcon,
     ChevronRightIcon,
     GlobeAltIcon,
-    LifebuoyIcon,
     TagIcon,
 } from '@heroicons/react/24/outline';
 import { useState, type ReactNode } from 'react';
@@ -69,8 +67,6 @@ function ItemRow({
 
 export default function SobreOAppPanel({ className = '' }: { className?: string }) {
     const { webLabel: webVersionLabel, installedLabel } = useAppVersionLabels();
-    const { isEnabled } = useAppFeatures();
-    const showSupport = isEnabled('support');
     const { iosAppStoreUrl = null, androidPlayStoreUrl = null } = usePage().props as {
         iosAppStoreUrl?: string | null;
         androidPlayStoreUrl?: string | null;
@@ -103,24 +99,6 @@ export default function SobreOAppPanel({ className = '' }: { className?: string 
                             />
                         </button>
                     </li>
-
-                    {showSupport ? (
-                        <li>
-                            <Link href={route('mobile.support.index')} className={ROW_CLASS}>
-                                <ItemRow
-                                    title="Suporte"
-                                    subtitle="Problema, sugestão ou elogio sobre o app"
-                                    icon={<LifebuoyIcon className="h-5 w-5" aria-hidden strokeWidth={1.75} />}
-                                    trailing={
-                                        <ChevronRightIcon
-                                            className="h-4 w-4 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-teal-700 dark:text-zinc-600 dark:group-hover:text-teal-300"
-                                            aria-hidden
-                                        />
-                                    }
-                                />
-                            </Link>
-                        </li>
-                    ) : null}
 
                     {appleUrl ? (
                         <li>

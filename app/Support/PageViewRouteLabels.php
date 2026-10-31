@@ -8,8 +8,6 @@ namespace App\Support;
  *
  * @see resources/js/Components/MobileBottomNav.tsx (activeRoutes)
  * @see resources/js/Components/Topbar.tsx
- * @see resources/js/Pages/Mobile/More.tsx
- * @see resources/js/Pages/More/Index.tsx
  *
  * Fallback: formatação do nome técnico da rota.
  */
@@ -42,7 +40,7 @@ final class PageViewRouteLabels
         'login' => 'Login',
         'register' => 'Cadastro',
 
-        // —— Mais (cartões) — mesmos títulos que Mobile/More.tsx e More/Index.tsx ——
+        // —— Atalhos que ficavam no menu Mais (a rota /mais redireciona para a home) ——
         'mobile.publications-feed' => 'Publicações',
         'mobile.news' => 'Notícias',
         'mobile.news.show' => 'Notícias — artigo',
@@ -114,6 +112,13 @@ final class PageViewRouteLabels
         'mobile.location' => 'Localização',
         'mobile.pastors' => 'Pastores',
         'mobile.conheca' => 'Conheça a Nova Semente',
+        'mobile.fale' => 'Fale com a Nova Semente',
+        'mobile.fale.baby' => 'Apresentação de bebê',
+        'mobile.fale.baby.store' => 'Apresentação de bebê — enviar',
+        'mobile.fale.bible' => 'Pedido de Estudo Bíblico',
+        'mobile.fale.bible.store' => 'Pedido de Estudo Bíblico — enviar',
+        'mobile.fale.pastor' => 'Agenda com o Pastor',
+        'mobile.fale.pastor.store' => 'Agenda com o Pastor — enviar',
         'mobile.quem-somos' => 'Quem somos',
         'mobile.programacao-sabado' => 'Programação do Sábado',
         'mobile.acompanhar-culto' => 'Acompanhar Programação',

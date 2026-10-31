@@ -11,7 +11,7 @@ import SelectInput from '@/Components/SelectInput';
 import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
 import ListSortOptionPicker from '@/Components/ListSortOptionPicker';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     AdjustmentsHorizontalIcon,
     ArrowsUpDownIcon,
@@ -91,6 +91,9 @@ export default function SharedTalentIndex({
     ageRangeOptions,
     hasModuleMembership,
 }: Props) {
+    const page = usePage();
+    const loggedIn = Boolean((page.props as { auth?: { user?: unknown } }).auth?.user);
+    const loginHref = `${route('login')}?redirect=${encodeURIComponent(page.url)}`;
     const [publishOpen, setPublishOpen] = useState(false);
     const [filterSheetOpen, setFilterSheetOpen] = useState(false);
     const [sortModalOpen, setSortModalOpen] = useState(false);
@@ -290,9 +293,11 @@ export default function SharedTalentIndex({
                 />
 
                 <div className="flex flex-wrap gap-2">
+                    {loggedIn ? (
+                    <>
                     <Link
                         href={route('mobile.shared-talents.my-listings')}
-                        className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                        className="cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
                     >
                         Minhas publicações
                     </Link>
@@ -319,6 +324,15 @@ export default function SharedTalentIndex({
                     >
                         Compartilhar talento
                     </button>
+                    </>
+                    ) : (
+                        <Link
+                            href={loginHref}
+                            className="cursor-pointer rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                        >
+                            Entre para compartilhar ou participar
+                        </Link>
+                    )}
                 </div>
 
                 <form onSubmit={applySearch} className="flex gap-2 sm:max-w-xl lg:max-w-2xl">

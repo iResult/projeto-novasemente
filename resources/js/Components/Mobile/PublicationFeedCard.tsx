@@ -300,7 +300,7 @@ export default function PublicationFeedCard({
     };
 
     const toggleLike = async () => {
-        if (!user) {
+        if (!user && !isPolls) {
             goLogin();
             return;
         }
@@ -326,7 +326,12 @@ export default function PublicationFeedCard({
                 credentials: 'same-origin',
             });
             if (response.status === 401) {
-                goLogin();
+                if (!isPolls) {
+                    goLogin();
+                }
+                setLiked(prevLiked);
+                setLikesCount(prevCount);
+                onEngagementChange?.(item.id, { liked_by_me: prevLiked, likes_count: prevCount });
                 return;
             }
             if (!response.ok) {
@@ -688,6 +693,7 @@ export default function PublicationFeedCard({
                 <PublicationCommentsSheet
                     show={commentsOpen}
                     feedId={item.id}
+                    allowGuest={isPolls}
                     onClose={() => setCommentsOpen(false)}
                     onCountChange={(count) => {
                         setCommentsCount(count);

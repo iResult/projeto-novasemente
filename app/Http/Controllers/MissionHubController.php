@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Mission\SubmitMissionMessage;
 use App\Models\Church;
 use App\Models\MissionAboutSection;
 use App\Models\MissionEvent;
-use App\Actions\Mission\SubmitMissionMessage;
 use App\Models\MissionMessage;
 use App\Models\MissionWallItem;
 use App\Services\DriveFolderCoverService;
@@ -113,7 +113,7 @@ class MissionHubController extends Controller
             ->map(fn (MissionMessage $m) => [
                 'id' => $m->id,
                 'body' => $m->body,
-                'authorName' => $m->user?->name ?? 'Membro',
+                'authorName' => $m->user?->name ?? $m->guest_name ?? 'Visitante',
                 'authorPhotoUrl' => $m->user?->photo_url,
                 'isTeamHighlight' => $m->is_team_highlight,
                 'createdAt' => $m->created_at?->toIso8601String(),
@@ -137,7 +137,8 @@ class MissionHubController extends Controller
         return Inertia::render('Mobile/MissionMessages', [
             'messages' => $messages,
             'myPendingMessages' => $myPending,
-            'canPost' => (bool) $user,
+            'canPost' => true,
+            'requiresGuestName' => $user === null,
             'storeUrl' => route('mobile.mission.messages.store'),
         ]);
     }
@@ -145,16 +146,30 @@ class MissionHubController extends Controller
     public function storeMessage(Request $request, SubmitMissionMessage $submit): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user, 401, 'Faça login para enviar um depoimento.');
 
         $churchId = $this->churchId($request);
         abort_unless($churchId, 404);
 
-        $valid = $request->validate([
+        $rules = [
             'body' => ['required', 'string', 'min:2', 'max:2000'],
+        ];
+        if ($user === null) {
+            $rules['guest_name'] = ['required', 'string', 'min:2', 'max:80'];
+        }
+
+        $valid = $request->validate($rules, [
+            'guest_name.required' => 'Informe seu nome ou apelido.',
+            'guest_name.min' => 'Use pelo menos 2 letras no nome ou apelido.',
+            'body.required' => 'Escreva o depoimento.',
+            'body.min' => 'Escreva um pouco mais no depoimento.',
         ]);
 
-        $result = $submit((int) $churchId, $user, $valid['body']);
+        $result = $submit(
+            (int) $churchId,
+            $user,
+            $valid['body'],
+            guestName: $user ? null : (string) $valid['guest_name'],
+        );
 
         $redirect = redirect()->route('mobile.mission.messages');
 

@@ -10,6 +10,7 @@ import type { CaixaFixoStoryFinancial } from '@/data/caixaFixoIgrejaStory';
 import { caixaFixoProgressRaised } from '@/data/caixaFixoIgrejaStory';
 import type { ConstrucaoIgrejaStoryData } from '@/data/construcaoIgrejaStory';
 import { construcaoProgressRaised } from '@/data/construcaoIgrejaStory';
+import GuestDonorFields from '@/Components/Donations/GuestDonorFields';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
@@ -168,6 +169,8 @@ export default function MobileDonationCampaignShow({
         amount: '',
         is_anonymous: false,
         send_email_confirmation: false,
+        guest_name: '',
+        guest_phone: '',
     });
 
     const pixKey = pix.pix_key?.trim() || localOffer.pixKey;
@@ -546,6 +549,16 @@ export default function MobileDonationCampaignShow({
                                     Não foi possível ler o valor automaticamente. Informe o valor manualmente.
                                 </p>
                             )}
+                            {!isLoggedIn ? (
+                                <GuestDonorFields
+                                    name={data.guest_name}
+                                    phone={data.guest_phone}
+                                    nameError={errors.guest_name}
+                                    phoneError={errors.guest_phone}
+                                    onName={(value) => setData('guest_name', value)}
+                                    onPhone={(value) => setData('guest_phone', value)}
+                                />
+                            ) : null}
                             <div>
                                 <InputLabel htmlFor="donation_amount" value="Valor da contribuição (R$)" />
                                 <TextInput
@@ -575,7 +588,7 @@ export default function MobileDonationCampaignShow({
                                         </span>
                                     </span>
                                 </label>
-                                {transparency.donor_email && (
+                                {isLoggedIn && transparency.donor_email && (
                                     <label className="flex cursor-pointer items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                                         <input
                                             type="checkbox"

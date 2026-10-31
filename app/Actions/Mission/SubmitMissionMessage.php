@@ -17,11 +17,14 @@ class SubmitMissionMessage
     /**
      * @return array{message: MissionMessage, flash: string, level: 'success'|'info'}
      */
-    public function __invoke(int $churchId, User $user, string $body, bool $asTeamHighlight = false): array
+    public function __invoke(int $churchId, ?User $user, string $body, bool $asTeamHighlight = false, ?string $guestName = null): array
     {
         $trimmed = trim($body);
+        $guestName = trim((string) $guestName);
 
         if ($asTeamHighlight) {
+            abort_unless($user instanceof User, 403);
+
             $message = MissionMessage::create([
                 'church_id' => $churchId,
                 'user_id' => $user->id,
@@ -47,7 +50,8 @@ class SubmitMissionMessage
 
         $message = MissionMessage::create([
             'church_id' => $churchId,
-            'user_id' => $user->id,
+            'user_id' => $user?->id,
+            'guest_name' => $user ? null : ($guestName !== '' ? $guestName : null),
             'body' => $trimmed,
             'moderation_status' => $status,
             'moderation_note' => $analysis->reason,
@@ -60,7 +64,9 @@ class SubmitMissionMessage
 
             return [
                 'message' => $message,
-                'flash' => 'Depoimento enviado! Nossa equipe vai analisar antes de publicar. Você será avisado no aplicativo.',
+                'flash' => $user
+                    ? 'Depoimento enviado! Nossa equipe vai analisar antes de publicar. Você será avisado no aplicativo.'
+                    : 'Depoimento enviado! Nossa equipe vai analisar antes de publicar.',
                 'level' => 'info',
             ];
         }

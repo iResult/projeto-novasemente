@@ -13,7 +13,7 @@ export default function SobreOAppModal({
             <div className="px-12 pt-6 pb-2 text-center sm:px-14 sm:pt-7">
                 <h2 className="text-lg font-bold leading-tight tracking-tight text-zinc-900 dark:text-white">Sobre o APP</h2>
                 <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    Versão, lojas, links e suporte.
+                    Versão, lojas e links.
                 </p>
             </div>
             <div className="px-5 pb-6 sm:px-7">

@@ -16,6 +16,8 @@ export type PublicationCommentRow = {
 type Props = {
     show: boolean;
     feedId: string;
+    /** Enquete: visitante comenta com nome, sem conta. */
+    allowGuest?: boolean;
     onClose: () => void;
     onCountChange?: (count: number) => void;
 };
@@ -25,13 +27,20 @@ type PageProps = {
     csrf_token?: string;
 };
 
-export default function PublicationCommentsSheet({ show, feedId, onClose, onCountChange }: Props) {
+export default function PublicationCommentsSheet({
+    show,
+    feedId,
+    allowGuest = false,
+    onClose,
+    onCountChange,
+}: Props) {
     const page = usePage().props as PageProps;
     const user = page.auth?.user ?? null;
     const csrf = page.csrf_token ?? '';
     const [comments, setComments] = useState<PublicationCommentRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [body, setBody] = useState('');
+    const [authorName, setAuthorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -86,12 +95,13 @@ export default function PublicationCommentsSheet({ show, feedId, onClose, onCoun
 
     const submit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!user) {
+        if (!user && !allowGuest) {
             window.location.href = route('login');
             return;
         }
         const text = body.trim();
-        if (!text || submitting) {
+        const name = authorName.trim();
+        if (!text || submitting || (!user && name.length < 2)) {
             return;
         }
 
@@ -107,11 +117,29 @@ export default function PublicationCommentsSheet({ show, feedId, onClose, onCoun
                     'X-CSRF-TOKEN': csrf,
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({ body: text }),
+                body: JSON.stringify(user ? { body: text } : { body: text, author_name: name }),
             });
 
             if (response.status === 401) {
-                window.location.href = route('login');
+                if (!allowGuest) {
+                    window.location.href = route('login');
+                } else {
+                    setError('Não foi possível publicar o comentário.');
+                }
+                return;
+            }
+
+            if (response.status === 422) {
+                const payload = (await response.json().catch(() => null)) as {
+                    errors?: { author_name?: string; body?: string };
+                    message?: string;
+                } | null;
+                setError(
+                    payload?.errors?.author_name ??
+                        payload?.errors?.body ??
+                        payload?.message ??
+                        'Não foi possível publicar o comentário.',
+                );
                 return;
             }
 
@@ -135,7 +163,7 @@ export default function PublicationCommentsSheet({ show, feedId, onClose, onCoun
     };
 
     const removeOwn = async (commentId: number) => {
-        if (!user) {
+        if (!user && !allowGuest) {
             return;
         }
         try {
@@ -207,24 +235,37 @@ export default function PublicationCommentsSheet({ show, feedId, onClose, onCoun
                 </div>
 
                 <div className="border-t border-zinc-200 px-3 py-3 dark:border-zinc-800">
-                    {user ? (
-                        <form onSubmit={(e) => void submit(e)} className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={body}
-                                onChange={(e) => setBody(e.target.value)}
-                                maxLength={1000}
-                                placeholder="Adicione um comentário…"
-                                className="min-w-0 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 outline-none ring-teal-500/30 placeholder:text-zinc-400 focus:border-teal-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
-                            />
-                            <button
-                                type="submit"
-                                disabled={submitting || !body.trim()}
-                                className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
-                                aria-label="Publicar comentário"
-                            >
-                                <PaperAirplaneIcon className="h-4 w-4" aria-hidden />
-                            </button>
+                    {user || allowGuest ? (
+                        <form onSubmit={(e) => void submit(e)} className="space-y-2">
+                            {!user ? (
+                                <input
+                                    type="text"
+                                    value={authorName}
+                                    onChange={(e) => setAuthorName(e.target.value)}
+                                    maxLength={80}
+                                    placeholder="Seu nome ou apelido"
+                                    autoComplete="nickname"
+                                    className="w-full rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 outline-none ring-teal-500/30 placeholder:text-zinc-400 focus:border-teal-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                                />
+                            ) : null}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={body}
+                                    onChange={(e) => setBody(e.target.value)}
+                                    maxLength={1000}
+                                    placeholder="Adicione um comentário…"
+                                    className="min-w-0 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 outline-none ring-teal-500/30 placeholder:text-zinc-400 focus:border-teal-500 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={submitting || !body.trim() || (!user && authorName.trim().length < 2)}
+                                    className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+                                    aria-label="Publicar comentário"
+                                >
+                                    <PaperAirplaneIcon className="h-4 w-4" aria-hidden />
+                                </button>
+                            </div>
                         </form>
                     ) : (
                         <p className="text-center text-sm text-zinc-600 dark:text-zinc-300">

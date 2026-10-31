@@ -20,7 +20,7 @@ class MissionMessageNotifier
 
         $message->loadMissing(['user:id,name']);
 
-        $authorName = $message->user?->name ?? 'Um membro';
+        $authorName = $message->user?->name ?? $message->guest_name ?? 'Um visitante';
         $preview = mb_strlen($message->body) > 120
             ? mb_substr($message->body, 0, 117).'…'
             : $message->body;

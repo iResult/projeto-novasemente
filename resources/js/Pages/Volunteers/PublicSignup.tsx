@@ -2333,17 +2333,9 @@ export default function PublicSignup({
                 <footer className="mt-10 hidden pb-6 text-center text-xs text-zinc-500 dark:text-zinc-400 sm:block">
                     <div className="flex flex-col items-center gap-2">
                         <span>Nova Semente — Voluntariado</span>
-                        <div className="flex items-center gap-3">
-                            <Link href={route('more.index')} className="underline">
-                                Início
-                            </Link>
-                            <span className="opacity-40" aria-hidden>
-                                ·
-                            </span>
-                            <Link href={route('mobile.home')} className="underline">
-                                App
-                            </Link>
-                        </div>
+                        <Link href={route('mobile.home')} className="underline">
+                            Início
+                        </Link>
                     </div>
                 </footer>
             </div>

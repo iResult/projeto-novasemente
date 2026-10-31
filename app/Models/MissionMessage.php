@@ -16,6 +16,7 @@ class MissionMessage extends Model
     protected $fillable = [
         'church_id',
         'user_id',
+        'guest_name',
         'body',
         'is_hidden',
         'is_team_highlight',

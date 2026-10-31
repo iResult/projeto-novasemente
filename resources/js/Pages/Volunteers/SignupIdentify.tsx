@@ -33,7 +33,7 @@ export default function SignupIdentify({ token, churchName, identifyUrl }: Props
             <div className="mx-auto w-full max-w-md space-y-5 px-1 sm:px-0">
                 <header>
                     <Link
-                        href={route('more.index')}
+                        href={route('mobile.home')}
                         className="mb-4 inline-flex cursor-pointer text-sm font-medium text-teal-800 underline-offset-2 hover:underline dark:text-teal-300"
                     >
                         Voltar

@@ -7,6 +7,7 @@ use App\Models\PollOption;
 use App\Models\PollVote;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -187,13 +188,25 @@ final class PollVoting
         $ip = self::clientIp($request);
         $voterKey = self::voterKey($user, $ip);
         $existing = self::findVote($poll, $user, $ip);
+        $voterName = trim(preg_replace('/\s+/u', ' ', (string) $request->input('voter_name', '')) ?? '');
+        if ($voterName === '') {
+            throw ValidationException::withMessages([
+                'voter_name' => 'Informe seu nome ou apelido.',
+            ]);
+        }
+        if (mb_strlen($voterName) > 80) {
+            throw ValidationException::withMessages([
+                'voter_name' => 'Nome ou apelido muito longo.',
+            ]);
+        }
 
         try {
-            DB::transaction(function () use ($poll, $user, $ip, $voterKey, $answer, $existing) {
+            DB::transaction(function () use ($poll, $user, $ip, $voterKey, $answer, $existing, $voterName) {
                 if ($existing !== null) {
                     $existing->update([
                         'poll_option_id' => null,
                         'answer_text' => $answer,
+                        'voter_name' => $voterName,
                         'voter_ip' => $ip,
                         'voter_key' => $voterKey,
                         'user_id' => $user?->id ?? $existing->user_id,
@@ -203,6 +216,7 @@ final class PollVoting
                         'poll_id' => $poll->id,
                         'poll_option_id' => null,
                         'answer_text' => $answer,
+                        'voter_name' => $voterName,
                         'user_id' => $user?->id,
                         'voter_ip' => $ip,
                         'voter_key' => $voterKey,
@@ -297,7 +311,7 @@ final class PollVoting
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, PollOption>  $candidates
+     * @param  Collection<int, PollOption>  $candidates
      */
     public static function findSimilarOption($candidates, string $label): ?PollOption
     {

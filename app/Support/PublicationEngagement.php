@@ -14,7 +14,7 @@ final class PublicationEngagement
      * @param  list<array<string, mixed>>  $items
      * @return list<array<string, mixed>>
      */
-    public static function enrichItems(array $items, ?User $user): array
+    public static function enrichItems(array $items, ?User $user, ?string $guestKey = null): array
     {
         if ($items === []) {
             return $items;
@@ -56,6 +56,8 @@ final class PublicationEngagement
         $likedByMe = [];
         if ($user !== null) {
             $likedByMe = self::likedKeysForUser($user->id, $pairs);
+        } elseif (is_string($guestKey) && $guestKey !== '') {
+            $likedByMe = self::likedKeysForGuest($guestKey, $pairs);
         }
 
         return array_map(static function (array $item) use ($likeCounts, $commentCounts, $likedByMe): array {
@@ -111,6 +113,32 @@ final class PublicationEngagement
 
         $rows = PublicationLike::query()
             ->where('user_id', $userId)
+            ->whereIn('subject_type', $types)
+            ->whereIn('subject_id', $ids)
+            ->get(['subject_type', 'subject_id']);
+
+        $out = [];
+        foreach ($rows as $row) {
+            $key = $row->subject_type.'|'.$row->subject_id;
+            if (isset($pairs[$key])) {
+                $out[$key] = true;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, array{type: string, id: int}>  $pairs
+     * @return array<string, true>
+     */
+    private static function likedKeysForGuest(string $guestKey, array $pairs): array
+    {
+        $types = array_values(array_unique(array_column($pairs, 'type')));
+        $ids = array_values(array_unique(array_column($pairs, 'id')));
+
+        $rows = PublicationLike::query()
+            ->where('guest_key', $guestKey)
             ->whereIn('subject_type', $types)
             ->whereIn('subject_id', $ids)
             ->get(['subject_type', 'subject_id']);

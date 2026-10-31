@@ -1,7 +1,6 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
-import DropletIcon from '@/Components/Mobile/DropletIcon';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
 import { arrangeHomeCardMosaic, homeCardPhotoPresentation } from '@/data/homeCardPilot';
 import {
@@ -18,7 +17,6 @@ import {
     CalendarDaysIcon,
     CameraIcon,
     ChartBarIcon,
-    ChatBubbleLeftRightIcon,
     ChatBubbleOvalLeftEllipsisIcon,
     ClipboardDocumentListIcon,
     FilmIcon,
@@ -70,14 +68,6 @@ const catalog: QuickAction[] = [
         icon: BookmarkSquareIcon,
     },
     {
-        id: 'batismo',
-        label: 'Batismo',
-        subtitle: 'Ainda não é batizado? Faça parte da família NS',
-        route: 'mobile.baptism',
-        featureKey: 'baptism',
-        icon: DropletIcon,
-    },
-    {
         id: 'conheca',
         label: 'Conheça a Nova Semente',
         subtitle: 'Quem somos, pastores e horários',
@@ -88,7 +78,7 @@ const catalog: QuickAction[] = [
     {
         id: 'biblioteca',
         label: 'Biblioteca',
-        subtitle: 'Livros e PDFs para leitura e download',
+        subtitle: 'Livros, revistas, lição, meditação e Ellen G. White',
         route: 'mobile.biblioteca',
         featureKey: 'library',
         icon: RectangleStackIcon,
@@ -206,14 +196,6 @@ const catalog: QuickAction[] = [
         icon: MusicalNoteIcon,
     },
     {
-        id: 'ns-whats',
-        label: 'NS Conecta',
-        subtitle: 'Converse com departamentos, líderes e voluntários',
-        route: 'mobile.ns-whats.index',
-        featureKey: 'ns_whats',
-        icon: ChatBubbleLeftRightIcon,
-    },
-    {
         id: 'revista-adventista',
         label: 'Revista Adventista',
         subtitle: 'Artigos, editoriais e colunas da Revista Adventista',
@@ -272,8 +254,8 @@ export default function HomeCardsPilot() {
                 return !action.featureKey || isEnabled(action.featureKey);
             });
 
-        return arrangeHomeCardMosaic(enabled);
-    }, [isEnabled]);
+        return arrangeHomeCardMosaic(enabled, bookmarks);
+    }, [bookmarks, isEnabled]);
 
     return (
         <MobileLayout>
@@ -321,7 +303,7 @@ export default function HomeCardsPilot() {
                                                 setBookmarks((current) =>
                                                     current.includes(key)
                                                         ? current.filter((item) => item !== key)
-                                                        : [...current, key],
+                                                        : [key, ...current.filter((item) => item !== key)],
                                                 )
                                             }
                                         />

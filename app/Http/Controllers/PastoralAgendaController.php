@@ -246,8 +246,7 @@ class PastoralAgendaController extends Controller
                     'appointmentId' => -((int) $s->id),
                     'status' => $s->status,
                     'statusLabel' => MobileChurchSolicitationController::statusLabel((string) $s->status),
-                    'requesterLabel' => $s->user?->name
-                        ?: 'Membro',
+                    'requesterLabel' => $s->memberDisplayName(),
                     'slotStartKey' => $slotStartKey,
                     'startAt' => $startAtIso,
                     'startLabel' => $startLabel,

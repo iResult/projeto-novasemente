@@ -37,10 +37,24 @@ class PastoralBookingInertiaProps
             return null;
         }
 
+        return [
+            'pastors' => self::pastorsWithSlots($churchId, $ignoreConflictAppointmentId, $ignoreChurchSolicitationId),
+            'storeUrl' => route('mobile.pastoral-appointments.store'),
+            'defaultRequesterName' => (string) $user->name,
+        ];
+    }
+
+    /**
+     * Pastores e horários livres, sem exigir usuário logado.
+     *
+     * @return list<array{id: int, name: string, slots: list<array{value: string, label: string, modality: string}>}>
+     */
+    public static function pastorsWithSlots(int $churchId, ?int $ignoreConflictAppointmentId = null, ?int $ignoreChurchSolicitationId = null): array
+    {
         $tz = (string) config('app.timezone');
         $from = Carbon::now($tz)->startOfMinute();
 
-        $pastors = Pastor::query()
+        return Pastor::query()
             ->where('church_id', $churchId)
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -60,11 +74,5 @@ class PastoralBookingInertiaProps
             ])
             ->values()
             ->all();
-
-        return [
-            'pastors' => $pastors,
-            'storeUrl' => route('mobile.pastoral-appointments.store'),
-            'defaultRequesterName' => (string) $user->name,
-        ];
     }
 }

@@ -7,7 +7,7 @@ import InputLabel from '@/Components/InputLabel';
 import Textarea from '@/Components/Textarea';
 import SelectInput from '@/Components/SelectInput';
 import InputError from '@/Components/InputError';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import TalentListingContactPanel, {
     type TalentContactChannel,
 } from '@/Components/Talents/TalentListingContactPanel';
@@ -35,6 +35,7 @@ interface Listing {
     has_interest: boolean;
     is_owner: boolean;
     is_example?: boolean;
+    has_contact?: boolean;
     contact_channels?: TalentContactChannel[];
 }
 
@@ -44,6 +45,9 @@ interface Props {
 }
 
 export default function TalentConnectionShow({ listing, reportReasons }: Props) {
+    const page = usePage();
+    const loggedIn = Boolean((page.props as { auth?: { user?: unknown } }).auth?.user);
+    const loginHref = `${route('login')}?redirect=${encodeURIComponent(page.url)}`;
     const [reportOpen, setReportOpen] = useState(false);
 
     const interestForm = useForm({ message: '' });
@@ -101,6 +105,13 @@ export default function TalentConnectionShow({ listing, reportReasons }: Props) 
 
                 {listing.contact_channels && listing.contact_channels.length > 0 ? (
                     <TalentListingContactPanel channels={listing.contact_channels} isExample={listing.is_example} />
+                ) : listing.has_contact && !loggedIn ? (
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                        O contato fica na sua conta.{' '}
+                        <Link href={loginHref} className="cursor-pointer font-semibold text-zinc-900 underline dark:text-white">
+                            Entrar
+                        </Link>
+                    </div>
                 ) : null}
 
                 <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
@@ -152,6 +163,15 @@ export default function TalentConnectionShow({ listing, reportReasons }: Props) 
                     tratados fora do app, com responsabilidade mútua entre as partes.
                 </p>
 
+                {!loggedIn && !listing.is_owner ? (
+                    <Link
+                        href={loginHref}
+                        className="inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-zinc-900 px-4 py-3 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900"
+                    >
+                        Entre para demonstrar interesse
+                    </Link>
+                ) : null}
+
                 {!listing.is_owner && listing.can_express_interest && !listing.has_interest && (
                     <form onSubmit={submitInterest} className="space-y-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-900 dark:bg-brand-950/30">
                         <h2 className="font-semibold text-zinc-900 dark:text-white">Tenho interesse</h2>
@@ -176,7 +196,7 @@ export default function TalentConnectionShow({ listing, reportReasons }: Props) 
                     </p>
                 )}
 
-                {!listing.is_owner && (
+                {loggedIn && !listing.is_owner && (
                     <button
                         type="button"
                         onClick={() => setReportOpen(true)}

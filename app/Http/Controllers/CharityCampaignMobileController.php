@@ -12,6 +12,7 @@ use App\Services\CharityDonationNotifier;
 use App\Services\CharityItemDonationNotifier;
 use App\Services\ReceiptOcrService;
 use App\Support\GivingLinks;
+use App\Support\GuestContact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -171,11 +172,12 @@ class CharityCampaignMobileController extends Controller
             return redirect()->back()->with('error', 'Envie o comprovante antes de confirmar a doação.');
         }
 
-        $data = $request->validate([
+        $user = $request->user();
+        $data = $request->validate(array_merge([
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
             'is_anonymous' => ['boolean'],
             'send_email_confirmation' => ['boolean'],
-        ]);
+        ], GuestContact::rules($user === null)), GuestContact::messages());
 
         if (CharityDonation::query()->where('receipt_hash', $pending['receipt_hash'])->exists()) {
             $request->session()->forget($this->sessionKey($charityCampaign->id));
@@ -190,18 +192,20 @@ class CharityCampaignMobileController extends Controller
             Storage::disk('public')->move($pendingPath, $finalPath);
         }
 
-        $donation = DB::transaction(function () use ($request, $charityCampaign, $pending, $data, $finalPath) {
+        $donation = DB::transaction(function () use ($request, $charityCampaign, $pending, $data, $finalPath, $user) {
             $campaign = CharityCampaign::query()->lockForUpdate()->findOrFail($charityCampaign->id);
 
             $donation = CharityDonation::create([
                 'campaign_id' => $campaign->id,
-                'user_id' => $request->user()->id,
+                'user_id' => $user?->id,
+                'external_donor_name' => $user ? null : trim((string) ($data['guest_name'] ?? '')),
                 'amount' => $data['amount'],
                 'ocr_suggested_amount' => $pending['ocr_suggested_amount'] ?? null,
                 'receipt_path' => $finalPath,
                 'receipt_hash' => $pending['receipt_hash'],
                 'is_anonymous' => $request->boolean('is_anonymous'),
-                'donor_email_confirmation_requested' => $request->boolean('send_email_confirmation'),
+                'manual_registration_note' => $user ? null : GuestContact::phoneNote($data['guest_phone'] ?? null),
+                'donor_email_confirmation_requested' => $user ? $request->boolean('send_email_confirmation') : false,
                 'confirmed_at' => now(),
             ]);
 
@@ -218,7 +222,9 @@ class CharityCampaignMobileController extends Controller
 
         return redirect()
             ->route('mobile.donations.show', $charityCampaign)
-            ->with('success', 'Doação registrada com sucesso! Obrigado pela contribuição. Você pode acompanhar em Minhas doações.');
+            ->with('success', $user
+                ? 'Doação registrada com sucesso! Obrigado pela contribuição. Você pode acompanhar em Minhas doações.'
+                : 'Doação registrada com sucesso! Obrigado. A equipe financeira confere o comprovante.');
     }
 
     public function pledgeItemDonation(Request $request, CharityCampaign $charityCampaign): RedirectResponse
@@ -231,24 +237,27 @@ class CharityCampaignMobileController extends Controller
             return redirect()->back()->with('error', 'Esta campanha não está aceitando doações no momento.');
         }
 
-        $data = $request->validate([
+        $user = $request->user();
+        $data = $request->validate(array_merge([
             'item_description' => ['required', 'string', 'max:255'],
             'quantity' => ['required', 'integer', 'min:1', 'max:999999'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'is_anonymous' => ['boolean'],
-        ]);
+        ], GuestContact::rules($user === null)), GuestContact::messages());
 
-        $pledge = DB::transaction(function () use ($request, $charityCampaign, $data) {
+        $pledge = DB::transaction(function () use ($request, $charityCampaign, $data, $user) {
             $campaign = CharityCampaign::query()->lockForUpdate()->findOrFail($charityCampaign->id);
 
             $pledge = CharityItemDonation::create([
                 'campaign_id' => $campaign->id,
                 'source' => CharityItemDonation::SOURCE_APP,
-                'user_id' => $request->user()->id,
+                'user_id' => $user?->id,
+                'external_donor_name' => $user ? null : trim((string) ($data['guest_name'] ?? '')),
                 'item_description' => trim($data['item_description']),
                 'quantity' => (int) $data['quantity'],
                 'unit_label' => $campaign->unit_label,
                 'notes' => $data['notes'] ?? null,
+                'staff_note' => $user ? null : GuestContact::phoneNote($data['guest_phone'] ?? null),
                 'status' => CharityItemDonation::STATUS_PLEDGED,
                 'is_anonymous' => $request->boolean('is_anonymous'),
                 'pledged_at' => now(),

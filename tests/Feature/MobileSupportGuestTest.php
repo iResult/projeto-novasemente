@@ -48,7 +48,7 @@ class MobileSupportGuestTest extends TestCase
                 ->has('modalDetail')
                 ->where('modalDetail.isGuestTicket', true)
                 ->where('modalDetail.guestName', 'Visitante')
-                ->where('modalDetail.canChat', false)
+                ->where('modalDetail.canChat', true)
                 ->has('tickets', 1)
                 ->where('tickets.0.publicToken', $token)
             );
@@ -214,5 +214,57 @@ class MobileSupportGuestTest extends TestCase
         Mail::assertQueued(SupportTicketStaffMessageMail::class, function (SupportTicketStaffMessageMail $mail) use ($reply) {
             return $mail->hasTo('eduardo@example.com') && str_contains($mail->messageContent, $reply);
         });
+    }
+
+    public function test_guest_can_reply_and_close_without_login(): void
+    {
+        $token = (string) Str::uuid();
+        AppSupportTicket::create([
+            'public_token' => $token,
+            'user_id' => null,
+            'type' => 'problem',
+            'message' => 'Não consigo fazer login',
+            'guest_name' => 'Visitante',
+            'status' => 'open',
+        ]);
+
+        $this->post(route('mobile.support.messages.store', ['token' => $token]), [
+            'content' => 'Continuo sem conseguir entrar.',
+        ])->assertRedirect(route('mobile.support.index', ['modal' => $token]));
+
+        $this->assertDatabaseHas('app_support_messages', [
+            'content' => 'Continuo sem conseguir entrar.',
+            'sender_type' => 'user',
+            'sender_user_id' => null,
+        ]);
+
+        $this->patch(route('mobile.support.close', ['token' => $token]), [])
+            ->assertRedirect(route('mobile.support.index', ['modal' => $token]));
+
+        $this->assertDatabaseHas('app_support_tickets', [
+            'public_token' => $token,
+            'status' => 'closed',
+        ]);
+    }
+
+    public function test_guest_cannot_reply_on_another_users_ticket(): void
+    {
+        $owner = User::factory()->create();
+        $token = (string) Str::uuid();
+        AppSupportTicket::create([
+            'public_token' => $token,
+            'user_id' => $owner->id,
+            'type' => 'problem',
+            'message' => 'Meu chamado',
+            'status' => 'open',
+        ]);
+
+        $this->post(route('mobile.support.messages.store', ['token' => $token]), [
+            'content' => 'Não deveria entrar.',
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('app_support_messages', [
+            'content' => 'Não deveria entrar.',
+        ]);
     }
 }

@@ -38,6 +38,7 @@ class PollTextResponseTest extends TestCase
         $this->actingAs($member)
             ->post(route('mobile.polls.vote', $poll), [
                 'answer_text' => "Calendário de eventos\nNotificações melhores",
+                'voter_name' => 'Ana',
             ])
             ->assertRedirect(route('mobile.polls.show', $poll));
 
@@ -45,6 +46,7 @@ class PollTextResponseTest extends TestCase
             'poll_id' => $poll->id,
             'user_id' => $member->id,
             'answer_text' => "Calendário de eventos\nNotificações melhores",
+            'voter_name' => 'Ana',
             'poll_option_id' => null,
         ]);
 
@@ -177,6 +179,7 @@ class PollTextResponseTest extends TestCase
         $this->actingAs($member)
             ->post(route('mobile.polls.vote', $suggestion), [
                 'answer_text' => $secret,
+                'voter_name' => 'Ana',
             ])
             ->assertRedirect(route('mobile.polls.show', $suggestion));
 
@@ -218,5 +221,48 @@ class PollTextResponseTest extends TestCase
 
         $this->get(route('polls.display', ['token' => $suggestion->public_token]))
             ->assertNotFound();
+    }
+
+    public function test_guest_can_open_polls_and_submit_text_with_nickname(): void
+    {
+        $this->seed([RolePermissionSeeder::class, ChurchSeeder::class]);
+
+        $churchId = (int) Church::query()->orderBy('id')->value('id');
+        $creator = User::factory()->create(['church_id' => $churchId]);
+
+        $poll = Poll::query()->create([
+            'church_id' => $churchId,
+            'created_by' => $creator->id,
+            'question' => Poll::WEEKLY_SUGGESTION_QUESTION,
+            'allow_multiple' => false,
+            'response_type' => Poll::RESPONSE_TEXT,
+            'status' => Poll::STATUS_OPEN,
+            'display_enabled' => false,
+        ]);
+
+        $this->get(route('mobile.polls.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Mobile/Polls/Index'));
+
+        $this->post(route('mobile.polls.vote', $poll), [
+            'answer_text' => 'Mais encontros',
+            'voter_name' => 'Bia',
+        ])->assertRedirect(route('mobile.polls.show', $poll));
+
+        $this->assertDatabaseHas('poll_votes', [
+            'poll_id' => $poll->id,
+            'user_id' => null,
+            'voter_name' => 'Bia',
+            'answer_text' => 'Mais encontros',
+        ]);
+
+        $this->get(route('mobile.polls.show', $poll))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Mobile/Polls/Show')
+                ->where('poll.has_voted', true)
+                ->where('poll.my_answer_text', 'Mais encontros')
+                ->where('poll.my_voter_name', 'Bia')
+                ->where('poll.results', null));
     }
 }

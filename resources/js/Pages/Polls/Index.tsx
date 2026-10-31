@@ -53,7 +53,7 @@ type PollRow = {
     votes_count: number;
     options: PollOptionForm[];
     results: PollResults | null;
-    text_answers?: { id: number; answer_text: string; created_at: string | null }[];
+    text_answers?: { id: number; answer_text: string; voter_name?: string | null; created_at: string | null }[];
     created_at: string | null;
     public_token: string | null;
     public_url: string | null;
@@ -515,7 +515,7 @@ export default function Index({
                                     </div>
                                     <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                                         {poll.response_type === 'text'
-                                            ? 'Texto livre · sem gráfico de resultado'
+                                            ? 'Texto livre'
                                             : `${poll.options_count} opções · resultado em % · 1 por pessoa`}
                                     </p>
                                     {poll.results && <PollCardResults results={poll.results} />}
@@ -528,7 +528,7 @@ export default function Index({
                                                     title: poll.question,
                                                     excerpt:
                                                         poll.response_type === 'text'
-                                                            ? 'Texto livre · sem gráfico de resultado'
+                                                            ? 'Texto livre'
                                                             : `${poll.options_count} opções · resultado em % · 1 por pessoa`,
                                                     meta: [
                                                         poll.status_label,
@@ -737,8 +737,7 @@ export default function Index({
                                 </SelectInput>
                                 {data.response_type === 'text' ? (
                                     <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                        Texto livre (até 2 linhas). Não há resultado público — as respostas ficam só no
-                                        painel.
+                                        Texto livre (até 2 linhas). As respostas ficam só no painel.
                                     </p>
                                 ) : null}
                             </section>
@@ -817,7 +816,7 @@ export default function Index({
 
                             <section className="rounded-3xl border border-zinc-200/80 bg-white px-4 py-4 text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 sm:px-5">
                                 {data.response_type === 'text'
-                                    ? 'Cada pessoa envia uma sugestão (até duas linhas). Não há gráfico de resultado.'
+                                    ? 'Cada pessoa envia uma sugestão (até duas linhas) e informa o nome ou apelido.'
                                     : 'Cada pessoa pode votar só uma vez. Visitantes sem login ficam limitados pelo IP.'}
                             </section>
                             <InputError message={errors.allow_multiple} className="mt-1" />
@@ -1409,7 +1408,12 @@ export default function Index({
                                                 key={row.id}
                                                 className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
                                             >
-                                                <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-100">
+                                                {row.voter_name ? (
+                                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                                                        {row.voter_name}
+                                                    </p>
+                                                ) : null}
+                                                <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-100">
                                                     {row.answer_text}
                                                 </p>
                                             </li>
@@ -1417,7 +1421,7 @@ export default function Index({
                                     </ul>
                                 ) : (
                                     <p className="rounded-3xl border border-dashed border-zinc-300 bg-white px-4 py-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-                                        Ainda não há sugestões nesta enquete. Não há gráfico de resultado.
+                                        Ainda não há sugestões nesta enquete.
                                     </p>
                                 )
                             ) : editingPoll?.results ? (

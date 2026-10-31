@@ -279,7 +279,11 @@ class PublicationFeed
 
         // Página 1: todos do mês atual (mín. 10). Demais páginas: +10.
         [$slice, $hasMore, $nextPage] = self::paginateForFeed($items, $page, $sort);
-        $slice = PublicationEngagement::enrichItems($slice, $request->user());
+        $slice = PublicationEngagement::enrichItems(
+            $slice,
+            $request->user(),
+            PublicationGuest::existingKey($request),
+        );
 
         return [
             'items' => [

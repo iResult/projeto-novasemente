@@ -1,5 +1,6 @@
 import MobileLayout from '@/Layouts/MobileLayout';
 import FlashMessages from '@/Components/FlashMessages';
+import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import Textarea from '@/Components/Textarea';
@@ -34,18 +35,25 @@ type PollShow = {
     options: PollOption[];
     selected_option_ids: number[];
     my_answer_text: string | null;
+    my_voter_name?: string | null;
     results: PollResults | null;
 };
 
 type Props = {
     poll: PollShow;
     otherOpenUnansweredCount?: number;
+    suggestedVoterName?: string;
 };
 
-export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: Props) {
+export default function MobilePollsShow({
+    poll,
+    otherOpenUnansweredCount = 0,
+    suggestedVoterName = '',
+}: Props) {
     const isText = poll.response_type === 'text';
     const [selected, setSelected] = useState<number[]>(poll.selected_option_ids ?? []);
     const [answerText, setAnswerText] = useState(poll.my_answer_text ?? '');
+    const [voterName, setVoterName] = useState(poll.my_voter_name || suggestedVoterName || '');
     const [otherText, setOtherText] = useState('');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -81,18 +89,22 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                 setError('Use no máximo duas linhas.');
                 return;
             }
+            if (voterName.trim().length < 2) {
+                setError('Informe seu nome ou apelido.');
+                return;
+            }
             setProcessing(true);
             setError(null);
             router.post(
                 route('mobile.polls.vote', poll.id),
-                { answer_text: trimmed },
+                { answer_text: trimmed, voter_name: voterName.trim() },
                 {
                     preserveScroll: true,
                     onFinish: () => setProcessing(false),
                     onSuccess: () => setEditing(false),
                     onError: (errs) => {
-                        const msg = (errs as { answer_text?: string }).answer_text;
-                        setError(msg ?? 'Não foi possível enviar sua sugestão.');
+                        const e = errs as { answer_text?: string; voter_name?: string };
+                        setError(e.voter_name ?? e.answer_text ?? 'Não foi possível enviar sua sugestão.');
                     },
                 },
             );
@@ -186,13 +198,16 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                     <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
                         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{poll.question}</h2>
                         <p className="text-sm text-emerald-900 dark:text-emerald-100">
-                            Obrigado! Sua sugestão foi registrada. Esta enquete não exibe resultado público.
+                            Obrigado! Sua sugestão foi registrada.
                         </p>
                         {poll.my_answer_text ? (
                             <div className="rounded-xl border border-emerald-200/80 bg-white/80 px-3 py-2 dark:border-emerald-800 dark:bg-zinc-900/60">
                                 <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                                     Sua resposta
                                 </p>
+                                {poll.my_voter_name ? (
+                                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{poll.my_voter_name}</p>
+                                ) : null}
                                 <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-100">
                                     {poll.my_answer_text}
                                 </p>
@@ -205,7 +220,7 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{poll.question}</h2>
                             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                                 {isText
-                                    ? 'Texto livre · no máximo duas linhas · sem resultado público'
+                                    ? 'Texto livre · no máximo duas linhas'
                                     : editing
                                       ? 'Escolha outra opção'
                                       : 'Selecione uma opção'}
@@ -228,6 +243,22 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                                     <p className="text-right text-[11px] text-zinc-400">
                                         {answerText.length}/{poll.text_answer_max || 160}
                                     </p>
+                                    <div>
+                                        <InputLabel htmlFor="poll_voter_name" value="Nome / apelido" />
+                                        <TextInput
+                                            id="poll_voter_name"
+                                            value={voterName}
+                                            onChange={(e) => {
+                                                setError(null);
+                                                setVoterName(e.target.value);
+                                            }}
+                                            maxLength={80}
+                                            disabled={!poll.is_open}
+                                            placeholder="Como podemos te chamar?"
+                                            className="mt-1 w-full"
+                                            autoComplete="nickname"
+                                        />
+                                    </div>
                                 </div>
                             ) : (
                                 <ul className="mt-4 space-y-2">
@@ -297,7 +328,7 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                                     disabled={
                                         processing ||
                                         (isText
-                                            ? answerText.trim().length === 0
+                                            ? answerText.trim().length === 0 || voterName.trim().length < 2
                                             : selected.length === 0 ||
                                               (writingIn && otherText.trim().length < writeInMin))
                                     }
@@ -325,11 +356,11 @@ export default function MobilePollsShow({ poll, otherOpenUnansweredCount = 0 }: 
                             </p>
                         )}
 
-                        <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-                            {isText
-                                ? 'Sua sugestão fica só com a equipe — não há resultado em gráfico.'
-                                : 'O resultado aparece assim que você enviar sua resposta.'}
-                        </p>
+                        {!isText ? (
+                            <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
+                                O resultado aparece assim que você enviar sua resposta.
+                            </p>
+                        ) : null}
                     </form>
                 ) : null}
 

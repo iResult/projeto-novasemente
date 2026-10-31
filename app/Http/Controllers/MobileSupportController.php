@@ -251,6 +251,24 @@ class MobileSupportController extends Controller
         )));
     }
 
+    /** Visitante (sem conta, ou a mesma sessão que abriu o chamado) pode conversar. */
+    private function guestVisitorMayChat(Request $request, ?User $user, AppSupportTicket $ticket, bool $isStaff): bool
+    {
+        if ($isStaff || ! empty($ticket->user_id)) {
+            return false;
+        }
+
+        if (! $user) {
+            return true;
+        }
+
+        return in_array(
+            (string) $ticket->public_token,
+            $this->guestTicketTokensFromSession($request),
+            true,
+        );
+    }
+
     private function rememberGuestTicketToken(Request $request, string $token): void
     {
         $tokens = $this->guestTicketTokensFromSession($request);
@@ -355,10 +373,11 @@ class MobileSupportController extends Controller
         $isStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
         $isActive = AppSupportTicket::isActiveStatus((string) $ticket->status);
 
-        // Equipe responde mesmo em chamado de visitante (sem user_id); o dono só conversa se tiver conta.
+        // Visitante conversa no chamado sem conta; a equipe responde no mesmo fio.
         $canChat = $isActive && (
             $isStaff
             || ((bool) $hasOwner && $isOwner)
+            || $this->guestVisitorMayChat($request, $user, $ticket, $isStaff)
         );
 
         $staffReplySendsOwnerEmail = $canChat && $isStaff && (
@@ -405,7 +424,6 @@ class MobileSupportController extends Controller
     public function ticketMessages(Request $request, string $token): JsonResponse
     {
         $user = $request->user();
-        abort_unless($user, 401);
         $isAdmin = $this->isAdmin($user);
 
         $ticket = AppSupportTicket::query()->where('public_token', $token)->firstOrFail();
@@ -414,21 +432,24 @@ class MobileSupportController extends Controller
             abort(403);
         }
 
-        $isOwner = $ticket->user_id && (int) $ticket->user_id === (int) $user->id;
+        $isGuestTicket = empty($ticket->user_id);
+        $isOwner = $user && $ticket->user_id && (int) $ticket->user_id === (int) $user->id;
         if ($isOwner && $ticket->user_hidden_at) {
             abort(403);
         }
         $isSupportStaff = $this->canReplyAsSupportStaff($user);
         $isPastoralStaff = $this->canReplyAsPastoralStaff($user, $ticket);
-        $canAccess = $isAdmin || $isOwner || $isSupportStaff || $isPastoralStaff;
-        abort_unless($canAccess, 403);
+        $isStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
+        $canAccess = $isAdmin || $isOwner || $isSupportStaff || $isPastoralStaff
+            || ($isGuestTicket && $this->guestVisitorMayChat($request, $user, $ticket, $isStaff));
+        abort_unless($canAccess, $user ? 403 : 401);
 
         $hasOwner = ! empty($ticket->user_id);
-        $isStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
         $isActive = AppSupportTicket::isActiveStatus((string) $ticket->status);
         $canChat = $isActive && (
             $isStaff
             || ((bool) $hasOwner && $isOwner)
+            || $this->guestVisitorMayChat($request, $user, $ticket, $isStaff)
         );
         $showMessages = $isStaff
             || ((bool) $hasOwner && $isOwner)
@@ -486,33 +507,46 @@ class MobileSupportController extends Controller
         $user = $request->user();
         $isAdmin = $this->isAdmin($user);
 
-        abort_unless($user, 401);
-
         $ticket = AppSupportTicket::query()->where('public_token', $token)->firstOrFail();
-        $isOwner = (int) $ticket->user_id === (int) $user->id;
-        if ($isOwner && $ticket->user_hidden_at) {
-            abort(403);
-        }
-        $isSupportStaff = $this->canReplyAsSupportStaff($user);
-        $isPastoralStaff = $this->canReplyAsPastoralStaff($user, $ticket);
-        abort_unless($isAdmin || $isOwner || $isSupportStaff || $isPastoralStaff, 403);
         abort_unless(AppSupportTicket::isActiveStatus((string) $ticket->status), 400);
-
-        $senderStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
-        // Visitante sem conta: só a equipe responde (histórico + e-mail do guest, se houver).
-        if (empty($ticket->user_id)) {
-            abort_unless($senderStaff, 400, 'Chat indisponível para chamados sem usuário logado.');
-        }
 
         $valid = $request->validate([
             'content' => ['required', 'string', 'max:5000'],
             'return_to' => ['nullable', 'string', Rule::in(['pastoral_hub'])],
         ]);
 
+        if (! $user) {
+            abort_unless(empty($ticket->user_id), 403);
+
+            AppSupportMessage::create([
+                'ticket_id' => $ticket->id,
+                'sender_type' => 'user',
+                'sender_user_id' => null,
+                'content' => $valid['content'],
+            ]);
+
+            $this->rememberGuestTicketToken($request, (string) $ticket->public_token);
+            app(SupportTicketChatNotifier::class)->notifyStaffOfUserMessage($ticket, null);
+
+            return redirect()->route('mobile.support.index', ['modal' => $ticket->public_token]);
+        }
+
+        $isOwner = (int) $ticket->user_id === (int) $user->id;
+        if ($isOwner && $ticket->user_hidden_at) {
+            abort(403);
+        }
+        $isSupportStaff = $this->canReplyAsSupportStaff($user);
+        $isPastoralStaff = $this->canReplyAsPastoralStaff($user, $ticket);
+        $isStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
+        $guestVisitor = $this->guestVisitorMayChat($request, $user, $ticket, $isStaff);
+        abort_unless($isAdmin || $isOwner || $isStaff || $guestVisitor, 403);
+
+        $senderStaff = $isStaff && ! $guestVisitor;
+
         AppSupportMessage::create([
             'ticket_id' => $ticket->id,
             'sender_type' => $senderStaff ? 'admin' : 'user',
-            'sender_user_id' => $user->id,
+            'sender_user_id' => $senderStaff || ! $guestVisitor ? $user->id : null,
             'content' => $valid['content'],
         ]);
 
@@ -544,16 +578,37 @@ class MobileSupportController extends Controller
     {
         $user = $request->user();
         $isAdmin = $this->isAdmin($user);
-        abort_unless($user, 401);
 
         $ticket = AppSupportTicket::query()->where('public_token', $token)->firstOrFail();
+
+        if (! $user) {
+            abort_unless(empty($ticket->user_id), 403);
+            abort_unless(AppSupportTicket::isActiveStatus((string) $ticket->status), 400);
+
+            $valid = $request->validate([
+                'solution_text' => ['nullable', 'string', 'max:5000'],
+            ]);
+
+            $ticket->update([
+                'status' => AppSupportTicket::STATUS_CLOSED,
+                'closed_at' => now(),
+                'solution_text' => $valid['solution_text'] ?? null,
+            ]);
+
+            $this->rememberGuestTicketToken($request, (string) $ticket->public_token);
+
+            return redirect()->route('mobile.support.index', ['modal' => $ticket->public_token]);
+        }
+
         $isOwner = (int) $ticket->user_id === (int) $user->id;
         if ($isOwner && $ticket->user_hidden_at) {
             abort(403);
         }
         $isSupportStaff = $this->canReplyAsSupportStaff($user);
         $isPastoralStaff = $this->canReplyAsPastoralStaff($user, $ticket);
-        abort_unless($isAdmin || $isOwner || $isSupportStaff || $isPastoralStaff, 403);
+        $isStaff = $isAdmin || $isSupportStaff || $isPastoralStaff;
+        $guestVisitor = $this->guestVisitorMayChat($request, $user, $ticket, $isStaff);
+        abort_unless($isAdmin || $isOwner || $isStaff || $guestVisitor, 403);
         abort_unless(AppSupportTicket::isActiveStatus((string) $ticket->status), 400);
 
         $valid = $request->validate([
@@ -561,7 +616,7 @@ class MobileSupportController extends Controller
         ]);
 
         $solution = $valid['solution_text'] ?? null;
-        $staffActor = $isAdmin || $isSupportStaff || $isPastoralStaff;
+        $staffActor = $isStaff && ! $guestVisitor;
         if ($staffActor && ! $isOwner) {
             abort_unless(is_string($solution) && trim($solution) !== '', 422, 'Indique um resumo ao encerrar o chamado.');
         }

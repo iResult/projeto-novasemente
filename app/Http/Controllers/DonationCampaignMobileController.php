@@ -10,6 +10,7 @@ use App\Models\DonationCampaign;
 use App\Services\CampaignDonationNotifier;
 use App\Services\ReceiptOcrService;
 use App\Support\GivingLinks;
+use App\Support\GuestContact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -142,11 +143,12 @@ class DonationCampaignMobileController extends Controller
             return redirect()->back()->with('error', 'Envie o comprovante antes de confirmar a contribuição.');
         }
 
-        $data = $request->validate([
+        $user = $request->user();
+        $data = $request->validate(array_merge([
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
             'is_anonymous' => ['boolean'],
             'send_email_confirmation' => ['boolean'],
-        ]);
+        ], GuestContact::rules($user === null)), GuestContact::messages());
 
         if (CampaignDonation::query()->where('receipt_hash', $pending['receipt_hash'])->exists()) {
             $request->session()->forget($this->sessionKey($donationCampaign->id));
@@ -161,18 +163,20 @@ class DonationCampaignMobileController extends Controller
             Storage::disk('public')->move($pendingPath, $finalPath);
         }
 
-        $donation = DB::transaction(function () use ($request, $donationCampaign, $pending, $data, $finalPath) {
+        $donation = DB::transaction(function () use ($request, $donationCampaign, $pending, $data, $finalPath, $user) {
             $campaign = DonationCampaign::query()->lockForUpdate()->findOrFail($donationCampaign->id);
 
             $donation = CampaignDonation::create([
                 'campaign_id' => $campaign->id,
-                'user_id' => $request->user()->id,
+                'user_id' => $user?->id,
+                'external_donor_name' => $user ? null : trim((string) ($data['guest_name'] ?? '')),
                 'amount' => $data['amount'],
                 'ocr_suggested_amount' => $pending['ocr_suggested_amount'] ?? null,
                 'receipt_path' => $finalPath,
                 'receipt_hash' => $pending['receipt_hash'],
                 'is_anonymous' => $request->boolean('is_anonymous'),
-                'donor_email_confirmation_requested' => $request->boolean('send_email_confirmation'),
+                'manual_registration_note' => $user ? null : GuestContact::phoneNote($data['guest_phone'] ?? null),
+                'donor_email_confirmation_requested' => $user ? $request->boolean('send_email_confirmation') : false,
                 'confirmed_at' => now(),
             ]);
 
@@ -189,7 +193,9 @@ class DonationCampaignMobileController extends Controller
 
         return redirect()
             ->route('mobile.campaigns.show', $donationCampaign)
-            ->with('success', 'Contribuição registrada com sucesso! Obrigado. Você pode acompanhar em Minhas contribuições.');
+            ->with('success', $user
+                ? 'Contribuição registrada com sucesso! Obrigado. Você pode acompanhar em Minhas contribuições.'
+                : 'Contribuição registrada com sucesso! Obrigado. A equipe financeira confere o comprovante.');
     }
 
     public function myDonations(Request $request): Response
