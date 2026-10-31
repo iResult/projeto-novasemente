@@ -1,5 +1,5 @@
 import MobileLayout from '@/Layouts/MobileLayout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     AcademicCapIcon,
@@ -19,7 +19,9 @@ import {
     MapPinIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
+    ChevronRightIcon,
     ClipboardDocumentListIcon,
+    DevicePhoneMobileIcon,
     SparklesIcon,
     SunIcon,
     UserGroupIcon,
@@ -29,7 +31,6 @@ import type { ComponentType, SVGProps } from 'react';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
-import SobreOAppPanel from '@/Components/Mobile/SobreOAppPanel';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
@@ -512,20 +513,16 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <section
-                    aria-label="Sobre o app"
-                    className="mx-auto w-full max-w-lg border-t border-zinc-200/90 pt-6 dark:border-zinc-800"
+                <Link
+                    href={route('mobile.sobre-o-app')}
+                    className="mx-auto flex min-h-11 w-full max-w-lg cursor-pointer items-center gap-2.5 rounded-2xl bg-white px-3.5 py-2 text-left shadow-sm ring-1 ring-zinc-200/80 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:bg-zinc-800/70"
                 >
-                    <h2 className="text-center text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
-                        Sobre o app
-                    </h2>
-                    <p className="mx-auto mt-1 max-w-xs text-center text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                        Versão, lojas, links e suporte.
-                    </p>
-                    <div className="mt-4">
-                        <SobreOAppPanel />
-                    </div>
-                </section>
+                    <DevicePhoneMobileIcon className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden strokeWidth={1.75} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                        Sobre o APP
+                    </span>
+                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" aria-hidden strokeWidth={1.75} />
+                </Link>
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>
