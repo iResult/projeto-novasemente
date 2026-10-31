@@ -9,7 +9,13 @@ export const HOME_CARD_MOSAIC_COLUMNS = 2;
  */
 export const homeCardPhotoPresentation: Record<string, HomeCardPresentation> = {
     batismo: {
-        image: '/images/home-cards-pilot/batismo.jpg?v=5',
+        image: '/images/home-cards-pilot/batismo.jpg?v=6',
+        imagePosition: 'center bottom',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
+    biblia: {
+        image: '/images/home-cards-pilot/biblia.jpg?v=4',
         imagePosition: 'center bottom',
         textTheme: 'light',
         gradientVariant: 'soft',
@@ -17,6 +23,12 @@ export const homeCardPhotoPresentation: Record<string, HomeCardPresentation> = {
     'classe-comecos': {
         image: '/images/home-cards-pilot/estudo.jpg?v=1',
         imagePosition: 'center bottom',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
+    conviva: {
+        image: '/images/home-cards-pilot/conviva.jpg?v=1',
+        imagePosition: 'center center',
         textTheme: 'light',
         gradientVariant: 'soft',
     },
@@ -53,6 +65,12 @@ export const homeCardPhotoPresentation: Record<string, HomeCardPresentation> = {
     series: {
         image: '/images/home-cards-pilot/series.jpg?v=1',
         imagePosition: 'center bottom',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
+    voluntario: {
+        image: '/images/home-cards-pilot/voluntario.jpg?v=1',
+        imagePosition: 'center center',
         textTheme: 'light',
         gradientVariant: 'soft',
     },

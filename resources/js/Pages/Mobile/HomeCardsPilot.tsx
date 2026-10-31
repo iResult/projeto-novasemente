@@ -29,9 +29,11 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
+    BookOpenIcon,
     SparklesIcon,
     SunIcon,
     UserGroupIcon,
+    UserPlusIcon,
 } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useState, type ComponentType, type SVGProps } from 'react';
 
@@ -73,6 +75,14 @@ const catalog: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
+    },
+    {
+        id: 'biblia',
+        label: 'Bíblia',
+        subtitle: 'Leitura e busca de versículos',
+        route: 'mobile.bible',
+        featureKey: 'bible',
+        icon: BookOpenIcon,
     },
     {
         id: 'biblioteca',
@@ -225,6 +235,14 @@ const catalog: QuickAction[] = [
         route: 'mobile.acervo',
         featureKey: 'acervo',
         icon: PlayCircleIcon,
+    },
+    {
+        id: 'voluntario',
+        label: 'Voluntário',
+        subtitle: 'Faça seu cadastro',
+        route: 'volunteers.public-signup.page',
+        featureKey: 'volunteer_signup',
+        icon: UserPlusIcon,
     },
 ];
 

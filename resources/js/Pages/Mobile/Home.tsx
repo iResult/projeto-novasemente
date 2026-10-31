@@ -16,12 +16,14 @@ import {
     NewspaperIcon,
     PlayCircleIcon,
     RectangleStackIcon,
+    BookOpenIcon,
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
     ClipboardDocumentListIcon,
     SparklesIcon,
     SunIcon,
     UserGroupIcon,
+    UserPlusIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
@@ -32,7 +34,6 @@ import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgra
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
 import { type HomeFeedHighlight } from '@/Components/Mobile/HomeFeedCarousel';
-import HomeVolunteerArea from '@/Components/Mobile/HomeVolunteerArea';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
 import AppNoveltyOverlay, {
@@ -113,6 +114,14 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.baptism',
         featureKey: 'baptism',
         icon: DropletIcon,
+    },
+    {
+        id: 'biblia',
+        label: 'Bíblia',
+        subtitle: 'Leitura e busca de versículos',
+        route: 'mobile.bible',
+        featureKey: 'bible',
+        icon: BookOpenIcon,
     },
     {
         id: 'biblioteca',
@@ -265,6 +274,14 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.acervo',
         featureKey: 'acervo',
         icon: PlayCircleIcon,
+    },
+    {
+        id: 'voluntario',
+        label: 'Voluntário',
+        subtitle: 'Faça seu cadastro',
+        route: 'volunteers.public-signup.page',
+        featureKey: 'volunteer_signup',
+        icon: UserPlusIcon,
     },
 ];
 
@@ -491,10 +508,7 @@ export default function MobileHome({
                     </div>
                 </section>
 
-                <div className="flex flex-col gap-4">
-                    <HomeVolunteerArea />
-                    <SobreOAppNavItem variant="home-footer" />
-                </div>
+                <SobreOAppNavItem variant="home-footer" />
 
                 <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />
             </div>
