@@ -16,7 +16,7 @@ class EnsureCanAccessAdminMenu
         $user = $request->user();
         if ($user !== null && ! $user->canAccessAdminMenu()) {
             return redirect()
-                ->route('mobile.home')
+                ->route('mobile.index')
                 ->with('error', 'Esta área é reservada à equipe da igreja.');
         }
 

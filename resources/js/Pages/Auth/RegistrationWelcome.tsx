@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 const REDIRECT_MS = 8000;
 
 function homeAfterRegistrationUrl(): string {
-    const base = route('mobile.home');
+    const base = route('mobile.index');
     const join = base.includes('?') ? '&' : '?';
 
     return `${base}${join}reg_ok=1`;

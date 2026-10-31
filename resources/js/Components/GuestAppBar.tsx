@@ -24,7 +24,7 @@ export default function GuestAppBar() {
                 <div className="absolute left-3 top-1/2 z-10 -translate-y-1/2 sm:left-4">
                     <TopbarEventsLink />
                 </div>
-                <Link href={route('mobile.home')} className="flex-shrink-0">
+                <Link href={route('mobile.index')} className="flex-shrink-0">
                     <img
                         src={currentChurch?.logo_url ?? defaultBrandLogoUrl ?? '/logo-ns.png'}
                         alt={currentChurch?.name ?? 'Nova Semente'}

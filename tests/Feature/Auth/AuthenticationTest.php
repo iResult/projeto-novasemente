@@ -10,6 +10,15 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_authenticated_user_opening_login_lands_on_the_feed(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/login')
+            ->assertRedirect(route('mobile.index', absolute: false));
+    }
+
     public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');

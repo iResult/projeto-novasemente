@@ -29,9 +29,27 @@ export const homeCardPhotoPresentation: Record<string, HomeCardPresentation> = {
         textTheme: 'light',
         gradientVariant: 'soft',
     },
+    comunidades: {
+        image: '/images/home-cards-pilot/comunidades.jpg?v=1',
+        imagePosition: 'center center',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
     culto: {
         image: '/images/home-cards-pilot/culto.jpg?v=3',
         imagePosition: 'center bottom',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
+    eventos: {
+        image: '/images/home-cards-pilot/eventos.jpg?v=2',
+        imagePosition: 'center center',
+        textTheme: 'light',
+        gradientVariant: 'soft',
+    },
+    fotos: {
+        image: '/images/home-cards-pilot/fotos.jpg?v=1',
+        imagePosition: 'center center',
         textTheme: 'light',
         gradientVariant: 'soft',
     },

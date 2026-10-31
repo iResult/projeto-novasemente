@@ -417,7 +417,7 @@ export default function Login({
 
                         <div className="mt-4">
                             <Link
-                                href={route('mobile.home')}
+                                href={route('mobile.index')}
                                 className="flex w-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 py-3 text-center text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-100"
                             >
                                 Navegar sem login

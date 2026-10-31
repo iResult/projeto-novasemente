@@ -27,7 +27,7 @@ class DashboardAccessTest extends TestCase
 
         $this->actingAs($user)
             ->get('/dashboard')
-            ->assertRedirect(route('mobile.home', absolute: false));
+            ->assertRedirect(route('mobile.index', absolute: false));
     }
 
     public function test_admin_can_access_dashboard(): void

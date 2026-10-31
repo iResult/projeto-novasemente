@@ -39,7 +39,6 @@ import AppNoveltyOverlay, {
     type PendingAppNoveltyPayload,
 } from '@/Components/Mobile/AppNoveltyOverlay';
 import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
-import PrayingHandsIcon from '@/Components/PrayingHandsIcon';
 import {
     type DevotionalAudience,
     DEVOTIONAL_AUDIENCE_DEFAULT,
@@ -247,14 +246,6 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.ns-whats.index',
         featureKey: 'ns_whats',
         icon: ChatBubbleLeftRightIcon,
-    },
-    {
-        id: 'oracao',
-        label: 'Oração',
-        subtitle: 'Pedidos de oração',
-        route: 'mobile.prayer',
-        featureKey: 'prayer',
-        icon: PrayingHandsIcon,
     },
     {
         id: 'revista-adventista',

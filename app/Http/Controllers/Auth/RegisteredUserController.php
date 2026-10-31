@@ -374,7 +374,7 @@ class RegisteredUserController extends Controller
     public function welcome(Request $request): RedirectResponse|Response
     {
         if (! $request->session()->pull('registration_success', false)) {
-            return redirect()->route('mobile.home');
+            return redirect()->route('mobile.index');
         }
 
         return Inertia::render('Auth/RegistrationWelcome');

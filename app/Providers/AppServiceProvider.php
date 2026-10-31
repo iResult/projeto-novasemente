@@ -97,7 +97,7 @@ class AppServiceProvider extends ServiceProvider
                 return route('dashboard');
             }
 
-            return route('mobile.home');
+            return route('mobile.index');
         });
     }
 

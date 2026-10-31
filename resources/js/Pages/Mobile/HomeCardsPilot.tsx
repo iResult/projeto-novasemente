@@ -3,7 +3,6 @@ import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
-import PrayingHandsIcon from '@/Components/PrayingHandsIcon';
 import {
     HOME_CARD_PILOT_PAGE_KEY,
     HOME_CARD_PILOT_PAGE_SIZE,
@@ -207,14 +206,6 @@ const catalog: QuickAction[] = [
         route: 'mobile.ns-whats.index',
         featureKey: 'ns_whats',
         icon: ChatBubbleLeftRightIcon,
-    },
-    {
-        id: 'oracao',
-        label: 'Oração',
-        subtitle: 'Pedidos de oração',
-        route: 'mobile.prayer',
-        featureKey: 'prayer',
-        icon: PrayingHandsIcon,
     },
     {
         id: 'revista-adventista',

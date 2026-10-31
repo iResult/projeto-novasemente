@@ -39,6 +39,12 @@ class PublicationsFeedTest extends TestCase
                 ->has('filters'));
     }
 
+    public function test_root_redirects_to_the_publications_feed(): void
+    {
+        $this->get('/')
+            ->assertRedirect(route('mobile.index', absolute: false));
+    }
+
     public function test_mobile_entry_opens_the_publications_feed(): void
     {
         config(['publications_feed.preview_only' => false]);
