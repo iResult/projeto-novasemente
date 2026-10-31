@@ -286,7 +286,6 @@ export default function VidaSaudeIndex({ articles, canManage, sections, filters 
                                                         title: article.title,
                                                         excerpt: article.excerpt,
                                                         imageUrl: hero,
-                                                        publishedLabel: formatDate(article.published_at),
                                                         meta: [article.section_label, article.author_name].filter(Boolean) as string[],
                                                     })
                                                 }

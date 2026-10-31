@@ -41,6 +41,8 @@ export type PublicationFeedItem = {
     cover_overlay_text?: string | null;
     cover_overlay_citation?: string | null;
     published_at: string | null;
+    /** Quando false, a data fica só na ordenação e não aparece no card. */
+    show_date?: boolean;
     photographer_name?: string | null;
     href: string;
     meta: string[];
@@ -241,7 +243,7 @@ export default function PublicationFeedCard({
         setLocalExpanded((current) => !current);
     };
     const openInstagramOnPlay = Boolean(item.cover_play_overlay) && Boolean(instagramUrl);
-    const whenLabel = formatRelative(item.published_at);
+    const whenLabel = item.show_date === false ? '' : formatRelative(item.published_at);
     const photographerLabel = item.photographer_name?.trim() || '';
     const photoDateTitle = formatPhotoDateTitle(item.published_at);
 

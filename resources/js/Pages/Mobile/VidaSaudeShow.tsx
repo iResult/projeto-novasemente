@@ -29,15 +29,6 @@ interface Props {
     article: Article;
 }
 
-function formatDate(iso: string | null): string {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-}
-
 function imageSrc(url: string | null, appUrl: string): string {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -107,7 +98,6 @@ export default function MobileVidaSaudeShow({ article }: Props) {
                                     {area.label}
                                 </Link>
                             ))}
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">{formatDate(article.published_at)}</p>
                         </div>
 
                         <h1 className="text-xl font-bold leading-snug tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">

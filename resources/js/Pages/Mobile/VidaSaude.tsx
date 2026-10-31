@@ -54,15 +54,6 @@ interface Props {
     };
 }
 
-function formatDate(iso: string | null): string {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-}
-
 function imageSrc(url: string | null, appUrl: string): string {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -113,14 +104,9 @@ function ArticleCard({
                             </div>
                         }
                         overlaySlot={
-                            <>
-                                <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-lg bg-black/70 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                                    {article.section_label}
-                                </span>
-                                <span className="pointer-events-none absolute bottom-2 right-2 z-10 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                                    {formatDate(article.published_at)}
-                                </span>
-                            </>
+                            <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-lg bg-black/70 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                                {article.section_label}
+                            </span>
                         }
                     />
                 </div>

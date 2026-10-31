@@ -778,11 +778,8 @@ class PublicationFeed
                 if (filled($article->author_name)) {
                     $meta[] = 'Por '.$article->author_name;
                 }
-                if ($article->published_at !== null) {
-                    $meta[] = $article->published_at->timezone((string) config('app.timezone', 'America/Sao_Paulo'))->format('d/m/Y');
-                }
 
-                return self::entry(
+                $entry = self::entry(
                     type: 'vida_saude',
                     typeLabel: self::TYPE_DEFINITIONS['vida_saude']['label'],
                     pk: $article->id,
@@ -795,6 +792,9 @@ class PublicationFeed
                     body: self::fullContent($article->body, $article->excerpt),
                     bodyIsHtml: self::looksLikeHtml((string) ($article->body ?? '')),
                 );
+                $entry['show_date'] = false;
+
+                return $entry;
             });
     }
 

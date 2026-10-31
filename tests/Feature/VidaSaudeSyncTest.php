@@ -128,7 +128,8 @@ class VidaSaudeSyncTest extends TestCase
         $releasedItem = $page['items']['data'][0];
         $this->assertSame('vida_saude', $releasedItem['type']);
         $this->assertStringStartsWith('2026-10-31', $releasedItem['published_at']);
-        $this->assertContains('Estilo de Vida', $releasedItem['meta']);
+        $this->assertFalse($releasedItem['show_date']);
+        $this->assertSame(['Estilo de Vida', 'Por Agatha Lemos'], $releasedItem['meta']);
     }
 
     public function test_mobile_page_lists_every_article_and_show_page_opens(): void
