@@ -1,14 +1,5 @@
 import type { HomeCardPresentation } from '@/data/homeFeatureCardMedia';
 
-/** Seis cards por página. */
-export const HOME_CARD_PAGE_SIZE = 6;
-
-export const HOME_CARD_PILOT_PAGE_SIZE = HOME_CARD_PAGE_SIZE;
-
-export const HOME_CARD_PAGE_KEY = 'ns-home-cards-page';
-
-export const HOME_CARD_PILOT_PAGE_KEY = 'ns-home-cards-pilot-page';
-
 /** Duas colunas: uma foto, um card claro, e a linha seguinte inverte. */
 export const HOME_CARD_MOSAIC_COLUMNS = 2;
 

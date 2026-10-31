@@ -3,12 +3,7 @@ import HomeCardBookmarkButton from '@/Components/Mobile/HomeCardBookmarkButton';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import DropletIcon from '@/Components/Mobile/DropletIcon';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
-import {
-    HOME_CARD_PILOT_PAGE_KEY,
-    HOME_CARD_PILOT_PAGE_SIZE,
-    arrangeHomeCardMosaic,
-    homeCardPhotoPresentation,
-} from '@/data/homeCardPilot';
+import { arrangeHomeCardMosaic, homeCardPhotoPresentation } from '@/data/homeCardPilot';
 import {
     DEVOTIONAL_AUDIENCE_DEFAULT,
     readStoredDevotionalAudience,
@@ -233,24 +228,16 @@ const catalog: QuickAction[] = [
     },
 ];
 
-const pagerButtonClass =
-    'inline-flex h-11 min-w-[7.25rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800';
-
 export default function HomeCardsPilot() {
     const pageProps = usePage();
     const user = (pageProps.props as { auth?: { user?: { id?: number } | null } }).auth?.user ?? null;
     const { isEnabled } = useAppFeatures();
     const [promiseOpen, setPromiseOpen] = useState(false);
     const [bookmarks, setBookmarks] = useState<string[]>([]);
-    const [page, setPage] = useState(0);
     const [meditationAudience, setMeditationAudience] = useState<DevotionalAudience>(DEVOTIONAL_AUDIENCE_DEFAULT);
 
     useEffect(() => {
         setMeditationAudience(readStoredDevotionalAudience());
-        const stored = Number(sessionStorage.getItem(HOME_CARD_PILOT_PAGE_KEY) ?? '0');
-        if (Number.isFinite(stored) && stored >= 0) {
-            setPage(Math.floor(stored));
-        }
     }, []);
 
     const items = useMemo(() => {
@@ -263,20 +250,6 @@ export default function HomeCardsPilot() {
         return arrangeHomeCardMosaic(enabled);
     }, [isEnabled]);
 
-    const pageCount = Math.max(1, Math.ceil(items.length / HOME_CARD_PILOT_PAGE_SIZE));
-    const safePage = Math.min(page, pageCount - 1);
-    const visible = items.slice(
-        safePage * HOME_CARD_PILOT_PAGE_SIZE,
-        safePage * HOME_CARD_PILOT_PAGE_SIZE + HOME_CARD_PILOT_PAGE_SIZE,
-    );
-
-    const goToPage = (next: number) => {
-        const bounded = Math.min(Math.max(0, next), pageCount - 1);
-        setPage(bounded);
-        sessionStorage.setItem(HOME_CARD_PILOT_PAGE_KEY, String(bounded));
-        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'auto' });
-    };
-
     return (
         <MobileLayout>
             <Head title="Protótipo dos cards" />
@@ -286,13 +259,13 @@ export default function HomeCardsPilot() {
                         Cards da Home
                     </h1>
                     <p className="mt-0.5 text-sm leading-snug text-zinc-500 dark:text-zinc-400">
-                        Mesma grade da Home, seis cards por página.
+                        Mesma grade da Home.
                     </p>
                 </header>
 
                 <section aria-label="Atalhos">
                     <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
-                        {visible.map((action) => {
+                        {items.map((action) => {
                             const presentation = homeCardPhotoPresentation[action.id];
                             const href = action.onClick
                                 ? undefined
@@ -333,28 +306,6 @@ export default function HomeCardsPilot() {
                         })}
                     </div>
                 </section>
-
-                <nav aria-label="Páginas dos atalhos" className="flex items-center justify-between gap-3">
-                    <button
-                        type="button"
-                        className={pagerButtonClass}
-                        disabled={safePage === 0}
-                        onClick={() => goToPage(safePage - 1)}
-                    >
-                        Anterior
-                    </button>
-                    <p className="text-sm font-medium tabular-nums text-zinc-600 dark:text-zinc-300" aria-live="polite">
-                        Página {safePage + 1} de {pageCount}
-                    </p>
-                    <button
-                        type="button"
-                        className={pagerButtonClass}
-                        disabled={safePage >= pageCount - 1}
-                        onClick={() => goToPage(safePage + 1)}
-                    >
-                        Próxima
-                    </button>
-                </nav>
             </div>
 
             <PromiseBoxModal show={promiseOpen} onClose={() => setPromiseOpen(false)} canFavorite={!!user} />

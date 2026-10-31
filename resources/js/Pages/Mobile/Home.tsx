@@ -45,12 +45,7 @@ import {
     readStoredDevotionalAudience,
 } from '@/data/devotionalAudience';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
-import {
-    HOME_CARD_PAGE_KEY,
-    HOME_CARD_PAGE_SIZE,
-    arrangeHomeCardMosaic,
-    homeCardPhotoPresentation,
-} from '@/data/homeCardPilot';
+import { arrangeHomeCardMosaic, homeCardPhotoPresentation } from '@/data/homeCardPilot';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
 
@@ -290,7 +285,6 @@ export default function MobileHome({
     const [promiseOpen, setPromiseOpen] = useState(false);
     const [bookmarks, setBookmarks] = useState<string[]>(bookmarkedHomeCards);
     const [bookmarkBusy, setBookmarkBusy] = useState(false);
-    const [cardPage, setCardPage] = useState(0);
     const [meditationAudience, setMeditationAudience] = useState<DevotionalAudience>(() =>
         typeof window !== 'undefined' ? readStoredDevotionalAudience() : DEVOTIONAL_AUDIENCE_DEFAULT,
     );
@@ -301,10 +295,6 @@ export default function MobileHome({
 
     useEffect(() => {
         setMeditationAudience(readStoredDevotionalAudience());
-        const stored = Number(sessionStorage.getItem(HOME_CARD_PAGE_KEY) ?? '0');
-        if (Number.isFinite(stored) && stored >= 0) {
-            setCardPage(Math.floor(stored));
-        }
     }, []);
 
     useEffect(() => {
@@ -380,20 +370,6 @@ export default function MobileHome({
         return arrangeHomeCardMosaic(actions);
     }, [isEnabled, isMinistryLeader]);
 
-    const cardPageCount = Math.max(1, Math.ceil(gridItems.length / HOME_CARD_PAGE_SIZE));
-    const safeCardPage = Math.min(cardPage, cardPageCount - 1);
-    const visibleGridItems = gridItems.slice(
-        safeCardPage * HOME_CARD_PAGE_SIZE,
-        safeCardPage * HOME_CARD_PAGE_SIZE + HOME_CARD_PAGE_SIZE,
-    );
-
-    const goToCardPage = (next: number) => {
-        const bounded = Math.min(Math.max(0, next), cardPageCount - 1);
-        setCardPage(bounded);
-        sessionStorage.setItem(HOME_CARD_PAGE_KEY, String(bounded));
-        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'auto' });
-    };
-
     useEffect(() => {
         if (!showPostRegistrationBanner || typeof window === 'undefined') {
             return;
@@ -463,7 +439,7 @@ export default function MobileHome({
 
                 <section aria-label="Atalhos" className="relative z-[1]">
                     <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
-                        {visibleGridItems.map((item) => {
+                        {gridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const pendingBadge =
                                 id === 'ns-whats' && nsWhatsPendingReply > 0 ? nsWhatsPendingReply : null;
@@ -513,29 +489,6 @@ export default function MobileHome({
                             );
                         })}
                     </div>
-                    {cardPageCount > 1 ? (
-                        <nav aria-label="Páginas dos atalhos" className="mt-4 flex items-center justify-between gap-3">
-                            <button
-                                type="button"
-                                className="inline-flex h-11 min-w-[7.25rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                                disabled={safeCardPage === 0}
-                                onClick={() => goToCardPage(safeCardPage - 1)}
-                            >
-                                Anterior
-                            </button>
-                            <p className="text-sm font-medium tabular-nums text-zinc-600 dark:text-zinc-300" aria-live="polite">
-                                Página {safeCardPage + 1} de {cardPageCount}
-                            </p>
-                            <button
-                                type="button"
-                                className="inline-flex h-11 min-w-[7.25rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                                disabled={safeCardPage >= cardPageCount - 1}
-                                onClick={() => goToCardPage(safeCardPage + 1)}
-                            >
-                                Próxima
-                            </button>
-                        </nav>
-                    ) : null}
                 </section>
 
                 <div className="flex flex-col gap-4">
