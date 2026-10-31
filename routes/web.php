@@ -95,6 +95,7 @@ use App\Http\Controllers\TreasurerDashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariosController;
 use App\Http\Controllers\VersiculoCaixinhaController;
+use App\Http\Controllers\VidaSaudeArticleController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\VolunteerManagementCenterController;
 use App\Http\Controllers\VolunteerMinistryInvitationController;
@@ -198,6 +199,9 @@ Route::get('/mobile/saude/{health:slug}', [MobileController::class, 'healthShow'
 Route::get('/mobile/revista-adventista', [MobileController::class, 'revistaAdventista'])->name('mobile.revista-adventista');
 Route::get('/mobile/revista-adventista/{revistaAdventistaArticle:slug}', [MobileController::class, 'revistaAdventistaShow'])
     ->name('mobile.revista-adventista.show');
+Route::get('/mobile/vida-e-saude', [MobileController::class, 'vidaESaude'])->name('mobile.vida-e-saude');
+Route::get('/mobile/vida-e-saude/{vidaSaudeArticle:slug}', [MobileController::class, 'vidaESaudeShow'])
+    ->name('mobile.vida-e-saude.show');
 Route::get('/mobile/acervo-revista-adventista', [MobileController::class, 'revistaAdventistaAcervo'])->name('mobile.acervo-revista-adventista');
 Route::get('/mobile/acervo-revista-adventista/edicao/{revistaAdventistaEdition}/download', [MobileController::class, 'revistaAdventistaAcervoPdfDownload'])
     ->middleware('throttle:60,1')
@@ -842,6 +846,13 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:news.manage');
     Route::post('/revista-adventista/sincronizar-artigos', [RevistaAdventistaArticleController::class, 'syncArticles'])
         ->name('revista-adventista.sync-articles')
+        ->middleware('permission:news.manage');
+    Route::get('/vida-e-saude', [VidaSaudeArticleController::class, 'index'])->name('vida-e-saude.index');
+    Route::patch('/vida-e-saude/{vidaSaudeArticle}/active', [VidaSaudeArticleController::class, 'setActive'])
+        ->name('vida-e-saude.active')
+        ->middleware('permission:news.manage');
+    Route::post('/vida-e-saude/sincronizar', [VidaSaudeArticleController::class, 'syncArticles'])
+        ->name('vida-e-saude.sync')
         ->middleware('permission:news.manage');
     Route::get('/revista-adventista/acervo', [RevistaAdventistaArticleController::class, 'archiveIndex'])->name('revista-adventista-acervo.index');
     Route::patch('/revista-adventista/acervo/edicao/{revistaAdventistaEdition}/active', [RevistaAdventistaArticleController::class, 'setEditionActive'])

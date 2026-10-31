@@ -12,6 +12,7 @@ use App\Models\News;
 use App\Models\PhotoAlbum;
 use App\Models\Poll;
 use App\Models\RevistaAdventistaArticle;
+use App\Models\VidaSaudeArticle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -125,6 +126,7 @@ final class PublicationSubject
             'photos' => PhotoAlbum::class,
             'events' => Event::class,
             'revista' => RevistaAdventistaArticle::class,
+            'vida_saude' => VidaSaudeArticle::class,
             'musica' => Musica::class,
             'donation_campaign' => DonationCampaign::class,
             'polls' => Poll::class,

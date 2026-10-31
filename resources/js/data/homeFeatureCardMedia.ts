@@ -46,6 +46,7 @@ export const homeFeatureCardMedia: Record<string, HomeCardMedia> = {
     'ns-whats': { src: '/images/home-cards/ns-whats.webp', crop: 'bottom', wave: 0, focus: 'center 66%' },
     oracao: { src: '/images/home-cards/oracao.webp', crop: 'bottom', wave: 1, focus: 'center 58%' },
     'revista-adventista': { src: '/images/home-cards/revista-adventista.webp', crop: 'bottom', wave: 2, focus: 'center 62%' },
+    'vida-e-saude': { src: '/images/home-cards/vida-e-saude.webp', crop: 'bottom', wave: 1, focus: 'center 40%' },
     saude: { src: '/images/home-cards/saude.webp', crop: 'bottom', wave: 0, focus: 'center 64%' },
     series: { src: '/images/home-cards/series.webp', crop: 'bottom', wave: 1, focus: 'center 60%' },
     conheca: { src: '/images/home-cards/conheca.webp?v=2', crop: 'side', wave: 0, focus: 'center center' },

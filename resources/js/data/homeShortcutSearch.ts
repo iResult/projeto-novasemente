@@ -65,6 +65,7 @@ export const homeShortcutAliases: Record<string, readonly string[]> = {
     musica: ['hinário', 'hino', 'cantar', 'louvor'],
     'ns-whats': ['conversa', 'chat', 'conecta'],
     'revista-adventista': ['revista', 'artigos'],
+    'vida-e-saude': ['vida', 'saúde', 'saude', 'nutrição', 'bem-estar'],
     saude: ['bem-estar', 'bem estar'],
     series: ['série', 'séries', 'acervo'],
     voluntario: ['voluntariado', 'servir'],

@@ -25,6 +25,8 @@ use App\Models\UserDismissedAppNotification;
 use App\Models\UserHomeCardBookmark;
 use App\Models\UserInboxNotification;
 use App\Models\UserLibraryBookBookmark;
+use App\Models\VidaSaudeArticle;
+use App\Models\VidaSaudeCategory;
 use App\Models\Volunteer;
 use App\Services\DriveFolderCoverService;
 use App\Services\DriveFolderImagesService;
@@ -803,6 +805,135 @@ class MobileController extends Controller
                 'published_at' => $revistaAdventistaArticle->published_at?->toIso8601String(),
             ],
         ]);
+    }
+
+    public function vidaESaude(Request $request): Response
+    {
+        $section = trim((string) $request->query('section', ''));
+        if ($section !== '' && ! VidaSaudeCategory::query()->where('slug', $section)->exists()) {
+            $section = '';
+        }
+
+        $search = trim((string) $request->query('q', ''));
+        if (mb_strlen($search) > 0 && mb_strlen($search) < 2) {
+            $search = '';
+        }
+
+        $base = VidaSaudeArticle::query()
+            ->with(['primaryCategory', 'categories'])
+            ->visibleInApp()
+            ->when($section !== '', fn ($q) => $q->whereHas(
+                'primaryCategory',
+                fn ($category) => $category->where('slug', $section),
+            ))
+            ->when($search !== '', fn ($q) => $q->search($search))
+            ->orderByDesc('published_at');
+
+        $filtered = $section !== '' || $search !== '';
+        $latest = [];
+        $groups = [];
+        $articles = null;
+
+        if ($filtered) {
+            $articles = (clone $base)->paginate(15)->withQueryString();
+            $articles->getCollection()->transform(fn (VidaSaudeArticle $article) => $this->vidaSaudeCard($article));
+        } else {
+            $all = $base->get();
+            $latestModels = $all->take(3)->values();
+            $latestIds = $latestModels->pluck('id')->all();
+            $latest = $latestModels->map(fn (VidaSaudeArticle $article) => $this->vidaSaudeCard($article))->all();
+
+            $groups = VidaSaudeCategory::query()
+                ->whereHas('primaryArticles', fn ($q) => $q->visibleInApp()->whereNotIn('id', $latestIds))
+                ->orderBy('display_position')
+                ->orderBy('label')
+                ->get()
+                ->map(function (VidaSaudeCategory $category) use ($all, $latestIds) {
+                    $items = $all
+                        ->filter(fn (VidaSaudeArticle $article) => $article->primary_category_id === $category->id && ! in_array($article->id, $latestIds, true))
+                        ->values()
+                        ->map(fn (VidaSaudeArticle $article) => $this->vidaSaudeCard($article))
+                        ->all();
+
+                    return [
+                        'slug' => $category->slug,
+                        'label' => $category->label,
+                        'articles' => $items,
+                    ];
+                })
+                ->filter(fn (array $group) => $group['articles'] !== [])
+                ->values()
+                ->all();
+        }
+
+        $sections = VidaSaudeCategory::query()
+            ->whereHas('primaryArticles', fn ($q) => $q->visibleInApp())
+            ->orderBy('display_position')
+            ->orderBy('label')
+            ->get()
+            ->map(fn (VidaSaudeCategory $category) => [
+                'value' => $category->slug,
+                'label' => $category->label,
+            ])
+            ->values()
+            ->all();
+
+        return Inertia::render('Mobile/VidaSaude', [
+            'latest' => $latest,
+            'groups' => $groups,
+            'articles' => $articles,
+            'sections' => $sections,
+            'filters' => [
+                'section' => $section !== '' ? $section : null,
+                'q' => $search !== '' ? $search : null,
+            ],
+        ]);
+    }
+
+    public function vidaESaudeShow(VidaSaudeArticle $vidaSaudeArticle): Response
+    {
+        if (! $vidaSaudeArticle->is_active) {
+            abort(404);
+        }
+        if ($vidaSaudeArticle->published_at === null || $vidaSaudeArticle->published_at->isFuture()) {
+            abort(404);
+        }
+
+        $vidaSaudeArticle->load(['primaryCategory', 'categories']);
+
+        return Inertia::render('Mobile/VidaSaudeShow', [
+            'article' => [
+                ...$this->vidaSaudeCard($vidaSaudeArticle),
+                'body' => $vidaSaudeArticle->body,
+                'source_url' => $vidaSaudeArticle->source_url,
+                'categories' => $vidaSaudeArticle->categories
+                    ->map(fn (VidaSaudeCategory $category) => [
+                        'slug' => $category->slug,
+                        'label' => $category->label,
+                    ])
+                    ->values()
+                    ->all(),
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function vidaSaudeCard(VidaSaudeArticle $article): array
+    {
+        return [
+            'id' => $article->id,
+            'title' => $article->title,
+            'slug' => $article->slug,
+            'excerpt' => $article->excerpt,
+            'section' => $article->sectionSlug(),
+            'section_label' => $article->sectionLabel(),
+            'author_name' => $article->author_name,
+            'image_url' => $article->image_url,
+            'cover_url' => $article->image_url,
+            'published_at' => $article->published_at?->toIso8601String(),
+        ];
     }
 
     public function revistaAdventistaAcervo(Request $request): Response

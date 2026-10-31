@@ -92,6 +92,8 @@ const navItems: NavItem[] = [
             'mobile.health.show',
             'mobile.revista-adventista',
             'mobile.revista-adventista.show',
+            'mobile.vida-e-saude',
+            'mobile.vida-e-saude.show',
             'mobile.acervo-revista-adventista',
             'mobile.acervo-revista-adventista.show',
             'mobile.mission',

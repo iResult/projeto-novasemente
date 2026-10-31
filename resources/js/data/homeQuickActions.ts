@@ -183,6 +183,14 @@ export const homeQuickActions: HomeQuickAction[] = [
         icon: NewspaperIcon,
     },
     {
+        id: 'vida-e-saude',
+        label: 'Vida e Saúde',
+        subtitle: 'Artigos de saúde, nutrição e bem-estar',
+        route: 'mobile.vida-e-saude',
+        featureKey: 'vida_saude',
+        icon: NewspaperIcon,
+    },
+    {
         id: 'saude',
         label: 'Saúde',
         subtitle: 'Conteúdos de saúde e bem-estar',

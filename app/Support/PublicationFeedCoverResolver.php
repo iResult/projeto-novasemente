@@ -14,6 +14,7 @@ use App\Models\News;
 use App\Models\PhotoAlbum;
 use App\Models\Poll;
 use App\Models\RevistaAdventistaArticle;
+use App\Models\VidaSaudeArticle;
 use App\Services\DriveFolderCoverService;
 
 /** Resolve capas e miniaturas para o feed unificado de publicações. */
@@ -114,6 +115,11 @@ final class PublicationFeedCoverResolver
     public static function forRevista(RevistaAdventistaArticle $article, ?Church $church, string $baseUrl): ?string
     {
         return self::finalize(self::absoluteUrl($article->image_url, $baseUrl), 'revista', $church, $baseUrl);
+    }
+
+    public static function forVidaSaude(VidaSaudeArticle $article, ?Church $church, string $baseUrl): ?string
+    {
+        return self::finalize(self::absoluteUrl($article->image_url, $baseUrl), 'vida_saude', $church, $baseUrl);
     }
 
     public static function forPhotoAlbum(

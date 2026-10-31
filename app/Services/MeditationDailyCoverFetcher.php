@@ -3,219 +3,197 @@
 namespace App\Services;
 
 use App\Models\News;
+use App\Support\MeditationCoverCatalog;
 use App\Support\MeditationDailyFeed;
-use App\Support\StorageUrl;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Busca diária de capa (nascer/pôr do sol) sem repetir URLs já usadas no feed.
+ * Escolhe a capa da meditação no catálogo local, sem repetir a janela visível do feed.
  */
 class MeditationDailyCoverFetcher
 {
-    private const OPENVERSE_ENDPOINT = 'https://api.openverse.org/v1/images';
-
-    /** Altura máxima da fumaça em relação à capa (centro superior). */
+    /** Altura máxima da marca em relação à capa (centro superior). */
     private const BRAND_MARK_HEIGHT_RATIO = 0.10;
 
     /** Margem superior da marca, em fração da altura da capa. */
     private const BRAND_MARK_TOP_RATIO = 0.025;
 
-    /** @var list<string> */
-    private const QUERIES = [
-        'sunrise',
-        'sunset sky',
-        'dawn sunrise',
-        'golden hour sunrise',
-        'morning sunrise landscape',
-    ];
-
     /**
-     * Resolve capa para a data: busca no banco de imagens e evita repetição.
+     * Capa do dia. Se esse dia já tem uma imagem do catálogo, mantém.
      */
     public function resolveForDate(CarbonInterface $date): string
     {
-        $date = $date->copy()->startOfDay();
-        $used = $this->usedCoverKeys();
-
-        $candidate = $this->pickFreshRemoteUrl($date, $used);
-        if ($candidate !== null) {
-            $stored = $this->storeLocalCopy($date, $candidate);
-            if ($stored !== null) {
-                return $stored;
-            }
-
-            return $candidate;
-        }
-
-        Log::notice('meditation_daily_cover.openverse_exhausted_or_failed');
-
-        return $this->fallbackFromPool($date, $used);
+        return $this->resolveForSlug(MeditationDailyFeed::slugForDate($date->copy()->startOfDay()));
     }
 
     /**
-     * Chaves normalizadas das capas já publicadas (para não repetir).
+     * Mantém a capa do catálogo já gravada nesse slug; senão escolhe a usada há mais tempo
+     * fora das últimas publicações.
+     */
+    public function resolveForSlug(string $slug): string
+    {
+        $existing = $this->existingCatalogCover($slug);
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        return $this->pickCatalogUrl($this->usageExceptSlug($slug)) ?? '';
+    }
+
+    /**
+     * Atribui uma capa distinta a cada slug, os mais recentes primeiro.
      *
-     * @return array<string, true>
+     * @param  list<string>  $slugsNewestFirst
+     * @return array<string, string>
      */
-    public function usedCoverKeys(): array
+    public function assignUrlsForSlugs(array $slugsNewestFirst): array
     {
-        $urls = News::query()
-            ->where('slug', 'like', MeditationDailyFeed::SLUG_PREFIX.'%')
-            ->whereNotNull('image_url')
-            ->pluck('image_url');
+        $blocked = [];
+        $lastUsed = [];
+        $assigned = [];
+        $order = 0;
 
-        $keys = [];
-        foreach ($urls as $url) {
-            $key = $this->normalizeCoverKey((string) $url);
-            if ($key !== '') {
-                $keys[$key] = true;
+        foreach ($slugsNewestFirst as $slug) {
+            $url = $this->pickCatalogUrl([
+                'blocked' => $blocked,
+                'last_used' => $lastUsed,
+            ]);
+            if ($url === null) {
+                break;
             }
+
+            $key = $this->normalizeCoverKey($url);
+            if ($key !== '') {
+                $blocked[$key] = true;
+                $lastUsed[$key] = $order;
+            }
+            $order++;
+            $assigned[$slug] = $url;
         }
 
-        return $keys;
+        return $assigned;
     }
 
     /**
-     * @param  array<string, true>  $used
+     * @param  array{blocked: array<string, true>, last_used: array<string, int>}  $usage
      */
-    private function pickFreshRemoteUrl(CarbonInterface $date, array $used): ?string
+    private function pickCatalogUrl(array $usage): ?string
     {
-        $dayOfYear = (int) $date->format('z');
-        $year = (int) $date->format('Y');
-        $query = self::QUERIES[($dayOfYear + $year) % count(self::QUERIES)];
-
-        // Varre algumas páginas a partir de um offset estável do dia.
-        $startPage = 1 + ($dayOfYear % 12);
-        for ($offset = 0; $offset < 8; $offset++) {
-            $page = (($startPage - 1 + $offset) % 20) + 1;
-            $results = $this->fetchOpenversePage($query, $page);
-            foreach ($results as $url) {
-                $key = $this->normalizeCoverKey($url);
-                if ($key === '' || isset($used[$key])) {
-                    continue;
-                }
-
-                return $url;
-            }
+        $entries = MeditationCoverCatalog::entries();
+        if ($entries === []) {
+            return null;
         }
 
-        // Última tentativa: outras queries.
-        foreach (self::QUERIES as $altQuery) {
-            if ($altQuery === $query) {
+        $blocked = $usage['blocked'];
+        $available = [];
+        foreach ($entries as $entry) {
+            $key = $this->normalizeCoverKey($entry['url']);
+            if ($key === '' || isset($blocked[$key])) {
                 continue;
             }
-            $results = $this->fetchOpenversePage($altQuery, 1 + ($dayOfYear % 5));
-            foreach ($results as $url) {
-                $key = $this->normalizeCoverKey($url);
-                if ($key === '' || isset($used[$key])) {
-                    continue;
-                }
+            $available[] = $entry;
+        }
 
-                return $url;
+        if ($available === []) {
+            $available = $entries;
+        }
+
+        $lastUsed = $usage['last_used'];
+        usort($available, function (array $a, array $b) use ($lastUsed): int {
+            $keyA = $this->normalizeCoverKey($a['url']);
+            $keyB = $this->normalizeCoverKey($b['url']);
+            $usedA = $lastUsed[$keyA] ?? null;
+            $usedB = $lastUsed[$keyB] ?? null;
+
+            if ($usedA === null && $usedB !== null) {
+                return -1;
+            }
+            if ($usedA !== null && $usedB === null) {
+                return 1;
+            }
+            if ($usedA !== $usedB) {
+                return $usedA <=> $usedB;
+            }
+
+            return $a['file'] <=> $b['file'];
+        });
+
+        return $available[0]['url'];
+    }
+
+    /**
+     * @return array{blocked: array<string, true>, last_used: array<string, int>}
+     */
+    private function usageExceptSlug(string $ignoreSlug): array
+    {
+        $window = max(1, (int) config('meditation.cover_recent_window', MeditationDailyFeed::COVER_FEED_WINDOW));
+
+        $posts = News::query()
+            ->where('slug', 'like', MeditationDailyFeed::SLUG_PREFIX.'%')
+            ->when($ignoreSlug !== '', fn ($query) => $query->where('slug', '!=', $ignoreSlug))
+            ->whereNotNull('image_url')
+            ->where('image_url', '!=', '')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->get(['slug', 'image_url', 'published_at']);
+
+        $blocked = [];
+        $lastUsed = [];
+        $seenSlugs = [];
+
+        foreach ($posts as $post) {
+            $key = $this->normalizeCoverKey((string) $post->image_url);
+            $slug = (string) $post->slug;
+            if (! isset($seenSlugs[$slug])) {
+                $seenSlugs[$slug] = true;
+                if (count($seenSlugs) <= $window && $key !== '') {
+                    $blocked[$key] = true;
+                }
+            }
+            if ($key !== '' && ! isset($lastUsed[$key]) && $post->published_at !== null) {
+                $lastUsed[$key] = $post->published_at->getTimestamp();
+            }
+        }
+
+        return [
+            'blocked' => $blocked,
+            'last_used' => $lastUsed,
+        ];
+    }
+
+    private function existingCatalogCover(string $slug): ?string
+    {
+        if ($slug === '') {
+            return null;
+        }
+
+        $byKey = [];
+        foreach (MeditationCoverCatalog::entries() as $entry) {
+            $key = $this->normalizeCoverKey($entry['url']);
+            if ($key !== '') {
+                $byKey[$key] = $entry['url'];
+            }
+        }
+
+        if ($byKey === []) {
+            return null;
+        }
+
+        $urls = News::query()
+            ->where('slug', $slug)
+            ->whereNotNull('image_url')
+            ->orderByDesc('id')
+            ->pluck('image_url');
+
+        foreach ($urls as $url) {
+            $key = $this->normalizeCoverKey((string) $url);
+            if ($key !== '' && isset($byKey[$key])) {
+                return $byKey[$key];
             }
         }
 
         return null;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function fetchOpenversePage(string $query, int $page): array
-    {
-        try {
-            $response = Http::timeout(18)
-                ->withHeaders([
-                    'User-Agent' => 'NovaSementeMeditationCover/1.0',
-                    'Accept' => 'application/json',
-                ])
-                ->get(self::OPENVERSE_ENDPOINT, [
-                    'q' => $query,
-                    'page' => max(1, $page),
-                    'page_size' => 40,
-                ]);
-
-            if (! $response->successful()) {
-                return [];
-            }
-
-            $results = $response->json('results');
-            if (! is_array($results)) {
-                return [];
-            }
-
-            $urls = [];
-            foreach ($results as $row) {
-                if (! is_array($row)) {
-                    continue;
-                }
-                $url = trim((string) ($row['url'] ?? ''));
-                if ($url === '' || (! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://'))) {
-                    continue;
-                }
-                $urls[] = $url;
-            }
-
-            return $urls;
-        } catch (\Throwable $e) {
-            Log::warning('meditation_daily_cover.openverse_error', [
-                'query' => $query,
-                'page' => $page,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [];
-        }
-    }
-
-    private function storeLocalCopy(CarbonInterface $date, string $remoteUrl): ?string
-    {
-        try {
-            $response = Http::timeout(25)
-                ->withHeaders(['User-Agent' => 'NovaSementeMeditationCover/1.0'])
-                ->get($remoteUrl);
-
-            if (! $response->successful()) {
-                return null;
-            }
-
-            $bytes = $response->body();
-            if ($bytes === '' || strlen($bytes) < 2_000) {
-                return null;
-            }
-
-            $ext = 'jpg';
-            $contentType = strtolower((string) $response->header('Content-Type'));
-            if (str_contains($contentType, 'png')) {
-                $ext = 'png';
-            } elseif (str_contains($contentType, 'webp')) {
-                $ext = 'webp';
-            }
-
-            $branded = $this->applyBrandMark($bytes, $contentType);
-            if ($branded !== null) {
-                $bytes = $branded['bytes'];
-                $ext = $branded['ext'];
-                // Sufixo `.ns` marca capa já com logo (o feed não sobrepõe de novo).
-                $relative = 'meditation-covers/'.$date->format('Y').'/'.$date->format('Y-m-d').'.ns.'.$ext;
-            } else {
-                $relative = 'meditation-covers/'.$date->format('Y').'/'.$date->format('Y-m-d').'.'.$ext;
-            }
-
-            Storage::disk('public')->put($relative, $bytes);
-
-            return StorageUrl::publicMediaUrl($relative);
-        } catch (\Throwable $e) {
-            Log::warning('meditation_daily_cover.store_failed', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
     }
 
     /**
@@ -298,30 +276,6 @@ class MeditationDailyCoverFetcher
         return ['bytes' => $bytes, 'ext' => $ext];
     }
 
-    /**
-     * @param  array<string, true>  $used
-     */
-    private function fallbackFromPool(CarbonInterface $date, array $used): string
-    {
-        $pool = MeditationDailyFeed::sunriseCoverPool();
-        $n = count($pool);
-        if ($n === 0) {
-            return '';
-        }
-
-        $start = ((int) $date->format('z') + (int) $date->format('Y')) % $n;
-        for ($i = 0; $i < $n; $i++) {
-            $url = $pool[($start + $i) % $n];
-            $key = $this->normalizeCoverKey($url);
-            if ($key !== '' && ! isset($used[$key])) {
-                return $url;
-            }
-        }
-
-        // Todas já usadas: ainda assim devolve uma do dia (ciclo longo).
-        return $pool[$start];
-    }
-
     public function normalizeCoverKey(string $url): string
     {
         $url = trim($url);
@@ -329,13 +283,12 @@ class MeditationDailyCoverFetcher
             return '';
         }
 
-        // Path local de storage também conta.
         if (str_contains($url, 'meditation-covers/')) {
             if (preg_match('#meditation-covers/\d{4}/(\d{4}-\d{2}-\d{2})(?:\.ns)?\.[a-z0-9]+#i', $url, $m)) {
                 return 'local:'.$m[1];
             }
 
-            return 'local:'.Str::lower(basename(parse_url($url, PHP_URL_PATH) ?: $url));
+            return 'local:'.Str::lower(basename((string) (parse_url($url, PHP_URL_PATH) ?: $url)));
         }
 
         $path = parse_url($url, PHP_URL_PATH);

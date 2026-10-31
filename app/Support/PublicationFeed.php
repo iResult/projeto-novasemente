@@ -12,6 +12,7 @@ use App\Models\News;
 use App\Models\PhotoAlbum;
 use App\Models\Poll;
 use App\Models\RevistaAdventistaArticle;
+use App\Models\VidaSaudeArticle;
 use App\Services\DriveFolderCoverService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -83,6 +84,12 @@ class PublicationFeed
             'label' => 'Revista Adventista',
             'feature' => 'revista_adventista',
             'description' => 'Artigo da Revista Adventista para ler no app.',
+            'action' => 'Ler artigo',
+        ],
+        'vida_saude' => [
+            'label' => 'Vida e Saúde',
+            'feature' => 'vida_saude',
+            'description' => 'Artigo da revista Vida e Saúde para ler no app.',
             'action' => 'Ler artigo',
         ],
         'musica' => [
@@ -374,6 +381,7 @@ class PublicationFeed
                 'photos' => self::collectPhotoAlbums($church, $churchId, $driveCover, $baseUrl),
                 'events' => self::collectEvents($church, $churchId, $baseUrl),
                 'revista' => self::collectRevistaArticles($church, $baseUrl),
+                'vida_saude' => self::collectVidaSaudeArticles($church, $baseUrl),
                 'musica' => self::collectMusicas($church, $churchId, $baseUrl),
                 'polls' => self::collectPolls($church, $churchId, $baseUrl),
                 'meditation' => self::collectMeditationDaily($church, $churchId, $baseUrl),
@@ -463,7 +471,7 @@ class PublicationFeed
             ->where('slug', 'like', MeditationDailyFeed::SLUG_PREFIX.'%')
             ->visibleToPublic()
             ->orderByDesc('published_at')
-            ->limit(self::sourceCap(60))
+            ->limit(self::sourceCap(MeditationDailyFeed::COVER_FEED_WINDOW))
             ->get()
             ->map(function (News $post) use ($baseUrl, $church) {
                 $parsed = MeditationDailyFeed::parseStoredBody($post->body, $post->excerpt);
@@ -745,6 +753,44 @@ class PublicationFeed
                     imageUrl: PublicationFeedCoverResolver::forRevista($article, $church, $baseUrl),
                     publishedAt: $article->published_at,
                     href: route('mobile.revista-adventista.show', ['revistaAdventistaArticle' => $article->slug], absolute: false),
+                    meta: $meta,
+                    body: self::fullContent($article->body, $article->excerpt),
+                    bodyIsHtml: self::looksLikeHtml((string) ($article->body ?? '')),
+                );
+            });
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    private static function collectVidaSaudeArticles(?Church $church, string $baseUrl): Collection
+    {
+        return VidaSaudeArticle::query()
+            ->with('primaryCategory')
+            ->where('is_active', true)
+            ->whereNotNull('feed_released_at')
+            ->where('feed_released_at', '<=', now())
+            ->orderByDesc('feed_released_at')
+            ->limit(self::sourceCap(100))
+            ->get()
+            ->map(function (VidaSaudeArticle $article) use ($church, $baseUrl) {
+                $meta = [$article->sectionLabel()];
+                if (filled($article->author_name)) {
+                    $meta[] = 'Por '.$article->author_name;
+                }
+                if ($article->published_at !== null) {
+                    $meta[] = $article->published_at->timezone((string) config('app.timezone', 'America/Sao_Paulo'))->format('d/m/Y');
+                }
+
+                return self::entry(
+                    type: 'vida_saude',
+                    typeLabel: self::TYPE_DEFINITIONS['vida_saude']['label'],
+                    pk: $article->id,
+                    title: $article->title,
+                    excerpt: self::plainText($article->excerpt, $article->body),
+                    imageUrl: PublicationFeedCoverResolver::forVidaSaude($article, $church, $baseUrl),
+                    publishedAt: $article->feed_released_at,
+                    href: route('mobile.vida-e-saude.show', ['vidaSaudeArticle' => $article->slug], absolute: false),
                     meta: $meta,
                     body: self::fullContent($article->body, $article->excerpt),
                     bodyIsHtml: self::looksLikeHtml((string) ($article->body ?? '')),

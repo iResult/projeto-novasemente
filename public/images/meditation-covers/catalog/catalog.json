@@ -1,0 +1,580 @@
+{
+    "images": [
+        {
+            "file": "cover-002.jpg",
+            "scene_key": "landscape sunset blue sunrise",
+            "source_title": "File:Landscape-sunset-blue-sunrise (23958859769).jpg",
+            "author": "www.Pixel.la Free Stock Photos",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALandscape-sunset-blue-sunrise_%2823958859769%29.jpg"
+        },
+        {
+            "file": "cover-003.jpg",
+            "scene_key": "landscapesunrise",
+            "source_title": "File:LandscapeSunrise4301.jpg",
+            "author": "Jeet5080",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALandscapeSunrise4301.jpg"
+        },
+        {
+            "file": "cover-004.jpg",
+            "scene_key": "sunrise with mount fuji march",
+            "source_title": "File:Sunrise with Mount Fuji - March 2025.jpg",
+            "author": "Romain Guy",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_with_Mount_Fuji_-_March_2025.jpg"
+        },
+        {
+            "file": "cover-005.jpg",
+            "scene_key": "tuscan sunrise flickr salvatore gerace",
+            "source_title": "File:Tuscan sunrise - Flickr - Salvatore Gerace.jpg",
+            "author": "Salvatore Gerace",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ATuscan_sunrise_-_Flickr_-_Salvatore_Gerace.jpg"
+        },
+        {
+            "file": "cover-006.jpg",
+            "scene_key": "backplate rural landscape dsc",
+            "source_title": "File:Backplate – Rural Landscape DSC 0106 (Sergej Majboroda via Poly Haven).jpg",
+            "author": "Sergej Majboroda",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ABackplate_%E2%80%93_Rural_Landscape_DSC_0106_%28Sergej_Majboroda_via_Poly_Haven%29.jpg"
+        },
+        {
+            "file": "cover-007.jpg",
+            "scene_key": "mediteranian sea at sunrise",
+            "source_title": "File:Mediteranian sea at sunrise.jpg",
+            "author": "Houzgouz76zof8of",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMediteranian_sea_at_sunrise.jpg"
+        },
+        {
+            "file": "cover-009.jpg",
+            "scene_key": "rural landscape panorama",
+            "source_title": "File:Rural landscape – Panorama (Sergej Majboroda via Poly Haven).jpg",
+            "author": "Sergej Majboroda",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ARural_landscape_%E2%80%93_Panorama_%28Sergej_Majboroda_via_Poly_Haven%29.jpg"
+        },
+        {
+            "file": "cover-010.jpg",
+            "scene_key": "sunrise in the country",
+            "source_title": "File:Sunrise in the Country (Unsplash PQYovEfGC I).jpg",
+            "author": "Jasper Boer jasperboer",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_in_the_Country_%28Unsplash_PQYovEfGC_I%29.jpg"
+        },
+        {
+            "file": "cover-011.jpg",
+            "scene_key": "atmosphere sky clouds",
+            "source_title": "File:Atmosphere Sky Clouds.jpg",
+            "author": "Unknown authorUnknown author",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAtmosphere_Sky_Clouds.jpg"
+        },
+        {
+            "file": "cover-012.jpg",
+            "scene_key": "cerise sunset over tuntorp",
+            "source_title": "File:Cerise sunset over Tuntorp.jpg",
+            "author": "W.carter",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACerise_sunset_over_Tuntorp.jpg"
+        },
+        {
+            "file": "cover-013.jpg",
+            "scene_key": "colorful sky during sunset",
+            "source_title": "File:Colorful sky during sunset (Unsplash).jpg",
+            "author": "Rowan Heuvel insolitus",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AColorful_sky_during_sunset_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-014.jpg",
+            "scene_key": "fried sky alive saskatchewan sunset",
+            "source_title": "File:Fried Sky Alive - Saskatchewan sunset.jpg",
+            "author": "Alan Levine",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AFried_Sky_Alive_-_Saskatchewan_sunset.jpg"
+        },
+        {
+            "file": "cover-016.jpg",
+            "scene_key": "glowing sunset at island in the sky",
+            "source_title": "File:Glowing sunset at Island in the Sky (Unsplash).jpg",
+            "author": "Alexandre Chambon goodspleen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGlowing_sunset_at_Island_in_the_Sky_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-017.jpg",
+            "scene_key": "red sky sunset",
+            "source_title": "File:Red sky sunset (Unsplash).jpg",
+            "author": "Quino Al quinoal",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ARed_sky_sunset_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-018.jpg",
+            "scene_key": "sky clouds atmosphere",
+            "source_title": "File:Sky Clouds Atmosphere.jpg",
+            "author": "Unknown authorUnknown author",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASky_Clouds_Atmosphere.jpg"
+        },
+        {
+            "file": "cover-019.jpg",
+            "scene_key": "sky at sunset reflected in rhine at eltville",
+            "source_title": "File:Sky at sunset reflected in Rhine at Eltville.jpg",
+            "author": "Gerda Arendt",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASky_at_sunset_reflected_in_Rhine_at_Eltville.jpg"
+        },
+        {
+            "file": "cover-020.jpg",
+            "scene_key": "sun sunset sky",
+            "source_title": "File:Sun Sunset Sky.jpg",
+            "author": "Unknown authorUnknown author",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASun_Sunset_Sky.jpg"
+        },
+        {
+            "file": "cover-021.jpg",
+            "scene_key": "aiguilles d arves at dawn from la toussuire",
+            "source_title": "File:Aiguilles d'Arves at dawn from La Toussuire, 2023.jpg",
+            "author": "DimiTalen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAiguilles_d%27Arves_at_dawn_from_La_Toussuire%2C_2023.jpg"
+        },
+        {
+            "file": "cover-023.jpg",
+            "scene_key": "backplate venice dawn venice dawn",
+            "source_title": "File:Backplate – Venice Dawn 1 (Greg Zaal and Rico Cilliers via Poly Haven) venice dawn 1.jpg",
+            "author": "Greg Zaal (Panorama) Rico Cilliers (Backplates)",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ABackplate_%E2%80%93_Venice_Dawn_1_%28Greg_Zaal_and_Rico_Cilliers_via_Poly_Haven%29_venice_dawn_1.jpg"
+        },
+        {
+            "file": "cover-024.jpg",
+            "scene_key": "castle and church seen from the cemetery at dawn cl ron",
+            "source_title": "File:Castle and church seen from the cemetery at dawn, Cléron, 2026.jpg",
+            "author": "DimiTalen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACastle_and_church_seen_from_the_cemetery_at_dawn%2C_Cl%C3%A9ron%2C_2026.jpg"
+        },
+        {
+            "file": "cover-026.jpg",
+            "scene_key": "dawn arlington ma",
+            "source_title": "File:Dawn - Arlington, MA - 01.jpg",
+            "author": "Daderot",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADawn_-_Arlington%2C_MA_-_01.jpg"
+        },
+        {
+            "file": "cover-027.jpg",
+            "scene_key": "dawn charles v palace alhambra granada andalusia spain",
+            "source_title": "File:Dawn Charles V Palace Alhambra Granada Andalusia Spain.jpg",
+            "author": "Jebulon",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADawn_Charles_V_Palace_Alhambra_Granada_Andalusia_Spain.jpg"
+        },
+        {
+            "file": "cover-029.jpg",
+            "scene_key": "dreef nuenen at dawn",
+            "source_title": "File:Dreef, Nuenen at dawn 2024-12-01.jpg",
+            "author": "Andy Li",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADreef%2C_Nuenen_at_dawn_2024-12-01.jpg"
+        },
+        {
+            "file": "cover-030.jpg",
+            "scene_key": "hooidonkse beek at dawn",
+            "source_title": "File:Hooidonkse Beek at dawn 2024-12-01.jpg",
+            "author": "Andy Li",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHooidonkse_Beek_at_dawn_2024-12-01.jpg"
+        },
+        {
+            "file": "cover-032.jpg",
+            "scene_key": "cattle in norrkila",
+            "source_title": "File:Cattle in Norrkila 1.jpg",
+            "author": "W.carter",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACattle_in_Norrkila_1.jpg"
+        },
+        {
+            "file": "cover-033.jpg",
+            "scene_key": "desert landscape at dusk with sagebrush and distant mountain",
+            "source_title": "File:Desert landscape at dusk with sagebrush and distant mountain 01.jpg",
+            "author": "AnniDessauOwen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADesert_landscape_at_dusk_with_sagebrush_and_distant_mountain_01.jpg"
+        },
+        {
+            "file": "cover-034.jpg",
+            "scene_key": "desert landscape at dusk with sagebrush and distant mountain pass",
+            "source_title": "File:Desert landscape at dusk with sagebrush and distant mountain pass 02.jpg",
+            "author": "AnniDessauOwen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADesert_landscape_at_dusk_with_sagebrush_and_distant_mountain_pass_02.jpg"
+        },
+        {
+            "file": "cover-035.jpg",
+            "scene_key": "desert landscape at dusk with sagebrush and distant mountain pass with one small house",
+            "source_title": "File:Desert landscape at dusk with sagebrush and distant mountain pass with one small house 03.jpg",
+            "author": "AnniDessauOwen",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADesert_landscape_at_dusk_with_sagebrush_and_distant_mountain_pass_with_one_small_house_03.jpg"
+        },
+        {
+            "file": "cover-036.jpg",
+            "scene_key": "field with mixed intercropping of oat and rye",
+            "source_title": "File:Field with mixed intercropping of oat and rye.jpg",
+            "author": "W.carter",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AField_with_mixed_intercropping_of_oat_and_rye.jpg"
+        },
+        {
+            "file": "cover-037.jpg",
+            "scene_key": "gda sk bastion wilk",
+            "source_title": "File:Gdańsk bastion Wilk 004.jpg",
+            "author": "Аимаина хикари",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGda%C5%84sk_bastion_Wilk_004.jpg"
+        },
+        {
+            "file": "cover-038.jpg",
+            "scene_key": "gda sk bastion wyskok",
+            "source_title": "File:Gdańsk bastion Wyskok 001.jpg",
+            "author": "Аимаина хикари",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGda%C5%84sk_bastion_Wyskok_001.jpg"
+        },
+        {
+            "file": "cover-039.jpg",
+            "scene_key": "gda sk bastion ubr",
+            "source_title": "File:Gdańsk bastion Żubr 008.jpg",
+            "author": "Аимаина хикари",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGda%C5%84sk_bastion_%C5%BBubr_008.jpg"
+        },
+        {
+            "file": "cover-040.jpg",
+            "scene_key": "gda sk luza kamienna",
+            "source_title": "File:Gdańsk Śluza Kamienna 001.jpg",
+            "author": "Аимаина хикари",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGda%C5%84sk_%C5%9Aluza_Kamienna_001.jpg"
+        },
+        {
+            "file": "cover-041.jpg",
+            "scene_key": "b varo sunrise dominican republic",
+            "source_title": "File:Bávaro Sunrise, Dominican Republic (54026094405).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AB%C3%A1varo_Sunrise%2C_Dominican_Republic_%2854026094405%29.jpg"
+        },
+        {
+            "file": "cover-042.jpg",
+            "scene_key": "daybreak flickr oneterry aka terry kearney",
+            "source_title": "File:Daybreak.... ( Explored ) - Flickr - Oneterry AKA Terry Kearney.jpg",
+            "author": "Terry Kearney from liverpool, merseyside",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADaybreak...._%28_Explored_%29_-_Flickr_-_Oneterry_AKA_Terry_Kearney.jpg"
+        },
+        {
+            "file": "cover-043.jpg",
+            "scene_key": "dramatic sunrise over the south china sea",
+            "source_title": "File:Dramatic sunrise over the South China Sea (54526466021).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADramatic_sunrise_over_the_South_China_Sea_%2854526466021%29.jpg"
+        },
+        {
+            "file": "cover-044.jpg",
+            "scene_key": "grand turk sunrise",
+            "source_title": "File:Grand Turk Sunrise (46733448141).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AGrand_Turk_Sunrise_%2846733448141%29.jpg"
+        },
+        {
+            "file": "cover-045.jpg",
+            "scene_key": "lever du juillet",
+            "source_title": "File:Lever du 16 Juillet 2025.jpg",
+            "author": "Smailtn Camera location36° 46′ 21.62″ N, 10° 17′ 31.74″ E View this and other nearby images on: OpenStreetMap 36.772672; 10.292149",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALever_du_16_Juillet_2025.jpg"
+        },
+        {
+            "file": "cover-046.jpg",
+            "scene_key": "matahari terbit di camp kobes pantai ujung pandaran",
+            "source_title": "File:Matahari terbit di Camp Kobes Pantai Ujung Pandaran (20230114 053532).jpg",
+            "author": "Gabpzxs",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMatahari_terbit_di_Camp_Kobes_Pantai_Ujung_Pandaran_%2820230114_053532%29.jpg"
+        },
+        {
+            "file": "cover-047.jpg",
+            "scene_key": "sunrise dominican republic",
+            "source_title": "File:Sunrise, Dominican Republic (54025665111).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise%2C_Dominican_Republic_%2854025665111%29.jpg"
+        },
+        {
+            "file": "cover-048.jpg",
+            "scene_key": "sunrise at tamarama beach",
+            "source_title": "File:Sunrise at Tamarama beach (13155531594).jpg",
+            "author": "Wyncliffe from Sydney, Australia",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_at_Tamarama_beach_%2813155531594%29.jpg"
+        },
+        {
+            "file": "cover-049.jpg",
+            "scene_key": "sunrise in the baltic sea",
+            "source_title": "File:Sunrise in the Baltic Sea1.jpg",
+            "author": "Henrique Pinto",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_in_the_Baltic_Sea1.jpg"
+        },
+        {
+            "file": "cover-050.jpg",
+            "scene_key": "sunrise on the gulf of thailand",
+            "source_title": "File:Sunrise on the Gulf of Thailand (53745679578).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_on_the_Gulf_of_Thailand_%2853745679578%29.jpg"
+        },
+        {
+            "file": "cover-051.jpg",
+            "scene_key": "albanian sunrise",
+            "source_title": "File:Albanian Sunrise (27775064183).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAlbanian_Sunrise_%2827775064183%29.jpg"
+        },
+        {
+            "file": "cover-052.jpg",
+            "scene_key": "ca sunrise highway san diego co ca bw",
+            "source_title": "File:CA - SUNRISE HIGHWAY, San Diego Co, CA -BW (1) (11110984596).jpg",
+            "author": "ALAN SCHMIERER",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACA_-_SUNRISE_HIGHWAY%2C_San_Diego_Co%2C_CA_-BW_%281%29_%2811110984596%29.jpg"
+        },
+        {
+            "file": "cover-053.jpg",
+            "scene_key": "cloudy sunrise at sunan ibu",
+            "source_title": "File:Cloudy sunrise at Sunan Ibu.jpg",
+            "author": "Christophorus Ardi Nugraha",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACloudy_sunrise_at_Sunan_Ibu.jpg"
+        },
+        {
+            "file": "cover-054.jpg",
+            "scene_key": "foggy sunrise at sunan ibu",
+            "source_title": "File:Foggy Sunrise at Sunan Ibu.jpg",
+            "author": "Christophorus Ardi Nugraha",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AFoggy_Sunrise_at_Sunan_Ibu.jpg"
+        },
+        {
+            "file": "cover-055.jpg",
+            "scene_key": "fuji san sunrise flickr romainguy",
+            "source_title": "File:Fuji-san Sunrise - Flickr - romainguy.jpg",
+            "author": "Romain Guy from San Francisco, USA",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AFuji-san_Sunrise_-_Flickr_-_romainguy.jpg"
+        },
+        {
+            "file": "cover-056.jpg",
+            "scene_key": "himalaya sunrise",
+            "source_title": "File:Himalaya sunrise.jpg",
+            "author": "Ali Sabbagh",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHimalaya_sunrise.jpg"
+        },
+        {
+            "file": "cover-057.jpg",
+            "scene_key": "mount agung sunrise",
+            "source_title": "File:Mount Agung Sunrise (Unsplash).jpg",
+            "author": "Azhar J azhrjl",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMount_Agung_Sunrise_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-058.jpg",
+            "scene_key": "mountain sunrise",
+            "source_title": "File:Mountain sunrise (Unsplash).jpg",
+            "author": "Alice Donovan Rouse alicekat",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMountain_sunrise_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-059.jpg",
+            "scene_key": "orange sunrise and mountain silhouette",
+            "source_title": "File:Orange sunrise and mountain silhouette (Unsplash).jpg",
+            "author": "JOHN TOWNER heytowner",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AOrange_sunrise_and_mountain_silhouette_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-060.jpg",
+            "scene_key": "photo of sunrise over mollymook new south wales australia",
+            "source_title": "File:Photo of Sunrise over Mollymook, New South Wales, Australia.jpg",
+            "author": "Chris Beaven",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3APhoto_of_Sunrise_over_Mollymook%2C_New_South_Wales%2C_Australia.jpg"
+        },
+        {
+            "file": "cover-061.jpg",
+            "scene_key": "a winter s sunrise",
+            "source_title": "File:A winter's sunrise (Unsplash).jpg",
+            "author": "Jeremy Bishop tidesinourveins",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AA_winter%27s_sunrise_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-062.jpg",
+            "scene_key": "lake manapouri manapouri",
+            "source_title": "File:Lake Manapouri - Manapouri9035.jpg",
+            "author": "lumoplank",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALake_Manapouri_-_Manapouri9035.jpg"
+        },
+        {
+            "file": "cover-063.jpg",
+            "scene_key": "lake ontario sunrise",
+            "source_title": "File:Lake Ontario Sunrise (31351504118).jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALake_Ontario_Sunrise_%2831351504118%29.jpg"
+        },
+        {
+            "file": "cover-064.jpg",
+            "scene_key": "late winter sunrise on lake okanagan",
+            "source_title": "File:Late Winter Sunrise on Lake Okanagan.JPG",
+            "author": "Extemporalist",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALate_Winter_Sunrise_on_Lake_Okanagan.JPG"
+        },
+        {
+            "file": "cover-065.jpg",
+            "scene_key": "sunrise at inle lake",
+            "source_title": "File:Sunrise at Inle Lake.JPG",
+            "author": "mydaydream89",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_at_Inle_Lake.JPG"
+        },
+        {
+            "file": "cover-066.jpg",
+            "scene_key": "sunrise at peyto lake alberta",
+            "source_title": "File:Sunrise at Peyto Lake, Alberta (Unsplash).jpg",
+            "author": "adrian aows",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_at_Peyto_Lake%2C_Alberta_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-067.jpg",
+            "scene_key": "sunrise on vereda del lago and eagle austin ship in maracaibo lake",
+            "source_title": "File:Sunrise on Vereda del Lago and Eagle Austin Ship in Maracaibo lake.jpg",
+            "author": "Wilfredor",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_on_Vereda_del_Lago_and_Eagle_Austin_Ship_in_Maracaibo_lake.jpg"
+        },
+        {
+            "file": "cover-068.jpg",
+            "scene_key": "sunrise on the lake",
+            "source_title": "File:Sunrise on the lake.jpg",
+            "author": "Smailtn",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASunrise_on_the_lake.jpg"
+        },
+        {
+            "file": "cover-069.jpg",
+            "scene_key": "templiner see potsdam during sunrise photowalk wikicon",
+            "source_title": "File:Templiner See Potsdam during sunrise Photowalk WikiCon 2025-10-04 13.jpg",
+            "author": "Leonhard Lenz",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ATempliner_See_Potsdam_during_sunrise_Photowalk_WikiCon_2025-10-04_13.jpg"
+        },
+        {
+            "file": "cover-070.jpg",
+            "scene_key": "emerald bay lake tahoe california",
+            "source_title": "File:Emerald Bay, Lake Tahoe, California. 2015.jpg",
+            "author": "Eric Philbin",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AEmerald_Bay%2C_Lake_Tahoe%2C_California._2015.jpg"
+        },
+        {
+            "file": "cover-071.jpg",
+            "scene_key": "a cloudy sunrise",
+            "source_title": "File:A Cloudy Sunrise (Unsplash).jpg",
+            "author": "Rajiv Bajaj rajiv63",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AA_Cloudy_Sunrise_%28Unsplash%29.jpg"
+        },
+        {
+            "file": "cover-072.jpg",
+            "scene_key": "autumn sunrise",
+            "source_title": "File:Autumn Sunrise (54080732294).jpg",
+            "author": "HLI-Photography",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAutumn_Sunrise_%2854080732294%29.jpg"
+        },
+        {
+            "file": "cover-073.jpg",
+            "scene_key": "autumn sunrise on still waters flickr terry kearney",
+            "source_title": "File:Autumn sunrise on still waters - Flickr - Terry Kearney.jpg",
+            "author": "Terry Kearney from liverpool, merseyside",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAutumn_sunrise_on_still_waters_-_Flickr_-_Terry_Kearney.jpg"
+        },
+        {
+            "file": "cover-074.jpg",
+            "scene_key": "beaver pond sunrise flickr mustang joe",
+            "source_title": "File:Beaver pond sunrise - Flickr - Mustang Joe.jpg",
+            "author": "Mustang Joe",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ABeaver_pond_sunrise_-_Flickr_-_Mustang_Joe.jpg"
+        },
+        {
+            "file": "cover-075.jpg",
+            "scene_key": "castellum hotel holl k kil t s zoz hdr",
+            "source_title": "File:Castellum Hotel Hollókő, kilátás, ZOZ 2388-HDR.jpg",
+            "author": "Castellum Hotel Holloko",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ACastellum_Hotel_Holl%C3%B3k%C5%91%2C_kil%C3%A1t%C3%A1s%2C_ZOZ_2388-HDR.jpg"
+        },
+        {
+            "file": "cover-076.jpg",
+            "scene_key": "jun n amanecer",
+            "source_title": "File:Junín Amanecer 20090410 2.jpg",
+            "author": "Germanramos",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AJun%C3%ADn_Amanecer_20090410_2.jpg"
+        },
+        {
+            "file": "cover-077.jpg",
+            "scene_key": "landscape neyyar",
+            "source_title": "File:Landscape Neyyar.jpg",
+            "author": "Mpcadus",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALandscape_Neyyar.jpg"
+        },
+        {
+            "file": "cover-078.jpg",
+            "scene_key": "sikunir dieng plateau mdpl",
+            "source_title": "File:Sikunir, Dieng Plateau 2306 mdpl 2.jpg",
+            "author": "Mhd Redha Maha",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASikunir%2C_Dieng_Plateau_2306_mdpl_2.jpg"
+        },
+        {
+            "file": "cover-079.jpg",
+            "scene_key": "sonnenaufgang stalis mai",
+            "source_title": "File:Sonnenaufgang Stalis Mai 2011.JPG",
+            "author": "Aetzebaer (Beiträge)",
+            "license": "CC0",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASonnenaufgang_Stalis_Mai_2011.JPG"
+        }
+    ]
+}

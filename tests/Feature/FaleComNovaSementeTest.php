@@ -73,7 +73,7 @@ class FaleComNovaSementeTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Mobile/Solicitations/GuestRequest')
-                ->where('title', 'Outro pedido'));
+                ->where('title', 'Outros Pedidos'));
 
         $this->post(route('mobile.fale.other.store'), [
             'message' => 'Quero conversar sobre outra coisa.',

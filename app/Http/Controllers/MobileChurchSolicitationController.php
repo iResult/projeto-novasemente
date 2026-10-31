@@ -391,7 +391,7 @@ class MobileChurchSolicitationController extends Controller
             $request,
             'other',
             'mobile.fale.other.store',
-            'Outro pedido',
+            'Outros Pedidos',
             'Envie um pedido que não se encaixa nos demais. Dá para enviar sem ter conta no app.',
         );
     }

@@ -5,10 +5,15 @@ namespace App\Services;
 use App\Models\PushToken;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class FcmMessaging
 {
+    private const MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
+
+    private const CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
+
     public static function enabled(): bool
     {
         $cfg = config('services.fcm', []);
@@ -26,7 +31,7 @@ class FcmMessaging
             return false;
         }
 
-        Cache::forget('fcm:oauth:access_token');
+        Cache::forget($this->oauthCacheKey(self::MESSAGING_SCOPE));
 
         $token = $this->accessToken();
 
@@ -36,6 +41,11 @@ class FcmMessaging
     public function sendVisibleNotification(string $token, string $title, string $body, array $data = []): bool
     {
         $projectId = (string) config('services.fcm.project_id');
+        $deliveryToken = $this->tokenForDelivery($token);
+        if ($deliveryToken === null || $deliveryToken === '') {
+            return false;
+        }
+
         $accessToken = $this->accessToken();
         if ($accessToken === null || $accessToken === '') {
             return false;
@@ -49,7 +59,7 @@ class FcmMessaging
 
         $payload = [
             'message' => [
-                'token' => $token,
+                'token' => $deliveryToken,
                 'notification' => [
                     'title' => $title,
                     'body' => $body,
@@ -87,9 +97,18 @@ class FcmMessaging
             return true;
         }
 
+        if ($this->isApnsDeviceToken($token)) {
+            Cache::forget($this->apnsCacheKey($token));
+        }
+
         $this->maybePruneInvalidToken($token, $res->json());
 
         return false;
+    }
+
+    public static function isApnsDeviceToken(string $token): bool
+    {
+        return (bool) preg_match('/^[0-9a-f]{64}$/i', $token);
     }
 
     private function maybePruneInvalidToken(string $token, mixed $json): void
@@ -111,8 +130,10 @@ class FcmMessaging
             }
         }
 
+        $invalidArgument = $code === 'INVALID_ARGUMENT' && ! self::isApnsDeviceToken($token);
         $shouldDelete = $status === 'NOT_FOUND'
-            || in_array($code, ['UNREGISTERED', 'SENDER_ID_MISMATCH', 'INVALID_ARGUMENT'], true);
+            || in_array($code, ['UNREGISTERED', 'SENDER_ID_MISMATCH'], true)
+            || $invalidArgument;
 
         if (! $shouldDelete) {
             return;
@@ -121,15 +142,79 @@ class FcmMessaging
         PushToken::query()->where('token', $token)->delete();
     }
 
-    private function accessToken(): ?string
+    /**
+     * O app iOS grava o token da Apple (64 hex). O FCM só entrega com token de registro.
+     */
+    private function tokenForDelivery(string $token): ?string
+    {
+        if (! self::isApnsDeviceToken($token)) {
+            return $token;
+        }
+
+        $cacheKey = $this->apnsCacheKey($token);
+        $cached = Cache::get($cacheKey);
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
+        }
+
+        $registration = $this->importApnsToken($token);
+        if ($registration === null) {
+            return null;
+        }
+
+        Cache::put($cacheKey, $registration, now()->addDays(7));
+
+        return $registration;
+    }
+
+    private function importApnsToken(string $apnsToken): ?string
+    {
+        $accessToken = $this->accessToken(self::CLOUD_PLATFORM_SCOPE);
+        if ($accessToken === null || $accessToken === '') {
+            return null;
+        }
+
+        $bundleId = (string) config('services.fcm.ios_bundle_id');
+        if ($bundleId === '') {
+            return null;
+        }
+
+        $res = Http::withToken($accessToken)
+            ->withHeaders(['access_token_auth' => 'true'])
+            ->acceptJson()
+            ->asJson()
+            ->timeout(20)
+            ->post('https://iid.googleapis.com/iid/v1:batchImport', [
+                'application' => $bundleId,
+                'sandbox' => (bool) config('services.fcm.ios_apns_sandbox'),
+                'apns_tokens' => [$apnsToken],
+            ]);
+
+        $result = $res->json('results.0');
+        $registration = is_array($result) ? ($result['registration_token'] ?? null) : null;
+        $status = is_array($result) ? ($result['status'] ?? null) : null;
+
+        if ($res->successful() && $status === 'OK' && is_string($registration) && $registration !== '') {
+            return $registration;
+        }
+
+        Log::warning('FCM: falha ao converter token da Apple.', [
+            'http' => $res->status(),
+            'status' => is_string($status) ? $status : null,
+        ]);
+
+        return null;
+    }
+
+    private function accessToken(string $scope = self::MESSAGING_SCOPE): ?string
     {
         if (! self::enabled()) {
             return null;
         }
 
-        return Cache::remember('fcm:oauth:access_token', now()->addMinutes(50), function (): ?string {
+        return Cache::remember($this->oauthCacheKey($scope), now()->addMinutes(50), function () use ($scope): ?string {
             try {
-                $jwt = $this->signedJwt();
+                $jwt = $this->signedJwt($scope);
 
                 $res = Http::asForm()
                     ->acceptJson()
@@ -151,7 +236,17 @@ class FcmMessaging
         });
     }
 
-    private function signedJwt(): string
+    private function oauthCacheKey(string $scope): string
+    {
+        return 'fcm:oauth:access_token:'.sha1($scope);
+    }
+
+    private function apnsCacheKey(string $apnsToken): string
+    {
+        return 'fcm:apns:'.hash('sha256', strtolower($apnsToken));
+    }
+
+    private function signedJwt(string $scope): string
     {
         $clientEmail = (string) config('services.fcm.client_email');
         $privateKeyPem = $this->normalizedPrivateKey((string) config('services.fcm.private_key'));
@@ -164,7 +259,7 @@ class FcmMessaging
             'aud' => 'https://oauth2.googleapis.com/token',
             'iat' => $now,
             'exp' => $now + 3600,
-            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'scope' => $scope,
         ];
 
         $segments = [

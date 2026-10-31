@@ -16,38 +16,8 @@ final class MeditationDailyFeed
 
     public const EXAMPLE_SLUG = 'meditacao-diaria-exemplo';
 
-    /**
-     * Capas portrait (nascer / pôr do sol) via Unsplash — hotlink gratuito.
-     * Fonte de busca: https://unsplash.com/s/photos/sunrise?orientation=portrait
-     *
-     * @return list<string>
-     */
-    public static function sunriseCoverPool(): array
-    {
-        return [
-            'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1080&q=80',
-            'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1080&q=80',
-        ];
-    }
+    /** Janela do feed em que a mesma capa não deve voltar. */
+    public const COVER_FEED_WINDOW = 60;
 
     public static function isMeditationNews(News $post): bool
     {
@@ -62,15 +32,20 @@ final class MeditationDailyFeed
     }
 
     /**
-     * Fallback estático (sem rede). Preferir MeditationDailyCoverFetcher no job diário.
+     * Capa estável do catálogo local quando a notícia não tem imagem.
+     * O job diário usa MeditationDailyCoverFetcher, que evita repetir na janela do feed.
      */
     public static function coverForDate(CarbonInterface $date): string
     {
-        $pool = self::sunriseCoverPool();
-        $n = count($pool);
+        $entries = MeditationCoverCatalog::entries();
+        $n = count($entries);
+        if ($n === 0) {
+            return '';
+        }
+
         $index = (((int) $date->format('Y') * 366) + (int) $date->format('z')) % $n;
 
-        return $pool[$index];
+        return $entries[$index]['url'];
     }
 
     /**

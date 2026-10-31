@@ -5,16 +5,19 @@ namespace Tests\Feature;
 use App\Models\Church;
 use App\Models\News;
 use App\Models\Poll;
+use App\Models\PrayerRequest;
 use App\Models\User;
 use App\Support\NewsLaunchDeepLinks;
 use Database\Seeders\ChurchSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\WritesMeditationCoverCatalog;
 use Tests\TestCase;
 
 class PublicationsFeedTest extends TestCase
 {
     use RefreshDatabase;
+    use WritesMeditationCoverCatalog;
 
     public function test_any_authenticated_user_can_access_publications_feed_when_open(): void
     {
@@ -225,7 +228,7 @@ class PublicationsFeedTest extends TestCase
             'email' => 'admin@example.com',
         ]);
 
-        \App\Models\PrayerRequest::query()->create([
+        PrayerRequest::query()->create([
             'church_id' => $church->id,
             'user_id' => $user->id,
             'request' => 'Texto secreto do pedido de oração',
@@ -394,16 +397,7 @@ class PublicationsFeedTest extends TestCase
             'email' => 'admin@example.com',
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'api.openverse.org/*' => \Illuminate\Support\Facades\Http::response([
-                'results' => [
-                    ['url' => 'https://live.staticflickr.com/demo/sunrise-example.jpg'],
-                ],
-            ], 200),
-            'live.staticflickr.com/*' => \Illuminate\Support\Facades\Http::response(str_repeat('JPEG', 800), 200, [
-                'Content-Type' => 'image/jpeg',
-            ]),
-        ]);
+        $this->writeMeditationCoverCatalog(['cover-001.jpg']);
 
         $this->artisan('app:publish-meditation-daily-feed-example', [
             '--church' => $church->slug,

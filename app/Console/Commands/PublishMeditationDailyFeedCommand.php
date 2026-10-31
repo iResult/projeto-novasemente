@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 #[AsCommand(
     name: 'app:publish-meditation-daily-feed',
-    description: 'Publica o feed Meditação diária do dia (capa Unsplash + versículo CPB)',
+    description: 'Publica o feed Meditação diária do dia (capa do catálogo local + versículo CPB)',
 )]
 class PublishMeditationDailyFeedCommand extends Command
 {

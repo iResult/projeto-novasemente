@@ -16,7 +16,7 @@ export default function ConhecaNovaSementeHomeCard() {
         <section aria-label="Conheça a Nova Semente" className="min-w-0">
             <Link
                 href={route('mobile.conheca')}
-                className="group flex h-full min-h-[8.75rem] cursor-pointer flex-col gap-2.5 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/80 md:min-h-[7.25rem] md:flex-row md:items-center md:gap-3 md:px-4"
+                className="group flex h-full min-h-[8.75rem] cursor-pointer flex-col gap-2.5 overflow-hidden rounded-2xl border border-zinc-200 bg-[#f6f3ec] p-3 shadow-sm transition hover:border-zinc-300 hover:bg-[#efeae0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700/40 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/80 md:min-h-[7.25rem] md:flex-row md:items-center md:gap-3 md:px-4"
             >
                 <span className="flex items-center justify-between md:contents">
                     <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-800 ring-1 ring-zinc-200/90 dark:bg-zinc-800 dark:text-brand-200 dark:ring-zinc-700 md:order-1 md:h-11 md:w-11">

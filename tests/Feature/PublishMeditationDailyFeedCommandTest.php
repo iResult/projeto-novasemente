@@ -10,11 +10,13 @@ use Database\Seeders\ChurchSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\Support\WritesMeditationCoverCatalog;
 use Tests\TestCase;
 
 class PublishMeditationDailyFeedCommandTest extends TestCase
 {
     use RefreshDatabase;
+    use WritesMeditationCoverCatalog;
 
     public function test_command_creates_daily_feed_for_active_church(): void
     {
@@ -28,19 +30,14 @@ class PublishMeditationDailyFeedCommandTest extends TestCase
         ]);
         $admin->assignRole('admin');
 
+        Http::preventStrayRequests();
         Http::fake([
             'mais.cpb.com.br/*' => Http::sequence()
                 ->push($this->indexHtml(), 200)
                 ->push($this->dailyHtml(), 200),
-            'api.openverse.org/*' => Http::response([
-                'results' => [
-                    ['url' => 'https://live.staticflickr.com/demo/sunrise-day.jpg'],
-                ],
-            ], 200),
-            'live.staticflickr.com/*' => Http::response(str_repeat('JPEG', 800), 200, [
-                'Content-Type' => 'image/jpeg',
-            ]),
         ]);
+
+        $this->writeMeditationCoverCatalog(['cover-001.jpg']);
 
         $date = now()->toDateString();
 
@@ -59,6 +56,7 @@ class PublishMeditationDailyFeedCommandTest extends TestCase
         $this->assertSame(News::TYPE_IMAGE, $news->content_type);
         $this->assertTrue($news->is_active);
         $this->assertNotEmpty((string) $news->image_url);
+        $this->assertStringContainsString('/images/meditation-covers/catalog/', (string) $news->image_url);
         $this->assertStringContainsString('[verse]', (string) $news->body);
         $this->assertStringContainsString('Salmo 91:4', (string) $news->body);
 

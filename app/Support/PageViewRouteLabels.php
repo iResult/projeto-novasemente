@@ -48,6 +48,8 @@ final class PageViewRouteLabels
         'mobile.health.show' => 'Saúde — artigo',
         'mobile.revista-adventista' => 'Revista Adventista',
         'mobile.revista-adventista.show' => 'Revista Adventista — artigo',
+        'mobile.vida-e-saude' => 'Vida e Saúde',
+        'mobile.vida-e-saude.show' => 'Vida e Saúde — artigo',
         'mobile.acervo-revista-adventista' => 'Acervo Revista Adventista',
         'mobile.acervo-revista-adventista.show' => 'Acervo Revista Adventista — edição',
         'mobile.mission' => 'Missão',
@@ -119,8 +121,8 @@ final class PageViewRouteLabels
         'mobile.fale.baby.store' => 'Apresentação de bebê — enviar',
         'mobile.fale.bible' => 'Pedido de Estudo Bíblico',
         'mobile.fale.bible.store' => 'Pedido de Estudo Bíblico — enviar',
-        'mobile.fale.other' => 'Outro pedido',
-        'mobile.fale.other.store' => 'Outro pedido — enviar',
+        'mobile.fale.other' => 'Outros Pedidos',
+        'mobile.fale.other.store' => 'Outros Pedidos — enviar',
         'mobile.fale.pastor' => 'Agenda com o Pastor',
         'mobile.fale.pastor.store' => 'Agenda com o Pastor — enviar',
         'mobile.quem-somos' => 'Quem somos',
@@ -137,6 +139,7 @@ final class PageViewRouteLabels
         'musica.index' => 'Música (painel)',
         'health.index' => 'Saúde (painel)',
         'revista-adventista.index' => 'Revista Adventista (painel)',
+        'vida-e-saude.index' => 'Vida e Saúde (painel)',
         'revista-adventista-acervo.index' => 'Acervo Revista Adventista (painel)',
 
         // —— Ligações frequentes a partir de Mais / áreas relacionadas ——

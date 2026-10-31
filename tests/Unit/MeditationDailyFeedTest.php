@@ -3,10 +3,13 @@
 namespace Tests\Unit;
 
 use App\Support\MeditationDailyFeed;
+use Tests\Support\WritesMeditationCoverCatalog;
 use Tests\TestCase;
 
 class MeditationDailyFeedTest extends TestCase
 {
+    use WritesMeditationCoverCatalog;
+
     public function test_encodes_and_parses_verse_payload(): void
     {
         $encoded = MeditationDailyFeed::encodeBody(
@@ -22,15 +25,15 @@ class MeditationDailyFeedTest extends TestCase
         $this->assertSame('Texto do corpo.', $parsed['body']);
     }
 
-    public function test_cover_pool_is_stable_by_day(): void
+    public function test_cover_for_date_is_a_stable_catalog_image(): void
     {
-        $pool = MeditationDailyFeed::sunriseCoverPool();
-        $this->assertNotEmpty($pool);
+        $this->writeMeditationCoverCatalog(['cover-001.jpg', 'cover-002.jpg']);
 
         $a = MeditationDailyFeed::coverForDate(now()->startOfYear());
         $b = MeditationDailyFeed::coverForDate(now()->startOfYear());
+
         $this->assertSame($a, $b);
-        $this->assertStringContainsString('images.unsplash.com', $a);
+        $this->assertStringStartsWith('/images/meditation-covers/catalog/', $a);
     }
 
     public function test_extracts_verse_title_and_body_from_cpb_html(): void

@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 
 #[AsCommand(
     name: 'app:publish-meditation-daily-feed-example',
-    description: 'Publica um exemplo do feed Meditação diária (capa Unsplash + versículo)',
+    description: 'Publica um exemplo do feed Meditação diária (capa do catálogo local + versículo)',
 )]
 class PublishMeditationDailyFeedExampleCommand extends Command
 {
@@ -38,7 +38,7 @@ class PublishMeditationDailyFeedExampleCommand extends Command
 
         $payload = MeditationDailyFeed::examplePayload();
         $today = now();
-        $cover = $covers->resolveForDate($today);
+        $cover = $covers->resolveForSlug(MeditationDailyFeed::EXAMPLE_SLUG);
         $body = MeditationDailyFeed::encodeBody(
             $payload['verse'],
             $payload['citation'],

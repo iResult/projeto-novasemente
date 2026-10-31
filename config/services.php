@@ -69,6 +69,9 @@ return [
         'project_id' => env('FCM_PROJECT_ID'),
         'client_email' => env('FCM_CLIENT_EMAIL'),
         'private_key' => env('FCM_PRIVATE_KEY'),
+        // O app iOS (Capacitor) grava o token da Apple. O FCM só envia com token de registro.
+        'ios_bundle_id' => env('FCM_IOS_BUNDLE_ID', 'mobapp.at.novasementeorg'),
+        'ios_apns_sandbox' => filter_var(env('FCM_IOS_APNS_SANDBOX', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
 ];

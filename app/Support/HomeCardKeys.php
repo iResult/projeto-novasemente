@@ -40,6 +40,7 @@ final class HomeCardKeys
         'oracao',
         'quem-somos',
         'revista-adventista',
+        'vida-e-saude',
         'saude',
         'series',
         'suporte-app',

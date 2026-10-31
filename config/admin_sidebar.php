@@ -34,6 +34,7 @@ return [
         ['name' => 'Comentários', 'route' => 'publication-comments.index', 'icon' => 'chat-bubble'],
         ['name' => 'Saúde', 'route' => 'health.index', 'icon' => 'heart'],
         ['name' => 'Revista Adventista', 'route' => 'revista-adventista.index', 'icon' => 'newspaper'],
+        ['name' => 'Vida e Saúde', 'route' => 'vida-e-saude.index', 'icon' => 'newspaper'],
         ['name' => 'Acervo Revista Adventista', 'route' => 'revista-adventista-acervo.index', 'icon' => 'book-open'],
         ['name' => 'Eventos', 'route' => 'events.index', 'icon' => 'calendar-days'],
         ['name' => 'Séries', 'route' => 'acervo.index', 'icon' => 'play-circle'],

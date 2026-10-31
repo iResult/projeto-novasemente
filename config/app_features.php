@@ -175,6 +175,11 @@ return [
             'group' => 'menu_mais',
             'routes' => ['mobile.revista-adventista', 'mobile.revista-adventista.show'],
         ],
+        'vida_saude' => [
+            'label' => 'Vida e Saúde',
+            'group' => 'menu_mais',
+            'routes' => ['mobile.vida-e-saude', 'mobile.vida-e-saude.show'],
+        ],
         'revista_adventista_acervo' => [
             'label' => 'Acervo Revista Adventista',
             'group' => 'biblioteca',

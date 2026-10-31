@@ -71,7 +71,7 @@ export default function FaleComNovaSemente({ nsWhatsPendingReply = 0 }: { nsWhat
         },
         {
             id: 'outro-pedido',
-            label: 'Outro pedido',
+            label: 'Outros Pedidos',
             subtitle: 'Outro pedido à igreja',
             href: loggedIn
                 ? route('mobile.solicitations.hub', { novo: 1, tipo: 'other' })
