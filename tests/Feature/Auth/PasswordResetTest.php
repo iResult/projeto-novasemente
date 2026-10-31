@@ -174,7 +174,7 @@ class PasswordResetTest extends TestCase
             'password' => $newPassword,
         ]);
 
-        $login->assertRedirect(route('mobile.home'));
+        $login->assertRedirect(route('mobile.index'));
         $this->assertAuthenticatedAs($user);
     }
 

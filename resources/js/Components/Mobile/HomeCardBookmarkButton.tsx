@@ -9,6 +9,8 @@ type Props = {
     className?: string;
     labelAdd?: string;
     labelRemove?: string;
+    /** `surface` é o botão sobre fundo claro. Os outros ficam sobre a fotografia. */
+    tone?: 'surface' | 'on-dark' | 'on-light';
 };
 
 export default function HomeCardBookmarkButton({
@@ -19,8 +21,15 @@ export default function HomeCardBookmarkButton({
     className = '',
     labelAdd = 'Marcar como favorito',
     labelRemove = 'Remover dos favoritos',
+    tone = 'surface',
 }: Props) {
     const label = bookmarked ? labelRemove : labelAdd;
+    const toneClass =
+        tone === 'on-dark'
+            ? 'text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.45)] hover:bg-white/15 hover:text-white'
+            : tone === 'on-light'
+              ? 'text-zinc-900 hover:bg-black/5 hover:text-zinc-950'
+              : 'text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100';
 
     return (
         <button
@@ -33,7 +42,7 @@ export default function HomeCardBookmarkButton({
                     onToggle(cardKey);
                 }
             }}
-            className={`absolute right-2 top-2 z-10 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 ${className}`}
+            className={`absolute right-2 top-2 z-10 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${toneClass} ${className}`}
             aria-label={label}
             aria-pressed={bookmarked}
             title={label}

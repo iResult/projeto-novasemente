@@ -36,7 +36,7 @@ class VolunteerAppLoginTest extends TestCase
         $this->post('/login', [
             'login' => 'marly@gmail.com.br',
             'password' => '123456',
-        ])->assertRedirect(route('mobile.home'));
+        ])->assertRedirect(route('mobile.index'));
 
         $this->assertAuthenticatedAs($user->fresh());
     }

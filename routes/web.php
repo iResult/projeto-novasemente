@@ -172,8 +172,14 @@ Route::post('/pedidos-oracao/{prayer}/orou', [PrayerRequestController::class, 'a
     ->name('prayer.amen');
 Route::get('/mobile/oracao', [PrayerRequestController::class, 'mobile'])->name('mobile.prayer');
 
-Route::get('/mobile', [MobileController::class, 'home'])->name('mobile.index');
+Route::get('/mobile', [MobileController::class, 'publicationsFeed'])->name('mobile.index');
 Route::get('/mobile/inicio', [MobileController::class, 'home'])->name('mobile.home');
+Route::get('/mobile/oferta', [MobileController::class, 'oferta'])->name('mobile.oferta');
+if (app()->environment(['local', 'testing'])) {
+    Route::get('/mobile/qa/cards-home', function () {
+        return Inertia::render('Mobile/HomeCardsPilot');
+    })->name('mobile.home-cards-pilot');
+}
 Route::get('/mobile/meditacao-diaria', [MobileController::class, 'meditacaoDiaria'])
     ->middleware('throttle:40,1')
     ->name('mobile.meditacao-diaria');

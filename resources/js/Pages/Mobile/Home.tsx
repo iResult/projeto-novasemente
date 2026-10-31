@@ -5,7 +5,6 @@ import {
     AcademicCapIcon,
     BanknotesIcon,
     BookmarkSquareIcon,
-    BookOpenIcon,
     CalendarDaysIcon,
     CameraIcon,
     ChatBubbleOvalLeftEllipsisIcon,
@@ -29,12 +28,10 @@ import DropletIcon from '@/Components/Mobile/DropletIcon';
 import HomeFeatureCard from '@/Components/Mobile/HomeFeatureCard';
 import PromiseBoxModal from '@/Components/Mobile/PromiseBoxModal';
 import SobreOAppNavItem from '@/Components/Mobile/SobreOAppNavItem';
-import WeeklyProgramHomeStrip from '@/Components/Mobile/WeeklyProgramHomeStrip';
 import type { WeeklyProgramHomeCardData } from '@/Components/Mobile/WeeklyProgramHomeCard';
 import SabbathHomeBanner, { type SabbathHomeBannerData } from '@/Components/Mobile/SabbathHomeBanner';
 import MeditationHomeBanner, { type MeditationHomeBannerData } from '@/Components/Mobile/MeditationHomeBanner';
-import HomeGivingShortcuts from '@/Components/Mobile/HomeGivingShortcuts';
-import HomeFeedCarousel, { type HomeFeedHighlight } from '@/Components/Mobile/HomeFeedCarousel';
+import { type HomeFeedHighlight } from '@/Components/Mobile/HomeFeedCarousel';
 import HomeVolunteerArea from '@/Components/Mobile/HomeVolunteerArea';
 import ConhecaNovaSementeHomeCard from '@/Components/Mobile/ConhecaNovaSementeHomeCard';
 import { type HomeModuleSpotlightPayload } from '@/Components/Mobile/HomeModuleSpotlightBanner';
@@ -49,6 +46,12 @@ import {
     readStoredDevotionalAudience,
 } from '@/data/devotionalAudience';
 import { useAppFeatures } from '@/hooks/useAppFeatures';
+import {
+    HOME_CARD_PAGE_KEY,
+    HOME_CARD_PAGE_SIZE,
+    arrangeHomeCardMosaic,
+    homeCardPhotoPresentation,
+} from '@/data/homeCardPilot';
 
 type MenuIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
 
@@ -126,14 +129,6 @@ const homeQuickActions: QuickAction[] = [
         icon: RectangleStackIcon,
     },
     {
-        id: 'biblia',
-        label: 'Bíblia',
-        subtitle: 'Leitura e busca de versículos',
-        route: 'mobile.bible',
-        featureKey: 'bible',
-        icon: BookOpenIcon,
-    },
-    {
         id: 'caixa-promessas',
         label: 'Caixa de Promessas',
         subtitle: 'Uma mensagem especial para você',
@@ -163,6 +158,14 @@ const homeQuickActions: QuickAction[] = [
         route: 'mobile.communities',
         featureKey: 'communities',
         icon: ChatBubbleOvalLeftEllipsisIcon,
+    },
+    {
+        id: 'conviva',
+        label: 'Conviva',
+        subtitle: 'Check-in da classe no culto de sábado',
+        route: 'mobile.conviva.checkin',
+        featureKey: 'conviva',
+        icon: AcademicCapIcon,
     },
     {
         id: 'culto',
@@ -283,8 +286,6 @@ export default function MobileHome({
     showPostRegistrationBanner = false,
     sabbathBanner = null,
     meditationBanner = null,
-    weeklyProgramCards = [],
-    feedHighlights = [],
     moduleSpotlight = null,
     bookmarkedHomeCards = [],
     nsWhatsPendingReply = 0,
@@ -298,6 +299,7 @@ export default function MobileHome({
     const [promiseOpen, setPromiseOpen] = useState(false);
     const [bookmarks, setBookmarks] = useState<string[]>(bookmarkedHomeCards);
     const [bookmarkBusy, setBookmarkBusy] = useState(false);
+    const [cardPage, setCardPage] = useState(0);
     const [meditationAudience, setMeditationAudience] = useState<DevotionalAudience>(() =>
         typeof window !== 'undefined' ? readStoredDevotionalAudience() : DEVOTIONAL_AUDIENCE_DEFAULT,
     );
@@ -308,6 +310,10 @@ export default function MobileHome({
 
     useEffect(() => {
         setMeditationAudience(readStoredDevotionalAudience());
+        const stored = Number(sessionStorage.getItem(HOME_CARD_PAGE_KEY) ?? '0');
+        if (Number.isFinite(stored) && stored >= 0) {
+            setCardPage(Math.floor(stored));
+        }
     }, []);
 
     useEffect(() => {
@@ -326,12 +332,6 @@ export default function MobileHome({
 
     const { isEnabled } = useAppFeatures();
     const showMeditationBanner = Boolean(meditationBanner) && isEnabled('devotional');
-    const programHref = isEnabled('services') ? route('mobile.services') : null;
-    const conhecaFallbackHref = (
-        ['quem_somos', 'pastors', 'location', 'services', 'beliefs', 'acompanhar_culto'] as const
-    ).some((key) => isEnabled(key))
-        ? route('mobile.conheca')
-        : null;
 
     const canBookmark = Boolean(user);
 
@@ -378,16 +378,6 @@ export default function MobileHome({
     };
 
     const gridItems = useMemo(() => {
-        const spotlightCardIds = (() => {
-            if (Array.isArray(moduleSpotlight?.home_card_ids) && moduleSpotlight.home_card_ids.length > 0) {
-                return moduleSpotlight.home_card_ids.filter((id): id is string => typeof id === 'string' && id !== '');
-            }
-            return (moduleSpotlight?.items ?? [])
-                .map((item) => item.home_card_id)
-                .filter((id): id is string => typeof id === 'string' && id !== '');
-        })();
-        const spotlightRank = new Map(spotlightCardIds.map((id, index) => [id, index]));
-
         const actions = homeQuickActions
             .map((action) =>
                 action.id === 'caixa-promessas' ? { ...action, onClick: openPromise } : action,
@@ -396,29 +386,22 @@ export default function MobileHome({
             .filter((action) => !action.leaderOnly || isMinistryLeader)
             .map((action) => ({ kind: 'action' as const, id: action.id, label: action.label, action }));
 
-        const items = actions;
+        return arrangeHomeCardMosaic(actions);
+    }, [isEnabled, isMinistryLeader]);
 
-        return items.sort((a, b) => {
-            const aSpotlight = spotlightRank.has(a.id);
-            const bSpotlight = spotlightRank.has(b.id);
-            if (aSpotlight !== bSpotlight) {
-                return aSpotlight ? -1 : 1;
-            }
-            if (aSpotlight && bSpotlight) {
-                return (spotlightRank.get(a.id) ?? 0) - (spotlightRank.get(b.id) ?? 0);
-            }
+    const cardPageCount = Math.max(1, Math.ceil(gridItems.length / HOME_CARD_PAGE_SIZE));
+    const safeCardPage = Math.min(cardPage, cardPageCount - 1);
+    const visibleGridItems = gridItems.slice(
+        safeCardPage * HOME_CARD_PAGE_SIZE,
+        safeCardPage * HOME_CARD_PAGE_SIZE + HOME_CARD_PAGE_SIZE,
+    );
 
-            const aBook = bookmarks.includes(a.id) ? 0 : 1;
-            const bBook = bookmarks.includes(b.id) ? 0 : 1;
-            if (aBook !== bBook) {
-                return aBook - bBook;
-            }
-            if (aBook === 0) {
-                return bookmarks.indexOf(a.id) - bookmarks.indexOf(b.id);
-            }
-            return a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' });
-        });
-    }, [isEnabled, bookmarks, isMinistryLeader, moduleSpotlight]);
+    const goToCardPage = (next: number) => {
+        const bounded = Math.min(Math.max(0, next), cardPageCount - 1);
+        setCardPage(bounded);
+        sessionStorage.setItem(HOME_CARD_PAGE_KEY, String(bounded));
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'auto' });
+    };
 
     useEffect(() => {
         if (!showPostRegistrationBanner || typeof window === 'undefined') {
@@ -457,24 +440,21 @@ export default function MobileHome({
                     </div>
                 </header>
 
-                <HomeGivingShortcuts />
+                {/*
+                    Atalhos Oferta NS, Dízimo e Pacto e Conviva — comentados para teste.
+                    Restaurar: importar HomeGivingShortcuts e renderizar <HomeGivingShortcuts />.
+                */}
 
-                <HomeFeedCarousel
-                    items={feedHighlights}
-                    appUrl={appUrl}
-                    fallback={{
-                        href: conhecaFallbackHref,
-                        title: 'Conheça a Nova Semente',
-                        excerpt: 'Quem somos, pastores, localização e horários.',
-                        imageUrl: '/images/home-cards/conheca.webp?v=2',
-                        actionLabel: 'Conhecer',
-                    }}
-                />
+                {/*
+                    Carrossel do feed — comentado para teste.
+                    Restaurar: importar HomeFeedCarousel e renderizar com items={feedHighlights}.
+                */}
                 </div>
 
-                {weeklyProgramCards.length > 0 ? (
-                    <WeeklyProgramHomeStrip cards={weeklyProgramCards} href={programHref} />
-                ) : null}
+                {/*
+                    Programação de sábado — comentada para teste.
+                    Restaurar: importar WeeklyProgramHomeStrip e renderizar quando weeklyProgramCards.length > 0.
+                */}
 
                 {showMeditationBanner && meditationBanner ? (
                     <MeditationHomeBanner
@@ -485,14 +465,14 @@ export default function MobileHome({
                     />
                 ) : null}
 
-                {sabbathBanner && !showMeditationBanner && weeklyProgramCards.length === 0 ? (
+                {sabbathBanner && !showMeditationBanner ? (
                     <SabbathHomeBanner banner={sabbathBanner} appUrl={appUrl} layout="strip" />
                 ) : null}
                 <ConhecaNovaSementeHomeCard />
 
                 <section aria-label="Atalhos" className="relative z-[1]">
-                    <div className="grid grid-cols-2 items-stretch gap-4 lg:grid-cols-3">
-                        {gridItems.map((item) => {
+                    <div className="mx-auto grid w-full max-w-lg grid-cols-2 items-stretch gap-4">
+                        {visibleGridItems.map((item) => {
                             const { id, label, subtitle, route: routeName, routeParams, onClick, icon } = item.action;
                             const pendingBadge =
                                 id === 'ns-whats' && nsWhatsPendingReply > 0 ? nsWhatsPendingReply : null;
@@ -512,6 +492,7 @@ export default function MobileHome({
                                   : routeParams
                                     ? route(routeName!, routeParams)
                                     : route(routeName!);
+                            const presentation = homeCardPhotoPresentation[id];
 
                             return (
                                 <HomeFeatureCard
@@ -524,14 +505,16 @@ export default function MobileHome({
                                     onClick={onClick}
                                     spotlight={isSpotlightCard}
                                     pendingCount={pendingBadge}
+                                    layout={presentation ? 'photo' : 'plain'}
+                                    presentation={presentation}
                                     bookmark={
                                         canBookmark ? (
                                             <HomeCardBookmarkButton
                                                 cardKey={id}
                                                 bookmarked={bookmarks.includes(id)}
                                                 disabled={bookmarkBusy}
+                                                tone={presentation ? 'on-dark' : 'surface'}
                                                 onToggle={(key) => void toggleBookmark(key)}
-                                                className={isSpotlightCard ? '!right-12' : ''}
                                             />
                                         ) : null
                                     }
@@ -539,6 +522,29 @@ export default function MobileHome({
                             );
                         })}
                     </div>
+                    {cardPageCount > 1 ? (
+                        <nav aria-label="Páginas dos atalhos" className="mt-4 flex items-center justify-between gap-3">
+                            <button
+                                type="button"
+                                className="inline-flex h-11 min-w-[7.25rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                                disabled={safeCardPage === 0}
+                                onClick={() => goToCardPage(safeCardPage - 1)}
+                            >
+                                Anterior
+                            </button>
+                            <p className="text-sm font-medium tabular-nums text-zinc-600 dark:text-zinc-300" aria-live="polite">
+                                Página {safeCardPage + 1} de {cardPageCount}
+                            </p>
+                            <button
+                                type="button"
+                                className="inline-flex h-11 min-w-[7.25rem] cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                                disabled={safeCardPage >= cardPageCount - 1}
+                                onClick={() => goToCardPage(safeCardPage + 1)}
+                            >
+                                Próxima
+                            </button>
+                        </nav>
+                    ) : null}
                 </section>
 
                 <div className="flex flex-col gap-4">

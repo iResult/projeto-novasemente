@@ -1,6 +1,8 @@
 export type HomeCardCrop = 'bottom' | 'side';
 export type HomeCardWave = 0 | 1 | 2;
 export type HomeCardTone = 'live';
+export type HomeCardTextTheme = 'light' | 'dark';
+export type HomeCardGradient = 'none' | 'soft' | 'read';
 
 export type HomeCardMedia = {
     src: string;
@@ -10,6 +12,15 @@ export type HomeCardMedia = {
     focus?: string;
     /** Fotos reais de culto: o mesmo filtro nos dois cards. */
     tone?: HomeCardTone;
+};
+
+/** Ajuste de uma foto no card, sem duplicar o componente. */
+export type HomeCardPresentation = {
+    image: string;
+    imagePosition?: string;
+    textTheme?: HomeCardTextTheme;
+    gradientVariant?: HomeCardGradient;
+    fallbackImage?: string;
 };
 
 /** Fotos locais dos cards da Home. O recorte fica no componente, não na imagem. */

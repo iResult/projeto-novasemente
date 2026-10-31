@@ -141,7 +141,7 @@ class VolunteerPublicSignupTest extends TestCase
             'password' => $password,
         ]);
 
-        $login->assertRedirect(route('mobile.home'));
+        $login->assertRedirect(route('mobile.index'));
         $this->assertAuthenticated();
     }
 

@@ -1342,6 +1342,11 @@ class MobileController extends Controller
         ]);
     }
 
+    public function oferta(): Response
+    {
+        return Inertia::render('Mobile/Oferta');
+    }
+
     public function sobreOApp(Request $request): Response
     {
         $from = $request->string('from')->toString();

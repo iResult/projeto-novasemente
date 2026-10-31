@@ -39,6 +39,24 @@ class PublicationsFeedTest extends TestCase
                 ->has('filters'));
     }
 
+    public function test_mobile_entry_opens_the_publications_feed(): void
+    {
+        config(['publications_feed.preview_only' => false]);
+
+        $this->seed(ChurchSeeder::class);
+
+        $this->get('/mobile')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Mobile/PublicationsFeed'));
+    }
+
+    public function test_oferta_hub_renders(): void
+    {
+        $this->get(route('mobile.oferta'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Mobile/Oferta'));
+    }
+
     public function test_guest_can_access_when_feed_is_open(): void
     {
         config(['publications_feed.preview_only' => false]);

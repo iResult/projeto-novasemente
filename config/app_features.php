@@ -28,6 +28,7 @@ return [
         'mobile.profile.edit',
         'nstimer.sso',
         'mobile.publications-feed',
+        'mobile.oferta',
         'oferta',
         'app',
         'baixar',

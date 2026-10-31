@@ -20,7 +20,8 @@ final class PageViewRouteLabels
      */
     private const MAP = [
         // —— Barra inferior ——
-        'mobile.index' => 'Início (entrada /mobile)',
+        'mobile.index' => 'Feed',
+        'mobile.oferta' => 'Oferta',
         'mobile.home' => 'Início',
         'mobile.culto' => 'Assistir culto',
         'mobile.culto.show' => 'Assistir culto — vídeo',

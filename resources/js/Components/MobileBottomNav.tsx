@@ -3,13 +3,13 @@ import { useAppFeatures } from '@/hooks/useAppFeatures';
 import {
     HomeIcon as HomeOutlineIcon,
     HandRaisedIcon as HandRaisedOutlineIcon,
-    PlayCircleIcon as PlayCircleOutlineIcon,
+    BanknotesIcon as BanknotesOutlineIcon,
     BookOpenIcon as BookOpenOutlineIcon,
 } from '@heroicons/react/24/outline';
 import {
     HomeIcon as HomeSolidIcon,
     HandRaisedIcon as HandRaisedSolidIcon,
-    PlayCircleIcon as PlayCircleSolidIcon,
+    BanknotesIcon as BanknotesSolidIcon,
     BookOpenIcon as BookOpenSolidIcon,
 } from '@heroicons/react/24/solid';
 import type { ComponentType, SVGProps } from 'react';
@@ -23,6 +23,8 @@ type NavItem = {
     icon?: NavIcon;
     iconActive?: NavIcon;
     featureKey?: string;
+    /** Visível se qualquer uma destas funcionalidades estiver ligada. */
+    featureAny?: readonly string[];
     /** PNG único no lugar de ícone + rótulo (ex.: Publicações). */
     imageSrc?: string;
 };
@@ -81,7 +83,6 @@ const navItems: NavItem[] = [
             'pastors.weekly-schedule.update',
             'mobile.schedule',
             'escalas.index',
-            'mobile.offerings',
             'mobile.events',
             'mobile.health',
             'mobile.health.show',
@@ -107,25 +108,10 @@ const navItems: NavItem[] = [
             'mobile.meditacao-diaria',
             'mobile.talents.index',
             'mobile.shared-talents.index',
-            'mobile.campaigns.index',
             'mobile.donations.index',
         ],
         icon: HomeOutlineIcon,
         iconActive: HomeSolidIcon,
-    },
-    {
-        name: 'Culto',
-        route: 'mobile.culto',
-        featureKey: 'culto',
-        activeRoutes: ['mobile.culto', 'mobile.culto.show'],
-        icon: PlayCircleOutlineIcon,
-        iconActive: PlayCircleSolidIcon,
-    },
-    {
-        name: 'Publicações',
-        route: 'mobile.publications-feed',
-        activeRoutes: ['mobile.publications-feed'],
-        imageSrc: '/logo-ns.png',
     },
     {
         name: 'Oração',
@@ -134,6 +120,29 @@ const navItems: NavItem[] = [
         activeRoutes: ['mobile.prayer', 'prayer.index'],
         icon: HandRaisedOutlineIcon,
         iconActive: HandRaisedSolidIcon,
+    },
+    {
+        name: 'Publicações',
+        route: 'mobile.publications-feed',
+        activeRoutes: ['mobile.publications-feed', 'mobile.index'],
+        imageSrc: '/logo-ns.png',
+    },
+    {
+        name: 'Oferta',
+        route: 'mobile.oferta',
+        featureAny: ['donation_campaigns', 'offerings'],
+        activeRoutes: [
+            'mobile.oferta',
+            'mobile.offerings',
+            'mobile.campaigns.index',
+            'mobile.campaigns.show',
+            'mobile.campaigns.receipt',
+            'mobile.campaigns.donate',
+            'mobile.campaigns.my-donations',
+            'mobile.campaigns.dispute',
+        ],
+        icon: BanknotesOutlineIcon,
+        iconActive: BanknotesSolidIcon,
     },
     {
         name: 'Bíblia',
@@ -145,10 +154,14 @@ const navItems: NavItem[] = [
     },
 ];
 
-/** Barra inferior: Home, Culto, Publicações, Oração, Bíblia. */
+/** Barra inferior: Home, Oração, Publicações, Oferta, Bíblia. */
 export default function MobileBottomNav({ borderless = false }: { borderless?: boolean }) {
     const { isEnabled } = useAppFeatures();
     const visibleItems = navItems.filter((item) => {
+        if (item.featureAny && item.featureAny.length > 0) {
+            return item.featureAny.some((key) => isEnabled(key));
+        }
+
         if (!item.featureKey) {
             return true;
         }
